@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+ <!-- $Id$ -->
+ <head>
+  <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=iso-8859-1" />
+  <link rel="stylesheet" href="default.css" type="text/css" />
+  <meta name="description" content="Maintaining Matt Dillon's dasm." />
+  <meta name="keywords" content="dasm, 6502, 6507, 68HC11, F8" />
+  <title>dasm</title>
+ </head>
+ <body>
+  <!--#include virtual="header.shtml" -->
+  <div id="main">
+   <h1>Coming soon...</h1>
+   <p style="text-align: justify">
+    We're working on it... :-)
+   </p>
+   <h2>Project Page</h2>
+   <p>
+    Check out the
+    <a href="http://sourceforge.net/projects/dasm-dillon/">project page</a>
+    for more information.
+   </p>
+   <h2>Related Projects</h2>
+   <ul>
+    <li>
+     Thomas Mathys'
+     <a href="http://sourceforge.net/projects/dasm2/">dasm2</a>
+    </li>
+    <li>
+     <a href="http://www.bradfordmott.com/">Bradford W. Mott</a>'s
+     <a href="http://stella.sourceforge.net/">Stella</a>
+    </li>
+   </ul>
+  </div>
+  <!--#include virtual="footer.shtml" -->
+ </body>
+</html>
