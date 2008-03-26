@@ -42,6 +42,11 @@ body {
  line-height: 1.2em;
 }
 
+#main p {
+  text-align: justify;
+  margin-left: 1em;
+}
+
 /*
   Logo using CSS, forget PNG. :-)
 */

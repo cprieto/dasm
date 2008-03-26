@@ -6,23 +6,55 @@
  <head>
   <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=iso-8859-1" />
   <link rel="stylesheet" href="default.css" type="text/css" />
-  <meta name="description" content="Maintaining Matt Dillon's dasm." />
-  <meta name="keywords" content="dasm, 6502, 6507, 68HC11, F8" />
-  <title>dasm</title>
+  <meta name="description"
+   content="Maintaining Matt Dillon's dasm assembler." />
+  <meta name="keywords"
+   content="dasm, assembler, macro, 8-bit,
+    6502, 6507, 6803, HD6303, 68HC11, 68705, F8" />
+  <title>the dasm macro assembler</title>
  </head>
  <body>
   <!--#include virtual="header.shtml" -->
   <div id="main">
-   <h1>Coming soon...</h1>
-   <p style="text-align: justify">
-    We're working on it... :-)
+   <h1>Welcome</h1>
+   <p>
+    Welcome to the (soon-to-be-official) home of
+    <strong>dasm</strong>,
+    a versatile macro assembler with support for
+    several 8-bit microprocessors including
+    6502, 6507, 6803, HD6303, 68HC11, 68705, and F8.
    </p>
+
+   <h2>History</h2>
+   <p>
+    Matthew Dillon started <strong>dasm</strong> in 1987-1988.
+    Olaf "Rhialto" Seibert extended <strong>dasm</strong> in 1995.
+    Andrew Davie maintained <strong>dasm</strong> in 2003-2008.
+    During all this time, several other versions of <strong>dasm</strong>
+    sprung up all over the net as well, making the exact chronology
+    quite complicated.
+    Peter Froehlich started maintaining <strong>dasm</strong> in
+    2008, hoping (against hope) to unify the various strands of
+    development a little, and to maybe give <strong>dasm</strong>
+    another 20 years of productive life. :-)
+   </p>
+   <p>
+    All versions of <strong>dasm</strong> are written
+    in C and include the full source code.
+
+    Earlier versions of <strong>dasm</strong> were distributed
+    under a custom license, but recent versions (since about 2002)
+    are distributed under the
+    <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a>.
+   </p>
+
    <h2>Project Page</h2>
    <p>
     Check out the
     <a href="http://sourceforge.net/projects/dasm-dillon/">project page</a>
     for more information.
    </p>
+
    <h2>Related Projects</h2>
    <ul>
     <li>
@@ -34,6 +66,19 @@
      <a href="http://stella.sourceforge.net/">Stella</a>
     </li>
    </ul>
+
+   <h2>Links</h2>
+   <ul>
+    <li>
+     Andrew Davie's
+     <a href="http://www.atari2600.org/DASM/">dasm</a> page
+    </li>
+    <li>
+     <a href="http://apollo.backplane.com/">Matthew Dillon</a>'s
+     <a href="http://apollo.backplane.com/FreeSrc/">dasm</a> page
+    </li>
+   </ul>
+
   </div>
   <!--#include virtual="footer.shtml" -->
  </body>
