@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="default.css" type="text/css" />
   <meta name="description"
    content="Maintaining Matt Dillon's dasm assembler." />
+  <!-- first few up to "dasm" are from Matt's 1989 / V2.12 POSTER file :-) -->
   <meta name="keywords"
-   content="dasm, assembler, macro, 8-bit,
-    6502, 6507, 6803, HD6303, 68HC11, 68705, F8" />
+    content="binary, 6303, 6502, 6803, 6811, 68705, asm, assembler, dasm, macro, 8-bit, MOS, 6507, Motorola, 68HC11, Hitachi, HD6303, Fairchild, F8" />
   <title>the dasm macro assembler</title>
  </head>
  <body>
