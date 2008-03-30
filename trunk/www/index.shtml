@@ -22,7 +22,31 @@
     <strong>dasm</strong>,
     a versatile macro assembler with support for
     several 8-bit microprocessors including
-    6502, 6507, 6803, HD6303, 68HC11, 68705, and F8.
+    MOS
+    <a href="http://en.wikipedia.org/wiki/MOS_Technology_6502">6502</a> &amp;
+    <a href="http://en.wikipedia.org/wiki/MOS_Technology_6507">6507</a>,
+    Motorola
+    <a href="http://en.wikipedia.org/wiki/Motorola_6800">6803</a>,
+    68705 &amp;
+    <a href="http://en.wikipedia.org/wiki/Freescale_68HC11">68HC11</a>,
+    Hitachi
+    HD6303 (extended Motorola 6801),
+    and
+    Fairchild
+    <a href="http://en.wikipedia.org/wiki/Fairchild_F8">F8</a>.
+   </p>
+   <p>
+    All versions of <strong>dasm</strong> are written
+    in
+    <a href="http://en.wikipedia.org/wiki/C_(programming_language)">C</a>
+    and include the full source code, recent versions (since about 2003)
+    also include selected target-machine runtimes.
+   </p>
+   <p>
+    Earlier versions of <strong>dasm</strong> were distributed
+    under a custom license, but recent versions (since about 2002)
+    are distributed under the
+    <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU General Public License</a>.
    </p>
 
    <h2>History</h2>
@@ -37,15 +61,6 @@
     2008, hoping (against hope) to unify the various strands of
     development a little, and to maybe give <strong>dasm</strong>
     another 20 years of productive life. :-)
-   </p>
-   <p>
-    All versions of <strong>dasm</strong> are written
-    in C and include the full source code.
-
-    Earlier versions of <strong>dasm</strong> were distributed
-    under a custom license, but recent versions (since about 2002)
-    are distributed under the
-    <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a>.
    </p>
 
    <h2>Project Page</h2>
