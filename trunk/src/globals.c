@@ -28,7 +28,10 @@ ulong	Localdollarindex;
 ulong	Lastlocaldollarindex;
 #endif
 ulong	Processor;
-ubyte	Xdebug, Xtrace;
+ubyte	Xtrace;
+
+bool Xdebug;
+
 ubyte	Outputformat;
 ulong	Redo, Redo_why;
 ulong	Redo_eval;	   /*  infinite loop detection only    */
