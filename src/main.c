@@ -28,8 +28,15 @@ void clearrefs(void);
 static uword hash1(char *str);
 static void outlistfile(char *);
 
-//uword _fmode = 0;    /*  was trying to port to 16 bit IBM-PC lattice C */
-/*      but failed    */
+
+
+/* 
+    AD - 15/July/2003
+uword _fmode = 0; 
+
+*/
+
+
 
 ubyte     Disable_me;
 ubyte     StopAtEnd = 0;
@@ -46,10 +53,10 @@ ubyte     F_Passes;
 #define  F_passes 10
 #endif
 
-const char name[] = "DASM V2.20.04, Macro Assembler (C)1988-2003";
+const char name[] = "DASM V2.20.07, Macro Assembler (C)1988-2003";
 
 
-int nTableSort = 0;                 // Sorting preference for symbol table output
+int nTableSort = 0;                 /* Sorting preference for symbol table output */
 
 
 char *Errors[] = {
@@ -69,7 +76,7 @@ char *Errors[] = {
         "Illegal forced Addressing mode on '%s'.",
         "Not enough args passed to Macro.",
         "Premature EOF.",
-        "Illegal character.",
+        "Illegal character '%s'.",
         "Branch out of range (%s bytes).",
         "ERR pseudo-op encountered.",
         "Origin Reverse-indexed.",
@@ -85,17 +92,6 @@ char *Errors[] = {
         NULL
 };
 
-
-int MainShadow(int ac, char **av);
-
-int
-main(int ac, char **av)
-{
-    int nError = MainShadow( ac, av );
-    if ( nError )
-        printf( "Fatal assembly error: %s\n", Errors[ nError ] );
-    return nError;
-}
 
 
 
@@ -143,16 +139,64 @@ int CompareAlpha( const void *arg1, const void *arg2 )
     /* Simple alphabetic ordering comparison function for quicksort */
 
     SYMBOL **sym1, **sym2;
+    int nSym1Size, nSym2Size;
+    char *pSym1LC, *pSym2LC;
+    char *pSrc, *pDest;
+    int nCompare;
 
     sym1 = (SYMBOL **) arg1;
     sym2 = (SYMBOL **) arg2;
 
-    return _stricmp( (*sym1)->name, (*sym2)->name );
+    nSym1Size = strlen( (*sym1)->name ) + 1;
+    nSym2Size = strlen( (*sym2)->name ) + 1;
+
+
+
+    /* Primitive manual to lowercase conversion */
+
+    pSym1LC = malloc( nSym1Size );
+    pDest = pSym1LC;
+    pSrc = (*sym1)->name;
+    while ( *pSrc )
+    {
+        if ( *pSrc >= 'A' && *pSrc <= 'Z' )
+            *pDest = *pSrc - 'A' + 'a';
+        else
+            *pDest = *pSrc;
+
+        *pDest++;
+        *pSrc++;
+    }
+    *pDest = 0;         /* terminator */
+
+    /* Primitive manual to lowercase conversion */
+
+    pSym2LC = malloc( nSym2Size );
+    pDest = pSym2LC;
+    pSrc = (*sym2)->name;
+    while ( *pSrc )
+    {
+        if ( *pSrc >= 'A' && *pSrc <= 'Z' )
+            *pDest = *pSrc - 'A' + 'a';
+        else
+            *pDest = *pSrc;
+
+        *pDest++;
+        *pSrc++;
+    }
+    *pDest = 0;         /* terminator */
+
+    nCompare = strcmp( pSym1LC, pSym2LC );
+
+    free( pSym2LC );
+    free( pSym1LC );
+
+    return nCompare;
 }
 
 int CompareAddress( const void *arg1, const void *arg2 )
 {
-    /* Simple alphabetic ordering comparison function for quicksort */
+    /* Simple numeric ordering comparison function for quicksort */
 
     SYMBOL **sym1, **sym2;
 
@@ -163,7 +207,7 @@ int CompareAddress( const void *arg1, const void *arg2 )
 }
 
 
-void ShowSymbols()
+void ShowSymbols( FILE *file )
 {
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
 
@@ -172,7 +216,7 @@ void ShowSymbols()
     int i;
     int nSymbols = 0;
 
-    printf("--- Symbol List");
+    fprintf( file, "--- Symbol List");
 
     /* Sort the symbol list either via name, or by value */
 
@@ -186,12 +230,12 @@ void ShowSymbols()
     symArray = malloc( sizeof( SYMBOL * ) * nSymbols );
     if ( !symArray )
     {
-        printf( " (unsorted - not enough memory to sort!)\n" );
+        fprintf( file, " (unsorted - not enough memory to sort!)\n" );
 
         /* Display complete symbol table */
         for (i = 0; i < SHASHSIZE; ++i)
             for (sym = SHash[i]; sym; sym = sym->next)
-                printf("%-24s %s\n", sym->name, sftos(sym->value, sym->flags));
+                fprintf( file, "%-24s %s\n", sym->name, sftos( sym->value, sym->flags ) );
     }
     else
     {
@@ -206,25 +250,31 @@ void ShowSymbols()
             
         if ( nTableSort )
         {
-            printf( " (sorted by address)\n" );
+            fprintf( file, " (sorted by address)\n" );
             qsort( symArray, nPtr, sizeof( SYMBOL * ), CompareAddress );           /* Sort via address */
         }
         else
         {
-            printf( " (sorted by symbol)\n" );
+            fprintf( file, " (sorted by symbol)\n" );
             qsort( symArray, nPtr, sizeof( SYMBOL * ), CompareAlpha );              /* Sort via name */
         }
+
 
         /* now display sorted list */
 
         for ( i = 0; i < nPtr; i++ )
-            printf( "%-24s %s\n", symArray[ i ]->name,
+        {
+            fprintf( file, "%-24s %-12s", symArray[ i ]->name,
                 sftos( symArray[ i ]->value, symArray[ i ]->flags ) );
-            
+            if ( symArray[ i ]->flags & SYM_STRING )
+                fprintf( file, " \"%s\"", symArray[ i ]->string );                  /* If a string, display actual string */
+            fprintf( file, "\n" );
+        }
+
         free( symArray );
     }
 
-    puts("--- End of Symbol List.\n" );
+    fputs( "--- End of Symbol List.\n", file );
 
 }
 
@@ -308,6 +358,25 @@ void ShowSegments()
 
 
 
+void DumpSymbolTable()
+{
+    if (F_symfile)
+    {
+        FILE *fi = fopen(F_symfile, "w");
+        if (fi)
+        {
+            ShowSymbols( fi );
+            fclose(fi);
+        }
+        else
+        {
+            printf("Warning: Unable to open Symbol Dump file '%s'\n", F_symfile);
+        }
+    }
+
+}
+
+
 int
 MainShadow(int ac, char **av)
 {
@@ -358,7 +427,7 @@ fail:
     {
         if ( ( av[i][0] == '-' ) || ( av[i][0] == '/' ) )
         {
-            register char *str = av[i]+2;
+            char *str = av[i]+2;
             switch(av[i][1])
             {
 
@@ -445,14 +514,14 @@ nofile:
     /*    INITIAL SEGMENT */
     
     {
-        register SEGMENT *seg = (SEGMENT *)permalloc(sizeof(SEGMENT));
+        SEGMENT *seg = (SEGMENT *)permalloc(sizeof(SEGMENT));
         seg->name = strcpy(permalloc(sizeof(ISEGNAME)), ISEGNAME);
         seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
         Csegment = Seglist = seg;
     }
     /*    TOP LEVEL IF    */
     {
-        register IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
+        IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
         ifs->file = NULL;
         ifs->flags = IFF_BASE;
         ifs->acctrue = 1;
@@ -474,13 +543,13 @@ nextpass:
 #if OlafDol
     Localdollarindex = Lastlocaldollarindex = 0;
 #endif
-    _fmode = 0x8000;
-    FI_temp = fopen(F_outfile, "w");
-    _fmode = 0;
+    /*_fmode = 0x8000;*/
+    FI_temp = fopen(F_outfile, "wb");
+    /*_fmode = 0;*/
     Fisclear = 1;
     CheckSum = 0;
     if (FI_temp == NULL) {
-        printf("unable to [re]open '%s'\n", F_outfile);
+        printf("Warning: Unable to [re]open '%s'\n", F_outfile);
         return ERROR_FILE_ERROR;
     }
     if (F_listfile) {
@@ -491,7 +560,7 @@ nextpass:
         FI_listfile = fopen(F_listfile, "w");
 #endif
         if (FI_listfile == NULL) {
-            printf("unable to [re]open '%s'\n", F_listfile);
+            printf("Warning: Unable to [re]open '%s'\n", F_listfile);
             return ERROR_FILE_ERROR;
         }
     }
@@ -574,7 +643,7 @@ nextpass:
     if ( F_verbose >= 3 )
     {
         if ( !Redo || ( F_verbose == 4 ) )
-            ShowSymbols();
+            ShowSymbols( stdout );
 
         ShowUnresolvedSymbols();
     }
@@ -583,7 +652,9 @@ nextpass:
     fclose(FI_temp);
     if (FI_listfile)
         fclose(FI_listfile);
-    if (Redo) {
+    
+    if (Redo)
+    {
 #if OlafPasses
         if (!F_Passes)
 #endif
@@ -611,7 +682,7 @@ nextpass:
             else if (pass > F_passes)
             {
                 char sBuffer[64];
-                itoa( pass, sBuffer, 10);
+                sprintf( sBuffer, "%d", pass );
                 /*printf("More than %d passes, something *must* be wrong!\n", F_passes);*/
                 return asmerr( ERROR_TOO_MANY_PASSES, false, sBuffer );
 
@@ -623,24 +694,6 @@ nextpass:
                 goto nextpass;
             }
     }
-    if (F_symfile) {
-        FILE *fi = fopen(F_symfile, "w");
-        if (fi) {
-            register SYMBOL *sym;
-            puts("dumping symbols...");
-            for (i = 0; i < SHASHSIZE; ++i) {
-                for (sym = SHash[i]; sym; sym = sym->next) {
-                    fprintf(fi, "%-24s %s", sym->name, sftos(sym->value, sym->flags));
-                    if (sym->flags & SYM_STRING)
-                        fprintf(fi, " \"%s\"", sym->string);
-                    putc('\n', fi);
-                }
-            }
-            fclose(fi);
-        } else {
-            printf("unable to open symbol dump file '%s'\n", F_symfile);
-        }
-    }
 
     printf( "Complete.\n" );
 
@@ -651,8 +704,8 @@ nextpass:
 int
 tabit(char *buf1, char *buf2)
 {
-    register char *bp, *ptr;
-    register int j, k;
+    char *bp, *ptr;
+    int j, k;
     
     bp = buf2;
     ptr= buf1;
@@ -691,7 +744,7 @@ char *comment;
     static char buf2[MAXLINE+32];
     char *ptr;
     char *dot;
-    register int i, j;
+    int i, j;
     
 #if OlafList
     if (Incfile->flags & INF_NOLIST)
@@ -733,7 +786,7 @@ sftos(long val, int flags)
 {
     static char buf[64];
     static char c;
-    register char *ptr = (c) ? buf : buf + 32;
+    char *ptr = (c) ? buf : buf + 32;
     
     memset( buf, 0, 64 );
 
@@ -789,7 +842,7 @@ sftos(long val, int flags)
 void
 clearsegs(void)
 {
-    register SEGMENT *seg;
+    SEGMENT *seg;
     
     for (seg = Seglist; seg; seg = seg->next) {
         seg->flags = (seg->flags & SF_BSS) | SF_UNKNOWN;
@@ -800,20 +853,24 @@ clearsegs(void)
 void
 clearrefs(void)
 {
-    register SYMBOL *sym;
-    register short i;
+    SYMBOL *sym;
+    short i;
     
     for (i = 0; i < SHASHSIZE; ++i)
         for (sym = SHash[i]; sym; sym = sym->next)
             sym->flags &= ~SYM_REF;
 }
 
+
+
+
+
 char *
 cleanup(char *buf)
 {
-    register char *str;
-    register STRLIST *strlist;
-    register int arg, add;
+    char *str;
+    STRLIST *strlist;
+    int arg, add;
     char *comment = "";
     
     for (str = buf; *str; ++str)
@@ -873,6 +930,7 @@ cleanup(char *buf)
             }
             --add;
             ++str;
+
 
             if (Xdebug)
                 printf("add/str: %d '%s'\n", add, str);
@@ -1054,7 +1112,7 @@ rmnode(void **base, int bytes)
 MNE *
 parse(char *buf)
 {
-    register int i, j;
+    int i, j;
     MNE *mne = NULL;
     
     i = 0;
@@ -1144,9 +1202,9 @@ parse(char *buf)
 MNE *
 findmne(char *str)
 {
-    register int i;
-    register char c;
-    register MNE *mne;
+    int i;
+    char c;
+    MNE *mne;
     char buf[64];
     
 #if OlafDotop
@@ -1172,10 +1230,10 @@ v_macro(char *str, MNE *dummy)
 {
     STRLIST *base;
     int defined = 0;
-    register STRLIST **slp, *sl;
-    register MACRO *mac;    /* slp, mac: might be used uninitialised */
-    register MNE   *mne;
-    register uword i;
+    STRLIST **slp, *sl;
+    MACRO *mac;    /* slp, mac: might be used uninitialised */
+    MNE   *mne;
+    uword i;
     char buf[MAXLINE];
     int skipit = !(Ifstack->xtrue && Ifstack->acctrue);
     
@@ -1232,7 +1290,7 @@ v_macro(char *str, MNE *dummy)
 void
 addhashtable(MNE *mne)
 {
-    register int i, j;
+    int i, j;
     uword opcode[NUMOC];
     
     for (; mne->vect; ++mne) {
@@ -1252,7 +1310,7 @@ addhashtable(MNE *mne)
 static uword
 hash1(char *str)
 {
-    register uword result = 0;
+    uword result = 0;
     
     while (*str)
         result = (result << 2) ^ *str++;
@@ -1262,8 +1320,8 @@ hash1(char *str)
 void
 pushinclude(char *str)
 {
-    register INCFILE *inf;
-    register FILE *fi;
+    INCFILE *inf;
+    FILE *fi;
     
     if ((fi = pfopen(str, "r")) != NULL) {
         if (F_verbose > 1 && F_verbose != 5 )
@@ -1305,8 +1363,9 @@ int asmerr(int err, bool abort, char *sText )
     
 #ifdef DAD
     
-    // Error output format changed to be Visual-Studio compatible.
-    // Output now file (line): error: string
+    /* Error output format changed to be Visual-Studio compatible.
+       Output now file (line): error: string
+    */
     
     if (F_listfile)
     {
@@ -1399,8 +1458,8 @@ permalloc(int bytes)
 char *
 strlower(char *str)
 {
-    register char c;
-    register char *ptr;
+    char c;
+    char *ptr;
     
     for (ptr = str; (c = *ptr); ++ptr)
     {
@@ -1408,5 +1467,18 @@ strlower(char *str)
             *ptr = c | 0x20;
     }
     return(str);
+}
+
+int
+main(int ac, char **av)
+{
+    int nError = MainShadow( ac, av );
+    
+    if ( nError )
+        printf( "Fatal assembly error: %s\n", Errors[ nError ] );
+
+    DumpSymbolTable();
+    
+    return nError;
 }
 

@@ -24,8 +24,8 @@ setspecial(int value, int flags)
 SYMBOL *
 findsymbol(char *str, int len)
 {
-    register uword h1;
-    register SYMBOL *sym;
+    uword h1;
+    SYMBOL *sym;
     char buf[64];
 
     if (len > 50)
@@ -70,8 +70,8 @@ findsymbol(char *str, int len)
 SYMBOL *
 createsymbol(char *str, int len)
 {
-    register SYMBOL *sym;
-    register uword h1;
+    SYMBOL *sym;
+    uword h1;
     char buf[64];
 
     if (len > 50)
@@ -102,7 +102,7 @@ createsymbol(char *str, int len)
 static uword
 hash1(char *str, int len)
 {
-    register uword result = 0;
+    uword result = 0;
 
     while (len--)
 	result = (result << 2) ^ *str++;
@@ -116,10 +116,10 @@ hash1(char *str, int len)
 void
 programlabel(void)
 {
-    register int len;
-    register SYMBOL *sym;
-    register SEGMENT *cseg = Csegment;
-    register char *str;
+    int len;
+    SYMBOL *sym;
+    SEGMENT *cseg = Csegment;
+    char *str;
     ubyte   rorg = cseg->flags & SF_RORG;
     ubyte   cflags = (rorg) ? cseg->rflags : cseg->flags;
     ulong   pc = (rorg) ? cseg->rorg : cseg->org;
@@ -213,7 +213,7 @@ freesymbol(SYMBOL *sym)
 void
 freesymbollist(SYMBOL *sym)
 {
-    register SYMBOL *next;
+    SYMBOL *next;
 
     while (sym) {
 	next = sym->next;
