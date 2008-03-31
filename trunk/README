@@ -1,17 +1,52 @@
 
-    DASM    V2.12
+    DASM    Version 2.20.01
 
-    (c)Copyright 1988 Matthew Dillon, All Rights Reserved.
-       Freely Distributable (for non-profit) ONLY.  No redistribution
-       of any modified text files or redistribution of a subset of the
-       source is allowed.
+    DASM was created in 1988 by Matthew Dillon (dillon@apollo.backplane.com)
+    and modified in 1995 by Olaf 'Rhialto' Seibert (rhialto@polderland.nl), and
+    is now updated and maintained by Andrew Davie (atari2600@taswegian.com)
 
-       Circumvention of said terms requires the permission of the Author (me)
-       via US Mail.
+    DASM's homepage is http://www.atari2600.org/dasm
 
-       Matthew Dillon
-       891 Regal Rd.
-       Berkeley, Ca. 94708
+    DASM is freely re-distributable, and provided with full source-code to
+    allow recompilation for other target-platforms.  This package may not be
+    sold on any media, or distributed in any way other than totally free.
+
+    Directory structure...
+
+	BIN\DOS                 Binary for DOS/Windows
+	DOC                     Documentation and manuals
+	MACHINES\ATARI2600      Support files for Atari 2600 development
+	SRC                     DASM Source code
+	TEST                    Suite of test code
+
+    This file (README.TXT) will always list the most recent updates for
+    the DASM disributable.
+
+
+VERSION HISTORY
+
+    2.20.01     - This version combines the modifications made by Olaf in 1995
+                  into an official release, with minor additions.  The source-code
+                  is currently being commented and/or rewritten to make future
+                  maintenance easier.
+
+                  For Olaf's changes, see the #ifdef'ed parts in DASM.DOC.
+                  These modifications have now become a part of the main code-line
+                  of DASM, so they are not optional.  Documentation will be merged
+                  in a later version.
+
+                - Machine-specific support is now provided for Atari 2600.
+                  Other machines may be added at later dates.
+
+                - 6502/7 illegal opcodes NOP zp and LAX (zp),y added
+
+    2.12.15     Matt's ultimate release, updates a memory-allocation problem on
+                SPARC systems.  This fix appears to have been fixed in Olaf's
+                version, so 2.12.14 (*not* 2.12.15) was used as the code-base
+                for 2.20.01
+
+    2.12.14     Olaf's release, including many additions - many of which are
+                conditionally-compiled.
 
 
 COMPILATION
@@ -23,9 +58,6 @@ COMPILATION
     This code will compile with little or no modification on Amiga and UNIX
     systems.
 
-CONVERSION TO IBM:
-
-    Should be relatively easy.	Most of the code will work if int=16 bits.
 
 FEATURES
 
@@ -78,3 +110,4 @@ NOTE:	HD6303 instruction extensions over the 6803 are:
 
 I believe the 6811 is a superset of the 6803.
 
+;EOF
