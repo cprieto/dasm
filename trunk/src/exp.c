@@ -116,7 +116,7 @@ int	Argibase, Opibase;
 SYMBOL *
 eval(char *str, int wantmode)
 {
-    register SYMBOL *base, *cur;
+    SYMBOL *base, *cur;
     int oldargibase = Argibase;
     int oldopibase = Opibase;
     int scr;
@@ -336,7 +336,7 @@ eval(char *str, int wantmode)
                 cur->addrmode = AM_0Y;
                 ++str;
             } else {
-                register SYMBOL *new = allocsymbol();
+                SYMBOL *new = allocsymbol();
                 cur->next = new;
                 --Argi;
                 if (Argi < Argibase)
@@ -719,7 +719,7 @@ pushchar(char *str)
 char *
 pushhex(char *str)
 {
-    register long val = 0;
+    long val = 0;
     for (;; ++str) {
         if (*str >= '0' && *str <= '9') {
             val = (val << 4) + (*str - '0');
@@ -738,7 +738,7 @@ pushhex(char *str)
 char *
 pushoct(char *str)
 {
-    register long val = 0;
+    long val = 0;
     while (*str >= '0' && *str <= '7') {
         val = (val << 3) + (*str - '0');
         ++str;
@@ -750,7 +750,7 @@ pushoct(char *str)
 char *
 pushdec(char *str)
 {
-    register long val = 0;
+    long val = 0;
     while (*str >= '0' && *str <= '9') {
         val = (val * 10) + (*str - '0');
         ++str;
@@ -762,7 +762,7 @@ pushdec(char *str)
 char *
 pushbin(char *str)
 {
-    register long val = 0;
+    long val = 0;
     while (*str == '0' || *str == '1') {
         val = (val << 1) | (*str - '0');
         ++str;
@@ -785,8 +785,8 @@ pushstr(char *str)
 char *
 pushsymbol(char *str)
 {
-    register SYMBOL *sym;
-    register char *ptr;
+    SYMBOL *sym;
+    char *ptr;
     ubyte macro = 0;
     
     for (ptr = str;
@@ -798,7 +798,7 @@ pushsymbol(char *str)
     ++ptr
         );
     if (ptr == str) {
-        asmerr( ERROR_ILLEGAL_CHARACTER, false, NULL );
+        asmerr( ERROR_ILLEGAL_CHARACTER, false, str );
         printf("char = '%c' %d (-1: %d)\n", *str, *str, *(str-1));
         if (F_listfile)
             fprintf(FI_listfile, "char = '%c' code %d\n", *str, *str);

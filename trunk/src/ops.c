@@ -74,9 +74,9 @@ v_processor(char *str, MNE *dummy)
 void
 v_mnemonic(char *str, MNE *mne)
 {
-    register int addrmode;
-    register SYMBOL *sym;
-    register uword opcode;
+    int addrmode;
+    SYMBOL *sym;
+    uword opcode;
     short opidx;
     SYMBOL *symbase;
     int     opsize;
@@ -386,7 +386,7 @@ v_incbin(char *str, MNE *dummy)
 void
 v_seg(char *str, MNE *dummy)
 {
-    register SEGMENT *seg;
+    SEGMENT *seg;
     
     for (seg = Seglist; seg; seg = seg->next) {
         if (strcmp(str, seg->name) == 0) {
@@ -408,8 +408,8 @@ v_seg(char *str, MNE *dummy)
 void
 v_hex(char *str, MNE *dummy)
 {
-    register int i;
-    register int result;
+    int i;
+    int result;
     
     programlabel();
     Glen = 0;
@@ -459,9 +459,9 @@ v_err(char *str, MNE *dummy)
 void
 v_dc(char *str, MNE *mne)
 {
-    register SYMBOL *sym;
-    register SYMBOL *tmp;
-    register ulong  value;
+    SYMBOL *sym;
+    SYMBOL *tmp;
+    ulong  value;
     char *macstr = 0;		/* "might be used uninitialised" */
     char vmode = 0;
     
@@ -477,7 +477,7 @@ v_dc(char *str, MNE *mne)
     }
 #endif
     if (mne->name[1] == 'v') {
-        register int i;
+        int i;
         vmode = 1;
         for (i = 0; str[i] && str[i] != ' '; ++i);
         tmp = findsymbol(str, i);
@@ -501,7 +501,7 @@ v_dc(char *str, MNE *mne)
             Redo_why |= REASON_DC_NOT_RESOVED;
         }
         if (sym->flags & SYM_STRING) {
-            register ubyte *ptr = (void *)sym->string;
+            ubyte *ptr = (void *)sym->string;
             while ((value = *ptr) != 0) {
                 if (vmode) {
                     setspecial(value, 0);
@@ -591,7 +591,7 @@ v_dc(char *str, MNE *mne)
 void
 v_ds(char *str, MNE *dummy)
 {
-    register SYMBOL *sym;
+    SYMBOL *sym;
     int mult = 1;
     long filler = 0;
     
@@ -620,7 +620,7 @@ v_ds(char *str, MNE *dummy)
 void
 v_org(char *str, MNE *dummy)
 {
-    register SYMBOL *sym;
+    SYMBOL *sym;
     
     sym = eval(str, 0);
     Csegment->org = sym->value;
@@ -650,7 +650,7 @@ v_org(char *str, MNE *dummy)
 void
 v_rorg(char *str, MNE *dummy)
 {
-    register SYMBOL *sym = eval(str, 0);
+    SYMBOL *sym = eval(str, 0);
     
     Csegment->flags |= SF_RORG;
     if (sym->addrmode != AM_IMP) {
@@ -699,7 +699,7 @@ v_align(char *str, MNE *dummy)
             ++Redo;
             Redo_why |= REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN;
         } else {
-            register long n = sym->value - (Csegment->rorg % sym->value);
+            long n = sym->value - (Csegment->rorg % sym->value);
             if (n != sym->value)
                 genfill(fill, n, 1);
         }
@@ -708,7 +708,7 @@ v_align(char *str, MNE *dummy)
             ++Redo;
             Redo_why |= REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN;
         } else {
-            register long n = sym->value - (Csegment->org % sym->value);
+            long n = sym->value - (Csegment->org % sym->value);
             if (n != sym->value)
                 genfill(fill, n, 1);
         }
@@ -808,8 +808,8 @@ v_equ(char *str, MNE *dummy)
 void
 v_eqm(char *str, MNE *dummy)
 {
-    register SYMBOL *lab;
-    register int len = strlen(Av[0]);
+    SYMBOL *lab;
+    int len = strlen(Av[0]);
     
     if ((lab = findsymbol(Av[0], len)) != NULL) {
         if (lab->flags & SYM_STRING)
@@ -864,10 +864,10 @@ v_set(char *str, MNE *dummy)
 void
 v_execmac(char *str, MACRO *mac)
 {
-    register INCFILE *inc;
+    INCFILE *inc;
     STRLIST *base;
-    register STRLIST **psl, *sl;
-    register char *s1;
+    STRLIST **psl, *sl;
+    char *s1;
     
     programlabel();
     
@@ -936,8 +936,8 @@ v_end(char *str, MNE *dummy)
 void
 v_endm(char *str, MNE *dummy)
 {
-    register INCFILE *inc = Incfile;
-    register STRLIST *args, *an;
+    INCFILE *inc = Incfile;
+    STRLIST *args, *an;
     
     /* programlabel(); contrary to documentation */
     if (inc->flags & INF_MACRO) {
@@ -1039,8 +1039,8 @@ v_endif(char *str, MNE *dummy)
 void
 v_repeat(char *str, MNE *dummy)
 {
-    register REPLOOP *rp;
-    register SYMBOL *sym;
+    REPLOOP *rp;
+    SYMBOL *sym;
     
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         pushif(0);
@@ -1308,9 +1308,9 @@ closegenerate(void)
 void
 genfill(long fill, long entries, int size)
 {
-    register long bytes = entries;  /*	multiplied later    */
-    register int i;
-    register ubyte c3,c2,c1,c0;
+    long bytes = entries;  /*	multiplied later    */
+    int i;
+    ubyte c3,c2,c1,c0;
     
     if (!bytes)
         return;
@@ -1373,7 +1373,7 @@ genfill(long fill, long entries, int size)
 void
 pushif(bool xbool)
 {
-    register IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
+    IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
     ifs->next = Ifstack;
     ifs->file = Incfile;
     ifs->flags = 0;

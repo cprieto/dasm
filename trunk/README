@@ -1,5 +1,5 @@
 
-    DASM    Version 2.20.04
+    DASM    Version 2.20.07
 
     DASM was created in 1988 by Matthew Dillon (dillon@apollo.backplane.com)
     and modified in 1995 by Olaf 'Rhialto' Seibert (rhialto@polderland.nl), and
@@ -14,6 +14,8 @@
     Directory structure...
 
 	BIN\DOS                 Binary for DOS/Windows
+	BIN\Mac\Classic		Binary for Mac Classic (2.20.07 onwards)
+	BIN\Mac\OSX		Binary for Mac OSX (2.20.07 onwards)
 	DOC                     Documentation and manuals
 	SRC                     DASM Source code
 	TEST                    Suite of test code
@@ -23,6 +25,38 @@
 
 
 VERSION HISTORY
+
+    2.20.07     - (3rd posting, Mac OSX version included!  Thanks Jeremy Penner)
+
+    2.20.07     - (2nd posting, Amiga Version included!  Thanks, Peter Gordon)
+
+    2.20.07     - Rewrote symbol table sort to NOT use string functions
+
+                - Removed '_fmode' code altogether
+
+                - Conditional compilation around 
+
+                - Mac binary provided by Jason Rein
+
+		- I appear to have misplaced the Amiga binary???
+
+
+    2.20.05	- modified the file open from using _fmode (what was that FOR?!) to a "wb"
+		  (as suggested by ES and PG)
+		
+		- changed itoa(...) usage to sprintf (PG - Amiga)
+
+		- changed _stricmp(...) to stricmp (again, PG - amiga)
+
+		- fixed Symbol Table Dump so it outputs symbol table even if errors occur
+		
+		- symbol table now displays string symbols in string form, too
+
+		- further modifications to code (removed REGISTER keywords).
+
+		- AMIGA support (binary included! - thanks Peter Gordon)
+
+
 
     2.20.04	- Significant reformatting of code, prelude to full documentation.
 
@@ -90,8 +124,8 @@ COMPILATION
     computation is carried out with 32 bit ints.  Additionaly, the
     correct implementation of STDIO functions is assumed (no translation).
 
-    This code will compile with little or no modification on Amiga and UNIX
-    systems.
+    This code will compile with little or no modification on DOS, Amiga,
+    Mac and UNIX systems.
 
 
 FEATURES
@@ -144,5 +178,7 @@ NOTE:	HD6303 instruction extensions over the 6803 are:
 	    AIM OIM EIM TIM XGDX SLP
 
 I believe the 6811 is a superset of the 6803.
+For 6507 (Atari 2600) use 6502 as the selected processor.
+
 
 ;EOF
