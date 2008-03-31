@@ -1,4 +1,3 @@
- 
 FTOHEX  Convert assembly output file to INTEL-HEX format suitable for, say,
 a GTEK prom programmer.
  

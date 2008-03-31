@@ -1,5 +1,5 @@
 
-    DASM    Version 2.20.07
+    DASM    Version 2.20.10
 
     DASM was created in 1988 by Matthew Dillon (dillon@apollo.backplane.com)
     and modified in 1995 by Olaf 'Rhialto' Seibert (rhialto@polderland.nl), and
@@ -16,6 +16,7 @@
 	BIN\DOS                 Binary for DOS/Windows
 	BIN\Mac\Classic		Binary for Mac Classic (2.20.07 onwards)
 	BIN\Mac\OSX		Binary for Mac OSX (2.20.07 onwards)
+	BIN\Linux               Binaries (static and dynamic) (2.20.09 onwards)
 	DOC                     Documentation and manuals
 	SRC                     DASM Source code
 	TEST                    Suite of test code
@@ -25,6 +26,21 @@
 
 
 VERSION HISTORY
+
+    2.20.10     - Fairchild Channel F (processor F8) support added.  Thanks to Thomas Mathys!
+		- Please review the readme file in the new F8 directory.
+		- There have been a LOT of code modifications to improve readability/maintainability.
+		- ONLY the DOS binary is updated in this release;  if you are able to provide binaries for
+		  other platforms, please send to me so I can update.
+
+    2.20.09     - various cleanups and code modifications.  Switched from typedefs to actual type usage to allow
+                  Linux compatibility (Linux had ulong defined).  Various minor changes.
+                - Linux versions compiled by Brian Wilson.
+
+    2.20.08     - started to do some source code changes - I think.
+                - // comments changed/removed
+		- changed DOC files to text format.  We may go to HTML soon, but Word is definitely
+		  a thing of the past!
 
     2.20.07     - (3rd posting, Mac OSX version included!  Thanks Jeremy Penner)
 

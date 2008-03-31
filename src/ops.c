@@ -1,3 +1,23 @@
+/*
+    DASM Assembler
+    Portions of this code are Copyright (C)1988 Matthew Dillon
+    and (C) 1995 Olaf Seibert, (C)2003 Andrew Davie 
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*/
 
 /*
 *  OPS.C
@@ -10,15 +30,16 @@
 
 #include "asm.h"
 
-ubyte	 Gen[256];
-ubyte	 OrgFill = DEFORGFILL;
+unsigned char Gen[256];
+unsigned char OrgFill = DEFORGFILL;
 int	 Glen;
 
-extern MNE    Mne6502[];
-extern MNE    Mne6803[];
-extern MNE    MneHD6303[];
-extern MNE    Mne68705[];
-extern MNE    Mne68HC11[];
+extern MNEMONIC    Mne6502[];
+extern MNEMONIC    Mne6803[];
+extern MNEMONIC    MneHD6303[];
+extern MNEMONIC    Mne68705[];
+extern MNEMONIC    Mne68HC11[];
+extern MNEMONIC    MneF8[];
 
 void generate(void);
 void genfill(long fill, long bytes, int size);
@@ -29,54 +50,91 @@ int gethexdig(int c);
 *  An opcode modifies the SEGMENT flags in the following ways:
 */
 
-void
-v_processor(char *str, MNE *dummy)
+void v_processor(char *str, MNEMONIC *dummy)
 {
-    static int	  called;
-    
-    if (called)
-        return;
-    called = 1;
-    if (strcmp(str,"6502") == 0) {
-        addhashtable(Mne6502);
+    static bool bCalled = false;
+    unsigned long PreviousProcessor = Processor;
+
+    Processor = 0;
+
+    if (strcmp(str,"6502") == 0)
+    {
+        if ( !bCalled )
+            addhashtable(Mne6502);
+
         MsbOrder = 0;	    /*	lsb,msb */
         Processor = 6502;
     }
-    if (strcmp(str,"6803") == 0) {
-        addhashtable(Mne6803);
+
+    if (strcmp(str,"6803") == 0)
+    {
+        if ( !bCalled )
+            addhashtable(Mne6803);
+        
         MsbOrder = 1;	    /*	msb,lsb */
         Processor = 6803;
     }
-    if (strcmp(str,"HD6303") == 0 || strcmp(str, "hd6303") == 0) {
-        addhashtable(Mne6803);
-        addhashtable(MneHD6303);
+
+    if (strcmp(str,"HD6303") == 0 || strcmp(str, "hd6303") == 0)
+    {
+        if ( !bCalled )
+        {
+            addhashtable(Mne6803);
+            addhashtable(MneHD6303);
+        }
+
         MsbOrder = 1;	    /*	msb,lsb */
         Processor = 6303;
     }
-    if (strcmp(str,"68705") == 0) {
-        addhashtable(Mne68705);
+
+    if (strcmp(str,"68705") == 0)
+    {
+        if ( !bCalled )
+            addhashtable(Mne68705);
+        
         MsbOrder = 1;	    /*	msb,lsb */
         Processor = 68705;
     }
-    if (strcmp(str,"68HC11") == 0 || strcmp(str, "68hc11") == 0) {
-        addhashtable(Mne68HC11);
+
+    if (strcmp(str,"68HC11") == 0 || strcmp(str, "68hc11") == 0)
+    {
+        if ( !bCalled )
+            addhashtable(Mne68HC11);
+        
         MsbOrder = 1;	    /*	msb,lsb */
         Processor = 6811;
     }
-    if (!Processor)
+
+    if (strcmp(str,"F8") == 0 || strcmp(str, "f8") == 0)
+    {
+		if ( !bCalled )
+			addhashtable(MneF8);
+
+		MsbOrder = 1;
+        Processor = 0xf8;
+    }
+
+    bCalled = true;
+
+    if ( !Processor )
     {
         asmerr( ERROR_PROCESSOR_NOT_SUPPORTED, true, str );
     }
+
+    if ( PreviousProcessor && Processor != PreviousProcessor )
+    {
+        asmerr( ERROR_ONLY_ONE_PROCESSOR_SUPPORTED, true, str );
+    }
+
 }
 
 #define badcode(mne,adrmode)  (!(mne->okmask & (1L << adrmode)))
 
-void
-v_mnemonic(char *str, MNE *mne)
+void v_mnemonic(char *str, MNEMONIC *mne)
 {
     int addrmode;
     SYMBOL *sym;
-    uword opcode;
+    unsigned int opcode;
     short opidx;
     SYMBOL *symbase;
     int     opsize;
@@ -85,9 +143,9 @@ v_mnemonic(char *str, MNE *mne)
     programlabel();
     symbase = eval(str, 1);
     
-    if (Xtrace)
-        printf("PC: %04lx  MNE: %s  addrmode: %d  ",
-	       Csegment->org, mne->name, symbase->addrmode);
+    if ( bTrace )
+        printf("PC: %04lx  MNEMONIC: %s  addrmode: %d  ", Csegment->org, mne->name, symbase->addrmode);
+
     for (sym = symbase; sym; sym = sym->next)
     {
         if (sym->flags & SYM_UNKNOWN)
@@ -112,19 +170,19 @@ v_mnemonic(char *str, MNE *mne)
         opsize = 2;
     else
         opsize = (sym->value) ? 1 : 0;
-
+    
     while (badcode(mne,addrmode) && Cvt[addrmode])
         addrmode = Cvt[addrmode];
-    if (Xtrace)
-        printf("mnemask: %08lx adrmode: %d  Cvt[am]: %d\n",
-        mne->okmask, addrmode, Cvt[addrmode]);
+    
+    if ( bTrace )
+        printf("mnemask: %08lx adrmode: %d  Cvt[am]: %d\n", mne->okmask, addrmode, Cvt[addrmode]);
     
     if (badcode(mne,addrmode))
     {
         char sBuffer[128];
         sprintf( sBuffer, "%s %s", mne->name, str );
         asmerr( ERROR_ILLEGAL_ADDRESSING_MODE, false, sBuffer );
-        freesymbollist(symbase);
+        FreeSymbolList(symbase);
         return;
     }
     
@@ -135,23 +193,23 @@ v_mnemonic(char *str, MNE *mne)
         if (badcode(mne,addrmode))
         {
             asmerr( ERROR_ILLEGAL_FORCED_ADDRESSING_MODE, false, mne->name );
-            freesymbollist(symbase);
+            FreeSymbolList(symbase);
             return;
         }
     }
     
-    if (Xtrace)
+    if ( bTrace )
         printf("final addrmode = %d\n", addrmode);
     
     while (opsize > Opsize[addrmode])
     {
         if (Cvt[addrmode] == 0 || badcode(mne,Cvt[addrmode]))
         {
-           char sBuffer[128];
-
-           if (sym->flags & SYM_UNKNOWN)
+            char sBuffer[128];
+            
+            if (sym->flags & SYM_UNKNOWN)
                 break;
-
+            
             sprintf( sBuffer, "%s %s", mne->name, str );
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, sBuffer );
             break;
@@ -177,7 +235,7 @@ v_mnemonic(char *str, MNE *mne)
         if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
         Gen[opidx++] = sym->value;
-
+        
         if (!(symbase->flags & SYM_UNKNOWN))
         {
             if (symbase->value > 7)
@@ -188,7 +246,7 @@ v_mnemonic(char *str, MNE *mne)
         break;
         
     case AM_BITBRAMOD:
-
+        
         if (!(symbase->flags & SYM_UNKNOWN))
         {
             if (symbase->value > 7)
@@ -255,7 +313,7 @@ v_mnemonic(char *str, MNE *mne)
         else if (!(sym->flags & SYM_UNKNOWN))
         {
             long    pc;
-            ubyte   pcf;
+            unsigned char pcf;
             long    dest;
             
             pc = (Csegment->flags & SF_RORG) ? Csegment->rorg : Csegment->org;
@@ -269,7 +327,7 @@ v_mnemonic(char *str, MNE *mne)
                     char sBuffer[64];
                     sprintf( sBuffer, "%d", dest );
                     asmerr( ERROR_BRANCH_OUT_OF_RANGE, false, sBuffer );
-
+                    
                 }
             }
             else
@@ -282,35 +340,28 @@ v_mnemonic(char *str, MNE *mne)
     }
     Glen = opidx;
     generate();
-    freesymbollist(symbase);
+    FreeSymbolList(symbase);
 }
 
-void
-v_trace(char *str, MNE *dummy)
+void v_trace(char *str, MNEMONIC *dummy)
 {
-    if (str[1] == 'n')
-        Xtrace = 1;
-    else
-        Xtrace = 0;
+    bTrace = (str[1] == 'n');
 }
 
-void
-v_list(char *str, MNE *dummy)
+void v_list(char *str, MNEMONIC *dummy)
 {
     programlabel();
     
     Glen = 0;		/*  Only so outlist() works */
-#if OlafList
+    
     if (strncmp(str, "localoff", 7) == 0 || strncmp(str, "LOCALOFF", 7) == 0)
-        Incfile->flags |=  INF_NOLIST;
+        pIncfile->flags |=  INF_NOLIST;
     else if (strncmp(str, "localon", 7) == 0 || strncmp(str, "LOCALON", 7) == 0)
-        Incfile->flags &= ~INF_NOLIST;
+        pIncfile->flags &= ~INF_NOLIST;
+    else if (strncmp(str, "off", 2) == 0 || strncmp(str, "OFF", 2) == 0)
+        ListMode = 0;
     else
-#endif
-        if (strncmp(str, "off", 2) == 0 || strncmp(str, "OFF", 2) == 0)
-            ListMode = 0;
-        else
-            ListMode = 1;
+        ListMode = 1;
 }
 
 char *
@@ -332,7 +383,7 @@ getfilename(char *str)
 }
 
 void
-v_include(char *str, MNE *dummy)
+v_include(char *str, MNEMONIC *dummy)
 {
     char    *buf;
     
@@ -345,10 +396,9 @@ v_include(char *str, MNE *dummy)
         free(buf);
 }
 
-#if OlafIncbin
 
 void
-v_incbin(char *str, MNE *dummy)
+v_incbin(char *str, MNEMONIC *dummy)
 {
     char    *buf;
     FILE    *binfile;
@@ -363,7 +413,9 @@ v_incbin(char *str, MNE *dummy)
             fseek(binfile, 0, SEEK_END);
             Glen = ftell(binfile);
             generate();     /* does not access Gen[] if Redo is set */
-        } else {
+        }
+        else
+        {
             for (;;) {
                 Glen = fread(Gen, 1, sizeof(Gen), binfile);
                 if (Glen <= 0)
@@ -372,7 +424,9 @@ v_incbin(char *str, MNE *dummy)
             }
         }
         fclose(binfile);
-    } else {
+    }
+    else
+    {
         printf("unable to open %s\n", buf);
     }
     
@@ -381,10 +435,10 @@ v_incbin(char *str, MNE *dummy)
     Glen = 0;		    /* don't list hexdump */
 }
 
-#endif
+
 
 void
-v_seg(char *str, MNE *dummy)
+v_seg(char *str, MNEMONIC *dummy)
 {
     SEGMENT *seg;
     
@@ -406,7 +460,7 @@ v_seg(char *str, MNE *dummy)
 }
 
 void
-v_hex(char *str, MNE *dummy)
+v_hex(char *str, MNEMONIC *dummy)
 {
     int i;
     int result;
@@ -428,15 +482,15 @@ int
 gethexdig(int c)
 {
     char sBuffer[64];
-
+    
     if (c >= '0' && c <= '9')
-        return(c - '0');
+        return c - '0';
     
     if (c >= 'a' && c <= 'f')
-        return(c - 'a' + 10);
+        return c - 'a' + 10;
     
     if (c >= 'A' && c <= 'F')
-        return(c - 'A' + 10);
+        return c - 'A' + 10;
     
     sprintf( sBuffer, "Bad Hex Digit %c", c );
     asmerr( ERROR_SYNTAX_ERROR, false, sBuffer );
@@ -445,11 +499,11 @@ gethexdig(int c)
     if (F_listfile)
         fputs("(Must be a valid hex digit)\n", FI_listfile);
     
-    return(0);
+    return 0;
 }
 
 void
-v_err(char *str, MNE *dummy)
+v_err(char *str, MNEMONIC *dummy)
 {
     programlabel();
     asmerr( ERROR_ERR_PSEUDO_OP_ENCOUNTERED, true, NULL );
@@ -457,17 +511,18 @@ v_err(char *str, MNE *dummy)
 }
 
 void
-v_dc(char *str, MNE *mne)
+v_dc(char *str, MNEMONIC *mne)
 {
     SYMBOL *sym;
     SYMBOL *tmp;
-    ulong  value;
+    unsigned long  value;
     char *macstr = 0;		/* "might be used uninitialised" */
     char vmode = 0;
     
     Glen = 0;
     programlabel();
-#if OlafByte
+
+
     /* for byte, .byte, word, .word, long, .long */
     if (mne->name[0] != 'd') {
         static char tmp[4];
@@ -475,7 +530,25 @@ v_dc(char *str, MNE *mne)
         tmp[2] = mne->name[0];
         findext(tmp);
     }
-#endif
+
+	/* F8... */
+
+    /* db, dw, dd */
+    if ( (mne->name[0] == 'd') && (mne->name[1] != 'c') ) {
+        static char tmp[4];
+        strcpy(tmp, "x.x");
+        if ('d' == mne->name[1]) {
+			tmp[2] = 'l';
+		} else {
+            tmp[2] = mne->name[1];
+		}
+        findext(tmp);
+    }
+
+	/* ...F8 */
+	
+
+
     if (mne->name[1] == 'v') {
         int i;
         vmode = 1;
@@ -488,7 +561,9 @@ v_dc(char *str, MNE *mne)
         }
         if (tmp->flags & SYM_MACRO) {
             macstr = (void *)tmp->string;
-        } else {
+        }
+        else
+        {
             puts("must specify EQM label for DV");
             return;
         }
@@ -501,7 +576,7 @@ v_dc(char *str, MNE *mne)
             Redo_why |= REASON_DC_NOT_RESOVED;
         }
         if (sym->flags & SYM_STRING) {
-            ubyte *ptr = (void *)sym->string;
+            unsigned char *ptr = (void *)sym->string;
             while ((value = *ptr) != 0) {
                 if (vmode) {
                     setspecial(value, 0);
@@ -511,7 +586,7 @@ v_dc(char *str, MNE *mne)
                         ++Redo;
                         Redo_why |= REASON_DV_NOT_RESOLVED_PROBABLY;
                     }
-                    freesymbollist(tmp);
+                    FreeSymbolList(tmp);
                 }
                 switch(Mnext) {
                 default:
@@ -522,7 +597,9 @@ v_dc(char *str, MNE *mne)
                     if (MsbOrder) {
                         Gen[Glen++] = (value >> 8) & 0xFF;
                         Gen[Glen++] = value & 0xFF;
-                    } else {
+                    }
+                    else
+                    {
                         Gen[Glen++] = value & 0xFF;
                         Gen[Glen++] = (value >> 8) & 0xFF;
                     }
@@ -533,7 +610,9 @@ v_dc(char *str, MNE *mne)
                         Gen[Glen++] = (value >> 16)& 0xFF;
                         Gen[Glen++] = (value >> 8) & 0xFF;
                         Gen[Glen++] = value & 0xFF;
-                    } else {
+                    }
+                    else
+                    {
                         Gen[Glen++] = value & 0xFF;
                         Gen[Glen++] = (value >> 8) & 0xFF;
                         Gen[Glen++] = (value >> 16)& 0xFF;
@@ -543,7 +622,9 @@ v_dc(char *str, MNE *mne)
                 }
                 ++ptr;
             }
-        } else {
+        }
+        else
+        {
             if (vmode) {
                 setspecial(value, sym->flags);
                 tmp = eval(macstr, 0);
@@ -552,7 +633,7 @@ v_dc(char *str, MNE *mne)
                     ++Redo;
                     Redo_why |= REASON_DV_NOT_RESOLVED_COULD;
                 }
-                freesymbollist(tmp);
+                FreeSymbolList(tmp);
             }
             switch(Mnext) {
             default:
@@ -563,7 +644,9 @@ v_dc(char *str, MNE *mne)
                 if (MsbOrder) {
                     Gen[Glen++] = (value >> 8) & 0xFF;
                     Gen[Glen++] = value & 0xFF;
-                } else {
+                }
+                else
+                {
                     Gen[Glen++] = value & 0xFF;
                     Gen[Glen++] = (value >> 8) & 0xFF;
                 }
@@ -574,7 +657,9 @@ v_dc(char *str, MNE *mne)
                     Gen[Glen++] = (value >> 16)& 0xFF;
                     Gen[Glen++] = (value >> 8) & 0xFF;
                     Gen[Glen++] = value & 0xFF;
-                } else {
+                }
+                else
+                {
                     Gen[Glen++] = value & 0xFF;
                     Gen[Glen++] = (value >> 8) & 0xFF;
                     Gen[Glen++] = (value >> 16)& 0xFF;
@@ -585,11 +670,13 @@ v_dc(char *str, MNE *mne)
         }
     }
     generate();
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
+
+
 void
-v_ds(char *str, MNE *dummy)
+v_ds(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     int mult = 1;
@@ -606,19 +693,21 @@ v_ds(char *str, MNE *dummy)
         if (sym->flags & SYM_UNKNOWN) {
             ++Redo;
             Redo_why |= REASON_DS_NOT_RESOLVED;
-        } else {
+        }
+        else
+        {
             if (sym->next && sym->next->flags & SYM_UNKNOWN) {
                 ++Redo;
                 Redo_why |= REASON_DS_NOT_RESOLVED;
             }
             genfill(filler, sym->value, mult);
         }
-        freesymbollist(sym);
+        FreeSymbolList(sym);
     }
 }
 
 void
-v_org(char *str, MNE *dummy)
+v_org(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     
@@ -644,11 +733,11 @@ v_org(char *str, MNE *dummy)
     }
     
     programlabel();
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
 void
-v_rorg(char *str, MNE *dummy)
+v_rorg(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, 0);
     
@@ -665,22 +754,22 @@ v_rorg(char *str, MNE *dummy)
         }
     }
     programlabel();
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
 void
-v_rend(char *str, MNE *dummy)
+v_rend(char *str, MNEMONIC *dummy)
 {
     programlabel();
     Csegment->flags &= ~SF_RORG;
 }
 
 void
-v_align(char *str, MNE *dummy)
+v_align(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, 0);
-    ubyte   fill = 0;
-    ubyte   rorg = Csegment->flags & SF_RORG;
+    unsigned char fill = 0;
+    unsigned char rorg = Csegment->flags & SF_RORG;
     
     if (rorg)
         Csegment->rflags |= SF_REF;
@@ -690,7 +779,9 @@ v_align(char *str, MNE *dummy)
         if (sym->next->flags & SYM_UNKNOWN) {
             ++Redo;
             Redo_why |= REASON_ALIGN_NOT_RESOLVED;
-        } else {
+        }
+        else
+        {
             fill = sym->value;
         }
     }
@@ -698,27 +789,33 @@ v_align(char *str, MNE *dummy)
         if ((Csegment->rflags | sym->flags) & SYM_UNKNOWN) {
             ++Redo;
             Redo_why |= REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN;
-        } else {
+        }
+        else
+        {
             long n = sym->value - (Csegment->rorg % sym->value);
             if (n != sym->value)
                 genfill(fill, n, 1);
         }
-    } else {
+    }
+    else
+    {
         if ((Csegment->flags | sym->flags) & SYM_UNKNOWN) {
             ++Redo;
             Redo_why |= REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN;
-        } else {
+        }
+        else
+        {
             long n = sym->value - (Csegment->org % sym->value);
             if (n != sym->value)
                 genfill(fill, n, 1);
         }
     }
-    freesymbollist(sym);
+    FreeSymbolList(sym);
     programlabel();
 }
 
 void
-v_subroutine(char *str, MNE *dummy)
+v_subroutine(char *str, MNEMONIC *dummy)
 {
     ++Lastlocalindex;
     Localindex = Lastlocalindex;
@@ -726,12 +823,12 @@ v_subroutine(char *str, MNE *dummy)
 }
 
 void
-v_equ(char *str, MNE *dummy)
+v_equ(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, 0);
     SYMBOL *lab;
     
-#if OlafDotAssign
+    
     /*
     * If we encounter a line of the form
     *   . = expr	; or . EQU expr
@@ -741,9 +838,7 @@ v_equ(char *str, MNE *dummy)
     * depending on whether we have a relocatable origin now or not.
     */
     if (strlen(Av[0]) == 1 && (Av[0][0] == '.'
-#if OlafStar
-        || (Av[0][0] == '*' && (Av[0][0] = '.') && 1)
-#endif
+        || (Av[0][0] == '*' && (Av[0][0] = '.') && 1)           /*AD: huh?*/
         )) {
         /* Av[0][0] = '\0'; */
         if (Csegment->flags & SF_RORG)
@@ -756,11 +851,11 @@ v_equ(char *str, MNE *dummy)
         }
         return;
     }
-#endif
+    
     
     lab = findsymbol(Av[0], strlen(Av[0]));
     if (!lab)
-        lab = createsymbol(Av[0], strlen(Av[0]));
+        lab = CreateSymbol( Av[0], strlen(Av[0]) );
     if (!(lab->flags & SYM_UNKNOWN))
     {
         if (sym->flags & SYM_UNKNOWN)
@@ -786,10 +881,9 @@ v_equ(char *str, MNE *dummy)
     lab->string = sym->string;
     sym->flags &= ~(SYM_STRING|SYM_MACRO);
     
-#if 1 || OlafListEqu
     /* List the value */
     {
-        ulong v = lab->value;
+        unsigned long v = lab->value;
         
         Glen = 0;
         if (v > 0x0000FFFF)
@@ -800,13 +894,13 @@ v_equ(char *str, MNE *dummy)
         Gen[Glen++] = v >>  8;
         Gen[Glen++] = v;
     }
-#endif
     
-    freesymbollist(sym);
+    
+    FreeSymbolList(sym);
 }
 
 void
-v_eqm(char *str, MNE *dummy)
+v_eqm(char *str, MNEMONIC *dummy)
 {
     SYMBOL *lab;
     int len = strlen(Av[0]);
@@ -814,8 +908,10 @@ v_eqm(char *str, MNE *dummy)
     if ((lab = findsymbol(Av[0], len)) != NULL) {
         if (lab->flags & SYM_STRING)
             free(lab->string);
-    } else {
-        lab = createsymbol(Av[0], len);
+    }
+    else
+    {
+        lab = CreateSymbol( Av[0], len );
     }
     lab->value = 0;
     lab->flags = SYM_STRING | SYM_SET | SYM_MACRO;
@@ -823,7 +919,7 @@ v_eqm(char *str, MNE *dummy)
 }
 
 void
-v_echo(char *str, MNE *dummy)
+v_echo(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, 0);
     SYMBOL *s;
@@ -845,20 +941,19 @@ v_echo(char *str, MNE *dummy)
         putc('\n', FI_listfile);
 }
 
-void
-v_set(char *str, MNE *dummy)
+void v_set(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, 0);
     SYMBOL *lab;
     
     lab = findsymbol(Av[0], strlen(Av[0]));
     if (!lab)
-        lab = createsymbol(Av[0], strlen(Av[0]));
+        lab = CreateSymbol( Av[0], strlen(Av[0]) );
     lab->value = sym->value;
     lab->flags = sym->flags & (SYM_UNKNOWN|SYM_STRING);
     lab->string = sym->string;
     sym->flags &= ~(SYM_STRING|SYM_MACRO);
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
 void
@@ -897,46 +992,41 @@ v_execmac(char *str, MACRO *mac)
     }
     
     inc = (INCFILE *)zmalloc(sizeof(INCFILE));
-    inc->next = Incfile;
+    inc->next = pIncfile;
     inc->name = mac->name;
-    inc->fi   = Incfile->fi;	/* garbage */
+    inc->fi   = pIncfile->fi;	/* garbage */
     inc->lineno = 0;
     inc->flags = INF_MACRO;
     inc->saveidx = Localindex;
-#if OlafDol
+    
     inc->savedolidx = Localdollarindex;
-#endif
+    
     inc->strlist = mac->strlist;
     inc->args	  = base;
-    Incfile = inc;
+    pIncfile = inc;
     
     ++Lastlocalindex;
     Localindex = Lastlocalindex;
-#if OlafDol
+    
     ++Lastlocaldollarindex;
     Localdollarindex = Lastlocaldollarindex;
-#endif
+    
 }
 
-void
-v_end(char *str, MNE *dummy)
+void v_end(char *str, MNEMONIC *dummy)
 {
-#if OlafEnd
     /* Only ENDs current file and any macro calls within it */
     
-    while (Incfile->flags & INF_MACRO)
+    while ( pIncfile->flags & INF_MACRO)
         v_endm(NULL, NULL);
     
-    fseek(Incfile->fi, 0, SEEK_END);
-#else
-    puts("END not implemented yet");
-#endif
+    fseek( pIncfile->fi, 0, SEEK_END);
 }
 
 void
-v_endm(char *str, MNE *dummy)
+v_endm(char *str, MNEMONIC *dummy)
 {
-    INCFILE *inc = Incfile;
+    INCFILE *inc = pIncfile;
     STRLIST *args, *an;
     
     /* programlabel(); contrary to documentation */
@@ -947,10 +1037,10 @@ v_endm(char *str, MNE *dummy)
             free(args);
         }
         Localindex = inc->saveidx;
-#if OlafDol
+        
         Localdollarindex = inc->savedolidx;
-#endif
-        Incfile = inc->next;
+        
+        pIncfile = inc->next;
         free(inc);
         return;
     }
@@ -958,35 +1048,35 @@ v_endm(char *str, MNE *dummy)
 }
 
 void
-v_mexit(char *str, MNE *dummy)
+v_mexit(char *str, MNEMONIC *dummy)
 {
     v_endm(NULL, NULL);
 }
 
 void
-v_ifconst(char *str, MNE *dummy)
+v_ifconst(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     
     programlabel();
     sym = eval(str, 0);
     pushif(sym->flags == 0);
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
 void
-v_ifnconst(char *str, MNE *dummy)
+v_ifnconst(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     
     programlabel();
     sym = eval(str, 0);
     pushif(sym->flags != 0);
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
 void
-v_if(char *str, MNE *dummy)
+v_if(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     
@@ -1001,17 +1091,18 @@ v_if(char *str, MNE *dummy)
         Redo_why |= REASON_IF_NOT_RESOLVED;
         pushif(0);
         Ifstack->acctrue = 0;
-#if OlafPhase
+        
         Redo_if |= 1;
-#endif
-    } else {
+        
+    }
+    else
+    {
         pushif(!!sym->value);
     }
-    freesymbollist(sym);
+    FreeSymbolList(sym);
 }
 
-void
-v_else(char *str, MNE *dummy)
+void v_else(char *str, MNEMONIC *dummy)
 {
     if (Ifstack->acctrue && !(Ifstack->flags & IFF_BASE)) {
         programlabel();
@@ -1020,24 +1111,25 @@ v_else(char *str, MNE *dummy)
 }
 
 void
-v_endif(char *str, MNE *dummy)
+v_endif(char *str, MNEMONIC *dummy)
 {
     IFSTACK *ifs = Ifstack;
     
     if (!(ifs->flags & IFF_BASE)) {
         if (ifs->acctrue)
             programlabel();
-        if (ifs->file != Incfile) {
+        if (ifs->file != pIncfile) {
             puts("too many endif's");
-        } else {
+        }
+        else
+        {
             Ifstack = ifs->next;
             free(ifs);
         }
     }
 }
 
-void
-v_repeat(char *str, MNE *dummy)
+void v_repeat(char *str, MNEMONIC *dummy)
 {
     REPLOOP *rp;
     SYMBOL *sym;
@@ -1050,7 +1142,7 @@ v_repeat(char *str, MNE *dummy)
     sym = eval(str, 0);
     if (sym->value == 0) {
         pushif(0);
-        freesymbollist(sym);
+        FreeSymbolList(sym);
         return;
     }
     
@@ -1061,7 +1153,7 @@ v_repeat(char *str, MNE *dummy)
     if ( sym->value < 0 )
     {
         pushif( 0 );
-        freesymbollist( sym );
+        FreeSymbolList( sym );
         
         asmerr( ERROR_REPEAT_NEGATIVE, false, NULL );
         return;
@@ -1071,37 +1163,39 @@ v_repeat(char *str, MNE *dummy)
     
     rp = (REPLOOP *)zmalloc(sizeof(REPLOOP));
     rp->next = Reploop;
-    rp->file = Incfile;
-    if (Incfile->flags & INF_MACRO)
-        rp->seek = (long)Incfile->strlist;
+    rp->file = pIncfile;
+    if (pIncfile->flags & INF_MACRO)
+        rp->seek = (long)pIncfile->strlist;
     else
-        rp->seek = ftell(Incfile->fi);
-    rp->lineno = Incfile->lineno;
+        rp->seek = ftell(pIncfile->fi);
+    rp->lineno = pIncfile->lineno;
     rp->count = sym->value;
     if ((rp->flags = sym->flags) != 0) {
         ++Redo;
         Redo_why |= REASON_REPEAT_NOT_RESOLVED;
     }
     Reploop = rp;
-    freesymbollist(sym);
+    FreeSymbolList(sym);
     pushif(1);
 }
 
 void
-v_repend(char *str, MNE *dummy)
+v_repend(char *str, MNEMONIC *dummy)
 {
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         v_endif(NULL,NULL);
         return;
     }
-    if (Reploop && Reploop->file == Incfile) {
+    if (Reploop && Reploop->file == pIncfile) {
         if (Reploop->flags == 0 && --Reploop->count) {
-            if (Incfile->flags & INF_MACRO)
-                Incfile->strlist = (STRLIST *)Reploop->seek;
+            if (pIncfile->flags & INF_MACRO)
+                pIncfile->strlist = (STRLIST *)Reploop->seek;
             else
-                fseek(Incfile->fi,Reploop->seek,0);
-            Incfile->lineno = Reploop->lineno;
-        } else {
+                fseek(pIncfile->fi,Reploop->seek,0);
+            pIncfile->lineno = Reploop->lineno;
+        }
+        else
+        {
             rmnode((void **)&Reploop, sizeof(REPLOOP));
             v_endif(NULL,NULL);
         }
@@ -1110,12 +1204,12 @@ v_repend(char *str, MNE *dummy)
     puts("no repeat");
 }
 
-#if OlafIncdir
+
 
 STRLIST *incdirlist;
 
 void
-v_incdir(char *str, MNE *dummy)
+v_incdir(char *str, MNEMONIC *dummy)
 {
     STRLIST **tail;
     char *buf;
@@ -1146,7 +1240,8 @@ addpart(char *dest, const char *dir, const char *file)
 #if 0	/* not needed here */
     if (strchr(file, ':')) {
         strcpy(dest, file);
-    } else
+    }
+    else
 #endif
     {
         int pos;
@@ -1190,7 +1285,6 @@ pfopen(const char *name, const char *mode)
     return f;
 }
 
-#endif
 
 static long Seglen;
 static long Seekback;
@@ -1199,7 +1293,7 @@ void
 generate(void)
 {
     long seekpos;
-    static ulong org;
+    static unsigned long org;
     int i;
     
     if (!Redo)
@@ -1221,12 +1315,12 @@ generate(void)
                 
                 org = Csegment->org;
                 
-                if (F_format < 3)
+                if ( F_format < FORMAT_RAW )
                 {
                     putc((org & 0xFF), FI_temp);
                     putc(((org >> 8) & 0xFF), FI_temp);
                     
-                    if (F_format == 2)
+                    if ( F_format == FORMAT_RAS )
                     {
                         Seekback = ftell(FI_temp);
                         Seglen = 0;
@@ -1238,9 +1332,14 @@ generate(void)
             
             switch(F_format)
             {
+            
             default:
-            case 3:
-            case 1:
+
+                asmerr( ERROR_BAD_FORMAT, true, "Unhandled internal format specifier" );
+                break;
+
+            case FORMAT_RAW:
+            case FORMAT_DEFAULT:
                 
                 if (Csegment->org < org)
                 {
@@ -1259,7 +1358,7 @@ generate(void)
                 fwrite(Gen, Glen, 1, FI_temp);
                 break;
                 
-            case 2:
+            case FORMAT_RAS:
                 
                 if (org != Csegment->org)
                 {
@@ -1279,6 +1378,8 @@ generate(void)
                 
                 fwrite(Gen, Glen, 1, FI_temp);
                 Seglen += Glen;
+                break;
+            
             }
             org += Glen;
         }
@@ -1290,12 +1391,11 @@ generate(void)
         Csegment->rorg += Glen;
 }
 
-void
-closegenerate(void)
+void closegenerate(void)
 {
     if (!Redo)
     {
-        if (F_format == 2)
+        if ( F_format == FORMAT_RAS )
         {
             fseek(FI_temp, Seekback, 0);
             putc((Seglen & 0xFF), FI_temp);
@@ -1310,7 +1410,7 @@ genfill(long fill, long entries, int size)
 {
     long bytes = entries;  /*	multiplied later    */
     int i;
-    ubyte c3,c2,c1,c0;
+    unsigned char c3,c2,c1,c0;
     
     if (!bytes)
         return;
@@ -1375,7 +1475,7 @@ pushif(bool xbool)
 {
     IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
     ifs->next = Ifstack;
-    ifs->file = Incfile;
+    ifs->file = pIncfile;
     ifs->flags = 0;
     ifs->xtrue  = xbool;
     ifs->acctrue = Ifstack->acctrue && Ifstack->xtrue;

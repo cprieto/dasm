@@ -9,7 +9,7 @@
 GOPTIM= -O3
 GWARN=	-ansi -pedantic -Wall -Wstrict-prototypes
 GDB=	# -g
-#CC=	gcc -noixemul $(GDB) $(GOPTIM) $(GWARN)
+#CC=	gcc $(GDB) $(GOPTIM) $(GWARN)
 CC=	dcc
 CFLAGS=
 

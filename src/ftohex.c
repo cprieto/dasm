@@ -1,4 +1,23 @@
+/*
+    DASM Assembler
+    Portions of this code are Copyright (C)1988 Matthew Dillon
+    and (C) 1995 Olaf Seibert, (C)2003 Andrew Davie 
 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*/
 /*
  *  FTOHEX.C
  *
@@ -19,17 +38,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef unsigned char ubyte;
-typedef unsigned short uword;
 
 #define PERLINE 16
 
 void exiterr(char *str);
 void convert(int format, FILE *in, FILE *out);
-uword getwlh(FILE *in);
-void puth(ubyte c, FILE *out);
+unsigned int getwlh(FILE *in);
+void puth(unsigned char c, FILE *out);
 
-uword _fmode = 0;
+unsigned int _fmode = 0;
 
 int
 main(int ac, char **av)
@@ -86,10 +103,10 @@ exiterr(char *str)
 void
 convert(int format, FILE *in, FILE *out)
 {
-    uword org = 0;
-    uword idx;
+    unsigned int org = 0;
+    unsigned int idx;
     long len;
-    ubyte buf[256];
+    unsigned char buf[256];
 
     if (format < 3)
     org = getwlh(in);
@@ -103,7 +120,7 @@ convert(int format, FILE *in, FILE *out)
     }
     for (;;) {
 	while (len > 0) {
-	    register ubyte chk;
+	    register unsigned char chk;
 	    register int i;
 
 	    idx = (len > PERLINE) ? PERLINE : len;
@@ -119,7 +136,7 @@ convert(int format, FILE *in, FILE *out)
 		chk += buf[i];
 		puth(buf[i], out);
 	    }
-	    puth((ubyte)-chk, out);
+	    puth((unsigned char)-chk, out);
 	    putc('\r', out);
 	    putc('\n', out);
 	    len -= idx;
@@ -137,18 +154,17 @@ convert(int format, FILE *in, FILE *out)
     fprintf(out, ":00000001FF\r\n");
 }
 
-uword
-getwlh(FILE *in)
+unsigned int getwlh(FILE *in)
 {
-    uword result;
+    unsigned int result;
 
     result = getc(in);
     result += getc(in) << 8;
-    return(result);
+    return result;
 }
 
 void
-puth(ubyte c, FILE *out)
+puth(unsigned char c, FILE *out)
 {
     static char dig[] = { "0123456789ABCDEF" };
     putc(dig[c>>4], out);

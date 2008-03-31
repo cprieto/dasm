@@ -1,6 +1,8 @@
 ; VCS.H
-; Version 1.02, 22/March/2003
-;
+; Version 1.05, 13/November/2003
+
+VERSION_VCS         = 105
+
 ; THIS IS A PRELIMINARY RELEASE OF *THE* "STANDARD" VCS.H
 ; THIS FILE IS EXPLICITLY SUPPORTED AS A DASM-PREFERRED COMPANION FILE
 ; PLEASE DO *NOT* REDISTRIBUTE THIS FILE!
@@ -17,7 +19,18 @@
 ; file!
 ;
 ; Latest Revisions...
-;
+; 1.05  13/NOV/2003      - Correction to 1.04 - now functions as requested by MR.
+;                        - Added VERSION_VCS equate (which will reflect 100x version #)
+;                          This will allow conditional code to verify VCS.H being
+;                          used for code assembly.
+; 1.04  12/NOV/2003     Added TIA_BASE_WRITE_ADDRESS and TIA_BASE_READ_ADDRESS for
+;                       convenient disassembly/reassembly compatibility for hardware
+;                       mirrored reading/writing differences.  This is more a 
+;                       readability issue, and binary compatibility with disassembled
+;                       and reassembled sources.  Per Manuel Rotschkar's suggestion.
+; 1.03  12/MAY/2003     Added SEG segment at end of file to fix old-code compatibility
+;                       which was broken by the use of segments in this file, as
+;                       reported by Manuel Polik on [stella] 11/MAY/2003
 ; 1.02  22/MAR/2003     Added TIMINT($285)
 ; 1.01	        		Constant offset added to allow use for 3F-style bankswitching
 ;						 - define TIA_BASE_ADDRESS as $40 for Tigervision carts, otherwise
@@ -49,10 +62,26 @@ TIA_BASE_ADDRESS	= 0
 ; TIA_BASE_ADDRESS = $40
 ;   include "vcs.h"
 
+; Alternate read/write address capability - allows for some disassembly compatibility
+; usage ; to allow reassembly to binary perfect copies).  This is essentially catering
+; for the mirrored ROM hardware registers.
+
+; Usage: As per above, define the TIA_BASE_READ_ADDRESS and/or TIA_BASE_WRITE_ADDRESS
+; using the -D command-line switch, as required.  If the addresses are not defined, 
+; they defaut to the TIA_BASE_ADDRESS.
+
+     IFNCONST TIA_BASE_READ_ADDRESS
+TIA_BASE_READ_ADDRESS = TIA_BASE_ADDRESS
+     ENDIF
+
+     IFNCONST TIA_BASE_WRITE_ADDRESS
+TIA_BASE_WRITE_ADDRESS = TIA_BASE_ADDRESS
+     ENDIF
+
 ;-------------------------------------------------------------------------------
 
 			SEG.U TIA_REGISTERS_WRITE
-			ORG TIA_BASE_ADDRESS
+			ORG TIA_BASE_WRITE_ADDRESS
 
 	; DO NOT CHANGE THE RELATIVE ORDERING OF REGISTERS!
     
@@ -105,7 +134,7 @@ CXCLR       ds 1    ; $2C   ---- ----   Clear Collision Latches
 ;-------------------------------------------------------------------------------
 
 			SEG.U TIA_REGISTERS_READ
-			ORG TIA_BASE_ADDRESS
+			ORG TIA_BASE_READ_ADDRESS
 
                     ;											bit 7   bit 6
 CXM0P       ds 1    ; $00       xx00 0000       Read Collision  M0-P1   M0-P0
@@ -163,4 +192,9 @@ TIM64T      ds 1    ; $296      set 64 clock interval
 T1024T      ds 1    ; $297      set 1024 clock interval
 
 ;-------------------------------------------------------------------------------
+; The following required for back-compatibility with code which does not use
+; segments.
+
+            SEG
+
 ; EOF
