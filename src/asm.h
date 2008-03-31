@@ -38,6 +38,18 @@
 #error This cannot be!
 #endif
 
+#define DAD
+
+#ifdef DAD
+
+	enum ASM_ERROR_EQUATES
+	{
+		ERROR_REPEAT_NEGATIVE = 21,
+	};
+
+#endif
+
+
 typedef unsigned char ubyte;
 typedef unsigned uword;
 typedef long ulong;
@@ -262,7 +274,7 @@ extern char	Inclevel;
 extern char	ListMode;
 extern ulong	Processor;
 
-extern uword _fmode;
+//extern uword _fmode;
 extern ulong  CheckSum;
 
 /* main.c */

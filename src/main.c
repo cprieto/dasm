@@ -47,9 +47,9 @@ ubyte	 F_Passes;
 #endif
 
 #if Olaf
-const char name[] = "DASM V2.12.04, high level Macro Assembler";
-const char copr[] = "(C)Copyright 1988 by Matthew Dillon, All Rights Reserved\n"
-    "Improvements (C)Copyright 1995 by Olaf 'Rhialto' Seibert, All Rights Reserved";
+const char name[] = "DASM V2.20.01, Macro Assembler";
+const char copr[] = "Homepage at http://www.atari2600.org/dasm";
+
 #else
 const char name[] = "DASM V2.12.01, high level Macro Assembler");
 const char copr[] = "(C)Copyright 1988 by Matthew Dillon, All Rights Reserved";
@@ -985,11 +985,18 @@ char *Errors[] = {
     "Value Undefined",
     "Illegal Forced Address mode",      /*  19  */
     "Processor not supported",          /*  20  */
+
+#ifdef DAD
+
+	"REPEAT parameter < 0 (ignored)",		/* 21 ERROR_REPEAT_NEGATIVE */
+
+#endif
+
     NULL
 };
 
-void
-asmerr(int err, int abort)
+
+void asmerr(int err, int abort)
 {
     char *str;
     INCFILE *incfile;
@@ -998,10 +1005,24 @@ asmerr(int err, int abort)
 	StopAtEnd = 1;
     for (incfile = Incfile; incfile->flags & INF_MACRO; incfile=incfile->next);
     str = Errors[err];
+
+#ifdef DAD
+
+	// Error output format changed to be Visual-Studio compatible.
+	// Output now file (line): error: string
+    
+	if (F_listfile)
+		fprintf(FI_listfile, "%s (%d): error: %s\n", incfile->name, incfile->lineno, str );
+	printf( "%s (%d): error: %s\n", incfile->name, incfile->lineno, str );
+
+#else
+
     if (F_listfile)
-	fprintf(FI_listfile, "*line %4ld %-10s %s\n", incfile->lineno,
-	    incfile->name, str);
-    printf("line %4ld %-10s %s\n", incfile->lineno, incfile->name, str);
+		fprintf(FI_listfile, "*line %4ld %-10s %s\n", incfile->lineno, incfile->name, str);
+	printf("line %4ld %-10s %s\n", incfile->lineno, incfile->name, str);
+
+#endif
+
     if (abort) {
 	puts("Aborting assembly");
 	if (F_listfile)

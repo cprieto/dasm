@@ -967,6 +967,22 @@ v_repeat(char *str, MNE *dummy)
 	freesymbollist(sym);
 	return;
     }
+
+#ifdef DAD
+
+	/* Don't allow negative values for REPEAT loops */
+
+	if ( sym->value < 0 )
+	{
+		pushif( 0 );
+		freesymbollist( sym );
+
+		asmerr( ERROR_REPEAT_NEGATIVE, 0 );
+		return;
+	}
+
+#endif
+
     rp = (REPLOOP *)zmalloc(sizeof(REPLOOP));
     rp->next = Reploop;
     rp->file = Incfile;

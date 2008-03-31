@@ -197,5 +197,10 @@
     txs
     tya
 
+    ; illegal opcode additions
+
+    lax     (1),y
+    nop     0
+
 
 
