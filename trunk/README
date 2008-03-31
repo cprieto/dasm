@@ -1,5 +1,5 @@
 
-    DASM    Version 2.20.01
+    DASM    Version 2.20.02
 
     DASM was created in 1988 by Matthew Dillon (dillon@apollo.backplane.com)
     and modified in 1995 by Olaf 'Rhialto' Seibert (rhialto@polderland.nl), and
@@ -15,7 +15,6 @@
 
 	BIN\DOS                 Binary for DOS/Windows
 	DOC                     Documentation and manuals
-	MACHINES\ATARI2600      Support files for Atari 2600 development
 	SRC                     DASM Source code
 	TEST                    Suite of test code
 
@@ -24,6 +23,9 @@
 
 
 VERSION HISTORY
+
+    2.20.02     - Inclusion of full (?) illegal opcode support using MNE6502.C by
+                  John Saeger.
 
     2.20.01     - This version combines the modifications made by Olaf in 1995
                   into an official release, with minor additions.  The source-code
