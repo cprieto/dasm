@@ -1,5 +1,5 @@
 
-    DASM    Version 2.20.02
+    DASM    Version 2.20.04
 
     DASM was created in 1988 by Matthew Dillon (dillon@apollo.backplane.com)
     and modified in 1995 by Olaf 'Rhialto' Seibert (rhialto@polderland.nl), and
@@ -23,6 +23,39 @@
 
 
 VERSION HISTORY
+
+    2.20.04	- Significant reformatting of code, prelude to full documentation.
+
+		- Internal error numbers now equated (more maintanable code).
+
+		- Command-line switches now allow / as prefix (and -).
+
+		- Divide by 0 (generated equates, etc.) now treated as an unrecoverable error.
+
+		- Error messages now contain more information about the error, including
+                  the source-line where possible.  Message templates allow inclusion of select
+		  data on error output.
+
+                - reworking of the output data.  Typically, the -v switch is now un-necessary
+                  as the appropriate messages to allow you to find errors will be output.  
+                  Back compatibility with the -v options has been maintained, though there
+                  may be a few minor changes.
+
+                - Branch out of range errors now list the 'distance' to the branch.
+
+                - Undefined symbols are now *always* listed in a separate table.  If an 
+		  unresolved symbol causes an error, then the table will be automatically
+                  displayed at the end of assembly.
+
+                - new command-line switch -T# where # is 0 or 1
+		    0 = sort symbol table alphabetically (default)
+		    1 = sort symbol table by address
+		  If available memory precludes a sort, then the table will be output in a
+		  non-sorted order.
+
+		- code now in transient state between old and new formatting.  More modular, but
+		  still all over the place as far as consistency.  It'll improve as we go along.
+
 
     2.20.02     - Inclusion of full (?) illegal opcode support using MNE6502.C by
                   John Saeger.

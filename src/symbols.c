@@ -150,13 +150,13 @@ programlabel(void)
     if ((sym = findsymbol(str, len)) != NULL) {
 	if ((sym->flags & (SYM_UNKNOWN|SYM_REF)) == (SYM_UNKNOWN|SYM_REF)) {
 	    ++Redo;
-	    Redo_why |= 1 << 13;
+	    Redo_why |= REASON_FORWARD_REFERENCE;
 	    if (Xdebug)
 		printf("redo 13: '%s' %04x %04x\n", sym->name, sym->flags, cflags);
 	} else
 	if ((cflags & SYM_UNKNOWN) && (sym->flags & SYM_REF)) {
 	    ++Redo;
-	    Redo_why |= 1 << 13;
+	    Redo_why |= REASON_FORWARD_REFERENCE;
 	} else
 	if (!(cflags & SYM_UNKNOWN) && !(sym->flags & SYM_UNKNOWN)) {
 	    if (pc != sym->value) {
@@ -166,15 +166,17 @@ programlabel(void)
 		 * previous pass, don't complain about phase errors
 		 * too loudly.
 		 */
-		if (F_verbose >= 1 || !(Redo_if & (1<<1)))
+		if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
 #endif
 		{
-		    printf("mismatch %10s %s  pc: %s\n", sym->name, sftos(sym->value,
-			    sym->flags), sftos(pc, cflags & 7));
-		    asmerr(17,0);
+            char sBuffer[ 128 ];
+		    sprintf( sBuffer, "%s %s", sym->name, sftos( sym->value, 0 ) );
+            /*, sftos(sym->value,
+			    sym->flags) ); , sftos(pc, cflags & 7));*/
+		    asmerr( ERROR_LABEL_MISMATCH, false, sBuffer );
 		}
 		++Redo;
-		Redo_why |= 1 << 14;
+		Redo_why |= REASON_PHASE_ERROR;
 	    }
 	}
     } else {
