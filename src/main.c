@@ -47,11 +47,11 @@ ubyte	 F_Passes;
 #endif
 
 #if Olaf
-const char name[] = "DASM V2.20.01, Macro Assembler";
+const char name[] = "DASM V2.20.02, Macro Assembler";
 const char copr[] = "Homepage at http://www.atari2600.org/dasm";
 
 #else
-const char name[] = "DASM V2.12.01, high level Macro Assembler");
+const char name[] = "DASM V2.12.02, high level Macro Assembler");
 const char copr[] = "(C)Copyright 1988 by Matthew Dillon, All Rights Reserved";
 #endif
 
