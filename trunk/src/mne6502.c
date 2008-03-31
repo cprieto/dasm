@@ -1,10 +1,30 @@
+/*
+    DASM Assembler
+    Portions of this code are Copyright (C)1988 Matthew Dillon
+    and (C) 1995 Olaf Seibert, (C)2003 Andrew Davie 
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*/
 
    #include "asm.h"
 
 #define ASTD	AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX|\
 	AF_WORDADRY|AF_INDBYTEX|AF_INDBYTEY
 
-MNE Mne6502[] = {
+MNEMONIC Mne6502[] = {
     { NULL, v_mnemonic, "adc", 0, AF_IMM8|ASTD, { 0x69, 0x65, 0x75, 0x6D, 0x7D, 0x79, 0x61, 0x71 } },
     { NULL, v_mnemonic, "anc", 0, AF_IMM8, { 0x0b } },
     { NULL, v_mnemonic, "and", 0, AF_IMM8|ASTD, { 0x29, 0x25, 0x35, 0x2D, 0x3D, 0x39, 0x21, 0x31 } },
