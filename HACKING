@@ -40,6 +40,16 @@ few short rules to ensure things go smoothly.
   approximate the existing style (due to Matt, Olaf, and Andrew)
   although a few changes had to be made to accomodate GNU indent
 
+- make sure that all your text files, including source code, fit
+  nicely on 80 character wide terminals; ideally you break lines
+  at about 75 characters; if in doubt, indent will do it for you
+  but maybe not the way you wanted it to...
+
+- do *not* use fancy formatting for your comments in source code,
+  do simple stuff as in the existing code; indent will not clean
+  up fancy comment formats, but someone will have to, to keep the
+  code in shape...
+
 - do *not* commit code that doesn't compile without warnings; it
   took quite an effort to make sure everything is C99 compliant
   and works well on POSIX systems; if you find a warning in the
