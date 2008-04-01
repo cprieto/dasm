@@ -310,7 +310,7 @@ SYMBOL {
     char    *string;    /*  if symbol is actually a string  */
     unsigned char   flags;    /*  flags                */
     unsigned char   addrmode;    /*  addressing mode (expressions)   */
-    unsigned long   value;    /*  current value            */
+    long value; /* current value, never EVER change this to unsigned! */
     unsigned int namelen;    /*  name length             */
 };
 
