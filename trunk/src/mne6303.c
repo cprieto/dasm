@@ -160,7 +160,7 @@ MNEMONIC Mne6803[] = {
     { NULL, v_mnemonic, "tstb", 0,  AF_IMP, { 0x5D }},
     { NULL, v_mnemonic, "tsx", 0,   AF_IMP, { 0x30 }},
     { NULL, v_mnemonic, "txs", 0,   AF_IMP, { 0x35 }},
-    NULL
+    { NULL, }
 };
 
 MNEMONIC MneHD6303[] = {
@@ -170,7 +170,7 @@ MNEMONIC MneHD6303[] = {
     { NULL, v_mnemonic, "eim", 0,   AF_BYTEADR|AF_BYTEADRX, { 0x75, 0x65 }},
     { NULL, v_mnemonic, "tim", 0,   AF_BYTEADR|AF_BYTEADRX, { 0x7B, 0x6B }},
     { NULL, v_mnemonic, "xgdx", 0,  AF_IMP, { 0x18 }},
-    NULL
+    { NULL, }
 };
 
 

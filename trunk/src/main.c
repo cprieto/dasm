@@ -86,7 +86,7 @@ ERROR_DEFINITION sErrorDef[] = {
 	{ ERROR_VALUE_MUST_BE_LT_F,						true,	"Value in '%s' must be <$f." },
 	{ ERROR_VALUE_MUST_BE_LT_10000,					true,	"Value in '%s' must be <$10000." },
 	{ ERROR_ILLEGAL_OPERAND_COMBINATION,			true,	"Illegal combination of operands '%s'" },
-    NULL
+    {-1, true, "Doh! Internal end-of-table marker, report the bug!"}
 };
 
 #define MAX_ERROR (( sizeof( sErrorDef ) / sizeof( ERROR_DEFINITION )))
@@ -106,7 +106,7 @@ const char name[] = "DASM V2.20.10, Macro Assembler (C)1988-2004";
 
 
 
-int CountUnresolvedSymbols()
+static int CountUnresolvedSymbols(void)
 {
     SYMBOL *sym;
     int nUnresolved = 0;
@@ -122,7 +122,7 @@ int CountUnresolvedSymbols()
 }
 
 
-int ShowUnresolvedSymbols()
+static int ShowUnresolvedSymbols(void)
 {
     SYMBOL *sym;
     int i;
@@ -145,7 +145,7 @@ int ShowUnresolvedSymbols()
 }
 
 
-int CompareAlpha( const void *arg1, const void *arg2 )
+static int CompareAlpha( const void *arg1, const void *arg2 )
 {
     /* Simple alphabetic ordering comparison function for quicksort */
     
@@ -205,7 +205,7 @@ int CompareAlpha( const void *arg1, const void *arg2 )
     return nCompare;
 }
 
-int CompareAddress( const void *arg1, const void *arg2 )
+static int CompareAddress( const void *arg1, const void *arg2 )
 {
     /* Simple numeric ordering comparison function for quicksort */
     
@@ -218,7 +218,7 @@ int CompareAddress( const void *arg1, const void *arg2 )
 }
 
 
-void ShowSymbols( FILE *file, bool bTableSort )
+static void ShowSymbols( FILE *file, bool bTableSort )
 {
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
     
@@ -290,7 +290,7 @@ void ShowSymbols( FILE *file, bool bTableSort )
 
 
 
-void ShowSegments()
+static void ShowSegments(void)
 {
     SEGMENT *seg;
     char *bss;
@@ -368,7 +368,7 @@ void ShowSegments()
 
 
 
-void DumpSymbolTable( bool bTableSort )
+static void DumpSymbolTable( bool bTableSort )
 {
     if (F_symfile)
     {
@@ -387,7 +387,7 @@ void DumpSymbolTable( bool bTableSort )
 }
 
 
-int MainShadow(int ac, char **av, bool *pbTableSort )
+static int MainShadow(int ac, char **av, bool *pbTableSort )
 {
     
     
@@ -708,7 +708,7 @@ nextpass:
 }
 
 
-int tabit(char *buf1, char *buf2)
+static int tabit(char *buf1, char *buf2)
 {
     char *bp, *ptr;
     int j, k;
@@ -945,7 +945,7 @@ char *cleanup(char *buf, bool bDisable)
                 add += strlen(strlist->buf);
                 
                 if (Xdebug)
-                    printf("strlist: '%s' %d\n", strlist->buf, strlen(strlist->buf));
+                    printf("strlist: '%s' %zu\n", strlist->buf, strlen(strlist->buf));
                 
                 if (str + add + strlen(str) + 1 > buf + MAXLINE)
                 {
@@ -1368,11 +1368,11 @@ int asmerr(int err, bool abort, char *sText )
         
         if (F_listfile)
         {
-            fprintf(FI_listfile, "%s (%d): error: ", pincfile->name, pincfile->lineno );
+            fprintf(FI_listfile, "%s (%lu): error: ", pincfile->name, pincfile->lineno );
             fprintf(FI_listfile, str, sText ? sText : "" );
             fprintf(FI_listfile, "\n" );
         }
-        printf( "%s (%d): error: ", pincfile->name, pincfile->lineno );
+        printf( "%s (%lu): error: ", pincfile->name, pincfile->lineno );
         printf( str, sText ? sText : "" );
         printf( "\n" );
         

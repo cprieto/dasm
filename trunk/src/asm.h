@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
 #define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */
@@ -377,7 +378,7 @@ void    setspecial(int value, int flags);
 SYMBOL *allocsymbol(void);
 SYMBOL *findsymbol(char *str, int len);
 SYMBOL *CreateSymbol( char *str, int len );
-void    freesymbollist(SYMBOL *sym);
+void    FreeSymbolList(SYMBOL *sym);
 void    programlabel(void);
 
 /* ops.c */
@@ -386,6 +387,7 @@ extern    int Glen;
 void    v_set(char *str, MNEMONIC *);
 void    v_mexit(char *str, MNEMONIC *);
 void    closegenerate(void);
+void    generate(void);
 
 void v_list(char *, MNEMONIC *);
 void v_include(char *, MNEMONIC *);

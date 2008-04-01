@@ -240,11 +240,14 @@ SYMBOL *allocsymbol(void)
     return sym;
 }
 
-void freesymbol(SYMBOL *sym)
+/* defined but not used [phf] */
+/*
+static void freesymbol(SYMBOL *sym)
 {
     sym->next = SymAlloc;
     SymAlloc = sym;
 }
+*/
 
 
 

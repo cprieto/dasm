@@ -103,7 +103,7 @@ static void emit_opcode3(unsigned char byte0, unsigned char byte1, unsigned char
  * result : zero = current program counter is unknown
  *          nonzero = current program counter is known
  */
-int isPCKnown(void) {
+static int isPCKnown(void) {
     unsigned char pcf;
     pcf= (Csegment->flags & SF_RORG) ? Csegment->rflags : Csegment->flags;
     return ((pcf & (SF_UNKNOWN|2)) == 0) ? 1 : 0;
@@ -707,5 +707,5 @@ MNEMONIC MneF8[] = {
     {NULL, v_byteop,   "xi" , 0, AF_IMP, {0x23}},
     {NULL, v_mnemonic, "xm" , 0, AF_IMP, {0x8c}},
     {NULL, v_sreg_op,  "xs" , 0, AF_IMP, {0xe0}},       /* base opcode */
-    NULL
+    {NULL,}
 };
