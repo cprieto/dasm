@@ -9,14 +9,14 @@
 GOPTIM= -O3
 GWARN=	-ansi -pedantic -Wall -Wstrict-prototypes
 GDB=	# -g
-#CC=	gcc $(GDB) $(GOPTIM) $(GWARN)
-CC=	dcc
+CC=	gcc $(GDB) $(GOPTIM) $(GWARN)
+#CC=	dcc
 CFLAGS=
 
 OBJS= main.o ops.o globals.o exp.o symbols.o \
-      mne6303.o mne6502.o mne68705.o mne6811.o
+      mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
 SRCS= main.c ops.c globals.c exp.c symbols.c \
-      mne6303.c mne6502.c mne68705.c mne6811.c
+      mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
 all: dasm ftohex
 
@@ -33,3 +33,6 @@ example:
 obj: $(OBJS)
 
 $(OBJS): asm.h
+
+clean:
+	rm -rf *.o dasm ftohex

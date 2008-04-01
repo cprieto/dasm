@@ -181,29 +181,29 @@ static int parse_scratchpad_register(char *str, unsigned char *reg) {
     unsigned long regnum;
 
     /* parse special cases where ISAR is used as index */
-    if (!stricmp("s", str) || !stricmp("(is)", str)) {
+    if (!strcasecmp("s", str) || !strcasecmp("(is)", str)) {
         *reg = 0x0c;
         return 0;
     }
-    if (!stricmp("i", str) || !stricmp("(is)+", str)) {
+    if (!strcasecmp("i", str) || !strcasecmp("(is)+", str)) {
         *reg = 0x0d;
         return 0;
     }
-    if (!stricmp("d", str) || !stricmp("(is)-", str)) {
+    if (!strcasecmp("d", str) || !strcasecmp("(is)-", str)) {
         *reg = 0x0e;
         return 0;
     }
 
     /* parse aliases for scratchpad registers */
-    if (!stricmp("j", str)) {
+    if (!strcasecmp("j", str)) {
         *reg = 0x09;
         return 0;
     }
-    if (!stricmp("hu", str)) {
+    if (!strcasecmp("hu", str)) {
         *reg = 0x0a;
         return 0;
     }
-    if (!stricmp("hl", str)) {
+    if (!strcasecmp("hl", str)) {
         *reg = 0x0b;
         return 0;
     }
@@ -228,43 +228,43 @@ static int parse_scratchpad_register(char *str, unsigned char *reg) {
  */
 static int parse_special_register(char *str) {
 
-    if (!stricmp("a", str)) {
+    if (!strcasecmp("a", str)) {
         return REG_A;
     }
-    if (!stricmp("dc0", str) || !stricmp("dc", str) ) {
+    if (!strcasecmp("dc0", str) || !strcasecmp("dc", str) ) {
         return REG_DC0;
     }
-    if (!stricmp("h", str)) {
+    if (!strcasecmp("h", str)) {
         return REG_H;
     }
-    if (!stricmp("is", str)) {
+    if (!strcasecmp("is", str)) {
         return REG_IS;
     }
-    if (!stricmp("k", str)) {
+    if (!strcasecmp("k", str)) {
         return REG_K;
     }
-    if (!stricmp("ku", str)) {
+    if (!strcasecmp("ku", str)) {
         return REG_KU;
     }
-    if (!stricmp("kl", str)) {
+    if (!strcasecmp("kl", str)) {
         return REG_KL;
     }
-    if (!stricmp("pc0", str) || !stricmp("p0", str)) {
+    if (!strcasecmp("pc0", str) || !strcasecmp("p0", str)) {
         return REG_PC0;
     }
-    if (!stricmp("pc1", str) || !stricmp("p", str)) {
+    if (!strcasecmp("pc1", str) || !strcasecmp("p", str)) {
         return REG_PC1;
     }
-    if (!stricmp("q", str)) {
+    if (!strcasecmp("q", str)) {
         return REG_Q;
     }
-    if (!stricmp("qu", str)) {
+    if (!strcasecmp("qu", str)) {
         return REG_QU;
     }
-    if (!stricmp("ql", str)) {
+    if (!strcasecmp("ql", str)) {
         return REG_QL;
     }
-    if (!stricmp("w", str)) {
+    if (!strcasecmp("w", str)) {
         return REG_W;
     }
     else {
