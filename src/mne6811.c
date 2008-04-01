@@ -176,7 +176,7 @@ MNEMONIC Mne68HC11[] = {
     { NULL, v_mnemonic, "wai",    0, AF_IMP, { 0x3E } },
     { NULL, v_mnemonic, "xgdx",   0, AF_IMP, { 0x8F } },
     { NULL, v_mnemonic, "xgdy",   0, AF_IMP, { 0x188F } },
-    NULL
+    { NULL, }
 };
 
 

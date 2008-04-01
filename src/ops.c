@@ -325,7 +325,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
                 if (dest >= 128 || dest < -128)
                 {
                     char sBuffer[64];
-                    sprintf( sBuffer, "%d", dest );
+                    sprintf( sBuffer, "%ld", dest );
                     asmerr( ERROR_BRANCH_OUT_OF_RANGE, false, sBuffer );
                     
                 }
@@ -364,7 +364,7 @@ void v_list(char *str, MNEMONIC *dummy)
         ListMode = 1;
 }
 
-char *
+static char *
 getfilename(char *str)
 {
     if (*str == '\"') {
@@ -1234,7 +1234,7 @@ v_incdir(char *str, MNEMONIC *dummy)
         free(buf);
 }
 
-void
+static void
 addpart(char *dest, const char *dir, const char *file)
 {
 #if 0	/* not needed here */

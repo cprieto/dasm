@@ -6,12 +6,12 @@
 #
 #   Modifications Copyright 1995 by Olaf Seibert. All Rights Reserved.
 
-GOPTIM= -O3
-GWARN=	-ansi -pedantic -Wall -Wstrict-prototypes
+GOPTIM= -O#3
+GWARN=	-ansi -std=c99 -pedantic -Wall -Wstrict-prototypes -Wdeclaration-after-statement -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes #-Wwrite-strings #-Wcast-qual -Wconversion -Wextra -Wshadow
 GDB=	# -g
 CC=	gcc $(GDB) $(GOPTIM) $(GWARN)
 #CC=	dcc
-CFLAGS=
+CFLAGS= #-D_FORTIFY_SOURCE=2
 
 OBJS= main.o ops.o globals.o exp.o symbols.o \
       mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o

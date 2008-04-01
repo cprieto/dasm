@@ -94,7 +94,7 @@ char *pushdec(char *str);
 char *pushhex(char *str);
 char *pushchar(char *str);
 
-int alphanum(int c);
+int IsAlphaNum( int c );
 
 /*
 *  evaluate an expression.  Figure out the addressing mode:
