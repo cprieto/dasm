@@ -117,7 +117,7 @@ enum FORMAT
     {
         int nErrorType;                                 /* ASM_ERROR_EQUATES value */
         bool bFatal;                                    /* 0 = OK, non-zero = cannot continue compilation */
-        char *sDescription;                             /* Error message */
+        const char *sDescription;                             /* Error message */
 
     } ERROR_DEFINITION;
 
@@ -230,7 +230,7 @@ STRLIST {
 MNEMONIC {
     MNEMONIC     *next;        /*    hash        */
     void    (*vect)(char *, MNEMONIC *);    /*  dispatch        */
-    char    *name;        /*    actual name    */
+    const char    *name;        /*    actual name    */
     unsigned char   flags;        /*    special flags    */
     unsigned long   okmask;
     unsigned int opcode[NUMOC];  /*    hex codes, byte or word (>xFF) opcodes    */
@@ -351,7 +351,7 @@ extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
 extern unsigned char    F_verbose;
-extern char    *F_outfile;
+extern const char    *F_outfile;
 extern char    *F_listfile;
 extern char    *F_symfile;
 extern FILE    *FI_listfile;
@@ -368,7 +368,7 @@ extern unsigned long  CheckSum;
 /* main.c */
 /*extern unsigned char Listing;*/
 void    findext(char *str);
-int    asmerr(int err, bool abort, char *sText);
+int    asmerr(int err, bool bAbort, const char *sText);
 char   *sftos(long val, int flags);
 void    rmnode(void **base, int bytes);
 void    addhashtable(MNEMONIC *mne);
@@ -381,8 +381,8 @@ char   *strlower(char *str);
 /* symbols.c */
 void    setspecial(int value, int flags);
 SYMBOL *allocsymbol(void);
-SYMBOL *findsymbol(char *str, int len);
-SYMBOL *CreateSymbol( char *str, int len );
+SYMBOL *findsymbol(const char *str, int len);
+SYMBOL *CreateSymbol( const char *str, int len );
 void    FreeSymbolList(SYMBOL *sym);
 void    programlabel(void);
 
@@ -432,7 +432,7 @@ FILE *pfopen(const char *, const char *);
 
 
 /* exp.c */
-SYMBOL *eval(char *str, int wantmode);
+SYMBOL *eval(const char *str, int wantmode);
 
 
 

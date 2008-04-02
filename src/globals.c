@@ -72,7 +72,7 @@ unsigned long	CheckSum;	    /*	output data checksum		*/
 int F_format = FORMAT_DEFAULT;
 
 unsigned char	 F_verbose;
-char	*F_outfile = "a.out";
+const char	*F_outfile = "a.out";
 char	*F_listfile;
 char	*F_symfile;
 FILE	*FI_listfile;

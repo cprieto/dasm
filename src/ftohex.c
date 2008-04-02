@@ -44,7 +44,7 @@ static const char svnid[] = "$Id$";
 
 #define PERLINE 16
 
-void exiterr(char *str);
+void exiterr(const char *str);
 void convert(int format, FILE *in, FILE *out);
 unsigned int getwlh(FILE *in);
 void puth(unsigned char c, FILE *out);
@@ -82,7 +82,7 @@ main(int ac, char **av)
 }
 
 void
-exiterr(char *str)
+exiterr(const char *str)
 {
     fputs(str, stderr);
     fputs("\n", stderr);
@@ -124,7 +124,7 @@ convert(int format, FILE *in, FILE *out)
     for (;;) {
 	while (len > 0) {
 	    register unsigned char chk;
-	    register int i;
+	    register unsigned int i;
 
 	    idx = (len > PERLINE) ? PERLINE : len;
 	    fread(buf, idx, 1, in);
