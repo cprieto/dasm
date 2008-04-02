@@ -529,24 +529,24 @@ v_dc(char *str, MNEMONIC *mne)
 
     /* for byte, .byte, word, .word, long, .long */
     if (mne->name[0] != 'd') {
-        static char tmp[4];
-        strcpy(tmp, "x.x");
-        tmp[2] = mne->name[0];
-        findext(tmp);
+        static char sTmp[4];
+        strcpy(sTmp, "x.x");
+        sTmp[2] = mne->name[0];
+        findext(sTmp);
     }
 
 	/* F8... */
 
     /* db, dw, dd */
     if ( (mne->name[0] == 'd') && (mne->name[1] != 'c') ) {
-        static char tmp[4];
-        strcpy(tmp, "x.x");
+        static char sTmp[4];
+        strcpy(sTmp, "x.x");
         if ('d' == mne->name[1]) {
-			tmp[2] = 'l';
+			sTmp[2] = 'l';
 		} else {
-            tmp[2] = mne->name[1];
+            sTmp[2] = mne->name[1];
 		}
-        findext(tmp);
+        findext(sTmp);
     }
 
 	/* ...F8 */

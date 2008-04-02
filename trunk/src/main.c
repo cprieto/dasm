@@ -35,16 +35,16 @@ SVNTAG("$Id$");
 #define MAXLINE 1024
 #define ISEGNAME    "INITIAL CODE SEGMENT"
 
-char *cleanup(char *buf, bool bDisable);
+static const char *cleanup(char *buf, bool bDisable);
 
 MNEMONIC *parse(char *buf);
-void panic(char *str);
+void panic(const char *str);
 MNEMONIC *findmne(char *str);
 void clearsegs(void);
 void clearrefs(void);
 
-static unsigned int hash1(char *str);
-static void outlistfile(char *);
+static unsigned int hash1(const char *str);
+static void outlistfile(const char *);
 
 
 
@@ -296,8 +296,8 @@ static void ShowSymbols( FILE *file, bool bTableSort )
 static void ShowSegments(void)
 {
     SEGMENT *seg;
-    char *bss;
-    char *sFormat = "%-24s %-3s %-8s %-8s %-8s %-8s\n\0";
+    const char *bss;
+    const char *sFormat = "%-24s %-3s %-8s %-8s %-8s %-8s\n\0";
     
     
     
@@ -580,7 +580,7 @@ nextpass:
     while ( pIncfile )
     {
         for (;;) {
-            char *comment;
+            const char *comment;
             if ( pIncfile->flags & INF_MACRO) {
                 if ( pIncfile->strlist == NULL) {
                     Av[0] = "";
@@ -743,14 +743,14 @@ static int tabit(char *buf1, char *buf2)
     return (int)(bp - buf2);
 }
 
-static void outlistfile(char *comment)
+static void outlistfile(const char *comment)
 {
     char xtrue;
     char c;
     static char buf1[MAXLINE+32];
     static char buf2[MAXLINE+32];
-    char *ptr;
-    char *dot;
+    const char *ptr;
+    const char *dot;
     int i, j;
     
 
@@ -868,12 +868,12 @@ void clearrefs(void)
 
 
 
-char *cleanup(char *buf, bool bDisable)
+static const char *cleanup(char *buf, bool bDisable)
 {
     char *str;
     STRLIST *strlist;
     int arg, add;
-    char *comment = "";
+    const char *comment = "";
     
     for (str = buf; *str; ++str)
     {
@@ -985,7 +985,7 @@ br2:
     return comment;
 }
 
-void panic(char *str)
+void panic(const char *str)
 {
     puts(str);
     exit(1);
@@ -1258,7 +1258,7 @@ void v_macro(char *str, MNEMONIC *dummy)
         MHash[i] = (MNEMONIC *)mac;
     }
     while (fgets(buf, MAXLINE, pIncfile->fi)) {
-        char *comment;
+        const char *comment;
         
         if (Xdebug)
             printf("%08lx %s\n", (unsigned long) pIncfile, buf);
@@ -1308,7 +1308,7 @@ void addhashtable(MNEMONIC *mne)
 }
 
 
-static unsigned int hash1(char *str)
+static unsigned int hash1(const char *str)
 {
     unsigned int result = 0;
     
@@ -1345,9 +1345,9 @@ void pushinclude(char *str)
 
 
 
-int asmerr(int err, bool abort, char *sText )
+int asmerr(int err, bool bAbort, const char *sText )
 {
-    char *str;
+    const char *str;
     INCFILE *pincfile;
     
     if ( err >= MAX_ERROR || err < 0 )
@@ -1388,7 +1388,7 @@ int asmerr(int err, bool abort, char *sText )
         
 #endif
         
-        if ( abort )
+        if ( bAbort )
         {
             puts("Aborting assembly");
             if (F_listfile)

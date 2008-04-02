@@ -59,7 +59,7 @@ typedef void (*opfunc_t)();
 
 #endif
 
-void stackarg(long val, int flags, char *ptr1);
+static void stackarg(long val, int flags, const char *ptr1);
 
 void doop(opfunc_t, int pri);
 void evaltop(void);
@@ -90,13 +90,13 @@ op_invert(long v1, int f1),
 op_not(long v1, int f1);
 
 
-char *pushsymbol(char *str);
-char *pushstr(char *str);
-char *pushbin(char *str);
-char *pushoct(char *str);
-char *pushdec(char *str);
-char *pushhex(char *str);
-char *pushchar(char *str);
+const char *pushsymbol(const char *str);
+const char *pushstr(const char *str);
+const char *pushbin(const char *str);
+const char *pushoct(const char *str);
+const char *pushdec(const char *str);
+const char *pushhex(const char *str);
+const char *pushchar(const char *str);
 
 int IsAlphaNum( int c );
 
@@ -136,14 +136,14 @@ opfunc_t Opdis[MAXOPS];
 int	Argi, Opi, Lastwasop;
 int	Argibase, Opibase;
 
-SYMBOL *eval(char *str, int wantmode)
+SYMBOL *eval(const char *str, int wantmode)
 {
     SYMBOL *base, *cur;
     int oldargibase = Argibase;
     int oldopibase = Opibase;
     int scr;
     
-    char *pLine = str;
+    const char *pLine = str;
 
     Argibase = Argi;
     Opibase = Opi;
@@ -453,7 +453,7 @@ SYMBOL *eval(char *str, int wantmode)
 
         default:
             {
-                char *dol = str;
+                const char *dol = str;
                 while (*dol >= '0' && *dol <= '9')
                     dol++;
                 if (*dol == '$')
@@ -548,7 +548,7 @@ void evaltop(void)
     }
 }
 
-void stackarg(long val, int flags, char *ptr1)
+static void stackarg(long val, int flags, const char *ptr1)
 {
     char *str = NULL;
     
@@ -776,7 +776,7 @@ void op_or(long v1, long v2, int f1, int f2)
     stackarg(v1|v2, f1|f2, NULL);
 }
 
-char *pushchar(char *str)
+const char *pushchar(const char *str)
 {
     if (*str) {
         stackarg((long)*str, 0, NULL);
@@ -787,7 +787,7 @@ char *pushchar(char *str)
     return str;
 }
 
-char *pushhex(char *str)
+const char *pushhex(const char *str)
 {
     long val = 0;
     for (;; ++str) {
@@ -805,7 +805,7 @@ char *pushhex(char *str)
     return str;
 }
 
-char *pushoct(char *str)
+const char *pushoct(const char *str)
 {
     long val = 0;
     while (*str >= '0' && *str <= '7') {
@@ -816,7 +816,7 @@ char *pushoct(char *str)
     return str;
 }
 
-char *pushdec(char *str)
+const char *pushdec(const char *str)
 {
     long val = 0;
     while (*str >= '0' && *str <= '9') {
@@ -827,7 +827,7 @@ char *pushdec(char *str)
     return str;
 }
 
-char *pushbin(char *str)
+const char *pushbin(const char *str)
 {
     long val = 0;
     while (*str == '0' || *str == '1') {
@@ -838,7 +838,7 @@ char *pushbin(char *str)
     return str;
 }
 
-char *pushstr(char *str)
+const char *pushstr(const char *str)
 {
     stackarg(0, SYM_STRING, str);
     while (*str && *str != '\"')
@@ -848,10 +848,10 @@ char *pushstr(char *str)
     return str;
 }
 
-char *pushsymbol(char *str)
+const char *pushsymbol(const char *str)
 {
     SYMBOL *sym;
-    char *ptr;
+    const char *ptr;
     unsigned char macro = 0;
     
     for (ptr = str;

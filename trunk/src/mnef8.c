@@ -46,7 +46,7 @@ enum REGISTERS {
  * abort    : false = don't abort assembly
  *            true = abort assembly
  */
-static void f8err(int err, char *mnename, char *opstring, bool abort) {
+static void f8err(int err, const char *mnename, const char *opstring, bool bAbort) {
 
     char *buf;
 
@@ -54,7 +54,7 @@ static void f8err(int err, char *mnename, char *opstring, bool abort) {
     strcpy(buf, mnename);
     strcat(buf, " ");
     strcat(buf, opstring);
-    asmerr(err, abort, buf);
+    asmerr(err, bAbort, buf);
     free(buf);
 }
 

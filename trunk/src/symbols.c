@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 SVNTAG("$Id$");
 
-static unsigned int hash1(char *str, int len);
+static unsigned int hash1(const char *str, int len);
 SYMBOL *allocsymbol(void);
 
 static SYMBOL org;
@@ -44,7 +44,7 @@ void setspecial(int value, int flags)
     special.flags = flags;
 }
 
-SYMBOL *findsymbol(char *str, int len)
+SYMBOL *findsymbol(const char *str, int len)
 {
     unsigned int h1;
     SYMBOL *sym;
@@ -98,7 +98,7 @@ SYMBOL *findsymbol(char *str, int len)
     return sym;
 }
 
-SYMBOL *CreateSymbol( char *str, int len )
+SYMBOL *CreateSymbol( const char *str, int len )
 {
     SYMBOL *sym;
     unsigned int h1;
@@ -133,7 +133,7 @@ SYMBOL *CreateSymbol( char *str, int len )
     return sym;
 }
 
-static unsigned int hash1(char *str, int len)
+static unsigned int hash1(const char *str, int len)
 {
     unsigned int result = 0;
     
