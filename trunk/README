@@ -1,31 +1,45 @@
+TODO: The first place a user will look to get an overview for the purpose of a package, and perhaps special installation instructions.
 
-    DASM    Version 2.20.10
+    DASM    Version 2.20.11
 
-    DASM was created in 1988 by Matthew Dillon (dillon@apollo.backplane.com)
-    and modified in 1995 by Olaf 'Rhialto' Seibert (rhialto@polderland.nl), and
-    is now updated and maintained by Andrew Davie (atari2600@taswegian.com)
+    DASM was created in 1988 by Matthew Dillon <dillon at backplane dot com>,
+    modified in 1995 by Olaf 'Rhialto' Seibert <rhialto at falu dot nl>, and
+    maintained in 2003-2008 by Andrew Davie <atari2600 at taswegian dot com>.
+    The current maintainer is Peter H. Froehlich <phf at acm dot org>.
 
-    DASM's homepage is http://www.atari2600.org/dasm
+    DASM's homepage is http://dasm-dillon.sourceforge.net/
 
-    DASM is freely re-distributable, and provided with full source-code to
-    allow recompilation for other target-platforms.  This package may not be
-    sold on any media, or distributed in any way other than totally free.
+    DASM is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 2 of the License, or (at your
+    option) any later version. (See the file COPYING for details.)
 
     Directory structure...
 
-	BIN\DOS                 Binary for DOS/Windows
-	BIN\Mac\Classic		Binary for Mac Classic (2.20.07 onwards)
-	BIN\Mac\OSX		Binary for Mac OSX (2.20.07 onwards)
-	BIN\Linux               Binaries (static and dynamic) (2.20.09 onwards)
-	DOC                     Documentation and manuals
-	SRC                     DASM Source code
-	TEST                    Suite of test code
+	bin                     Executables for various platforms
+	doc                     Documentation and manuals
+	src                     DASM Source code
+	test                    Suite of test code
 
-    This file (README.TXT) will always list the most recent updates for
-    the DASM disributable.
+    This file (README) will always list the most recent updates for the
+    DASM distribution.
 
 
 VERSION HISTORY
+
+    2.20.11     - Fixed (obvious version of) the long-standing "-1 bug"
+                  that made DASM reject sources with negative integer
+                  literals; there may still be signed/unsigned problems
+                  in other areas.
+
+                - Started transitioning to C99 and fixed many warnings
+                  associated with said transition.
+
+?????           - Fixed the way string compares are done internally
+
+                - Moved DASM to sourceforge.net with a slightly cleaner
+                  code base and reconstructed its history since 2.12.04
+                  (approximately anyway)
 
     2.20.10     - Fairchild Channel F (processor F8) support added.  Thanks to Thomas Mathys!
 		- Please review the readme file in the new F8 directory.
