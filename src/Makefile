@@ -7,7 +7,7 @@
 #   Modifications Copyright 1995 by Olaf Seibert. All Rights Reserved.
 
 GOPTIM= -O#3
-GWARN=	-ansi -std=c99 -pedantic -Wall -Wstrict-prototypes -Wdeclaration-after-statement -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes -Wshadow -Wwrite-strings #-Wcast-qual -Wconversion -Wextra
+GWARN=	-ansi -std=c99 -pedantic -Wall -Wstrict-prototypes -Wdeclaration-after-statement -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes -Wshadow -Wwrite-strings -Wcast-qual #-Wconversion -Wextra
 GDB=	# -g
 CC=	gcc $(GDB) $(GOPTIM) $(GWARN)
 #CC=	dcc

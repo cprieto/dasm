@@ -186,7 +186,7 @@ SYMBOL *eval(const char *str, int wantmode)
 
         case '%':
             if (Lastwasop) {
-                str = (char *)pushbin(str+1);
+                str = pushbin(str+1);
             } else {
                 doop((opfunc_t)op_mod, 20);
                 ++str;
@@ -558,7 +558,11 @@ static void stackarg(long val, int flags, const char *ptr1)
     Lastwasop = 0;
     if (flags & SYM_STRING)
     {
-        unsigned char *ptr = (unsigned char *)ptr1;
+        /*
+           Why unsigned char? Looks like we're converting to
+           long in a very strange way... [phf]
+        */
+        const unsigned char *ptr = (const unsigned char *)ptr1;
         char *new;
         int len;
         val = len = 0;

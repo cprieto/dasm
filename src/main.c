@@ -152,13 +152,14 @@ static int ShowUnresolvedSymbols(void)
 static int CompareAlpha( const void *arg1, const void *arg2 )
 {
     /* Simple alphabetic ordering comparison function for quicksort */
-    
-    SYMBOL **sym1, **sym2;
-    
-    sym1 = (SYMBOL **) arg1;
-    sym2 = (SYMBOL **) arg2;
 
+    const SYMBOL *sym1 = *(SYMBOL * const *) arg1;
+    const SYMBOL *sym2 = *(SYMBOL * const *) arg2;
+    
     /*
+       The cast above is wild, thank goodness the Linux man page
+       for qsort(3) has an example explaining it... :-) [phf]
+
        Note that we compare labels case-insensitive here which is
        not quite right; I believe we should be case-sensitive as
        in other contexts where symbols (labels) are compared. But
@@ -166,19 +167,17 @@ static int CompareAlpha( const void *arg1, const void *arg2 )
        didn't want to change that right now. [phf]
     */
 
-    return strcasecmp((*sym1)->name, (*sym2)->name);
+    return strcasecmp(sym1->name, sym2->name);
 }
 
 static int CompareAddress( const void *arg1, const void *arg2 )
 {
     /* Simple numeric ordering comparison function for quicksort */
     
-    SYMBOL **sym1, **sym2;
+    const SYMBOL *sym1 = *(SYMBOL * const *) arg1;
+    const SYMBOL *sym2 = *(SYMBOL * const *) arg2;
     
-    sym1 = (SYMBOL **) arg1;
-    sym2 = (SYMBOL **) arg2;
-    
-    return (*sym1)->value - (*sym2)->value;
+    return sym1->value - sym2->value;
 }
 
 
@@ -384,7 +383,7 @@ fail:
     puts(" -Lname   list file, containing all passes");
     puts(" -sname   symbol dump");
     puts(" -v#      verboseness");
-    puts(" -t#      Symbol Table sorting preference (#1 = by address.  default #0 = alphabetic)" );
+    puts(" -T#      Symbol Table sorting preference (#1 = by address.  default #0 = alphabetic)" );
     puts(" -Dname=exp   define label");
     puts(" -Mname=exp   define label as in EQM");
     puts(" -Idir    search directory for include and incbin");
@@ -405,6 +404,7 @@ fail:
             {
                 
             case 'T':
+                /* should test range of argument? [phf] */
                 *pbTableSort = ( atoi( str ) != 0 );
                 break;
                 
