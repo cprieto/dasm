@@ -7,9 +7,6 @@ you have before we do the first new release! [phf]
 Hacking dasm
 ============
 
-Peter H. Froehlich
-phf at acm dot org
-
 Thank you for considering dasm as a project to hack on. Here are a
 few short rules to ensure things go smoothly.
 
@@ -21,13 +18,10 @@ few short rules to ensure things go smoothly.
     (see http://www.apache.org/dev/svn-eol-style.txt for original)
 
   from the Apache project for dasm, you can just merge that into
-  your local SVN configuration
-
-    ~/.subversion/config
-
-  and you're good to go; for most file extensions anyway, feel free
-  to add more and submit a new version of svn-eol-style.txt to us;
-  do *not* ever *remove* svn:eol-style=native from any files!
+  your local SVN configuration and you're good to go; for most
+  file extensions anyway, feel free to add more and submit a new
+  version of svn-eol-style.txt to us; do *not* ever *remove*
+  svn:eol-style=native from any files!
 
 - before committing a new version of .c or .h files, please run
   them through GNU indent; the src/ directory has our default
