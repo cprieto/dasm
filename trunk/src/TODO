@@ -18,3 +18,7 @@ are hiding the file all the way down here for a reason...
   - NOTE: if both are used on the same global data
     structures, there may be a bug here after all!
 
+- both memusage and valgrind say that we are leaking
+  - however, this probably only matters for Amiga OS 3 users
+  - any other OS out there where memory is not freed on exit?
+
