@@ -153,59 +153,19 @@ static int CompareAlpha( const void *arg1, const void *arg2 )
     /* Simple alphabetic ordering comparison function for quicksort */
     
     SYMBOL **sym1, **sym2;
-    int nSym1Size, nSym2Size;
-    char *pSym1LC, *pSym2LC;
-    char *pSrc, *pDest;
-    int nCompare;
     
     sym1 = (SYMBOL **) arg1;
     sym2 = (SYMBOL **) arg2;
-    
-    nSym1Size = strlen( (*sym1)->name ) + 1;
-    nSym2Size = strlen( (*sym2)->name ) + 1;
-    
-    
-    
-    /* Primitive manual to lowercase conversion */
-    
-    pSym1LC = ckmalloc( nSym1Size );
-    pDest = pSym1LC;
-    pSrc = (*sym1)->name;
-    while ( *pSrc )
-    {
-        if ( *pSrc >= 'A' && *pSrc <= 'Z' )
-            *pDest = *pSrc - 'A' + 'a';
-        else
-            *pDest = *pSrc;
-        
-        *pDest++;
-        *pSrc++;
-    }
-    *pDest = 0;         /* terminator */
-    
-    /* Primitive manual to lowercase conversion */
-    
-    pSym2LC = ckmalloc( nSym2Size );
-    pDest = pSym2LC;
-    pSrc = (*sym2)->name;
-    while ( *pSrc )
-    {
-        if ( *pSrc >= 'A' && *pSrc <= 'Z' )
-            *pDest = *pSrc - 'A' + 'a';
-        else
-            *pDest = *pSrc;
-        
-        *pDest++;
-        *pSrc++;
-    }
-    *pDest = 0;         /* terminator */
-    
-    nCompare = strcmp( pSym1LC, pSym2LC );
-    
-    free( pSym2LC );
-    free( pSym1LC );
-    
-    return nCompare;
+
+    /*
+       Note that we compare labels case-insensitive here which is
+       not quite right; I believe we should be case-sensitive as
+       in other contexts where symbols (labels) are compared. But
+       the old CompareAlpha() was case-insensitive as well, so I
+       didn't want to change that right now. [phf]
+    */
+
+    return strcasecmp((*sym1)->name, (*sym2)->name);
 }
 
 static int CompareAddress( const void *arg1, const void *arg2 )

@@ -35,11 +35,12 @@ VERSION HISTORY
                 - Started transitioning to C99 and fixed many warnings
                   associated with said transition.
 
-?????           - Fixed the way string compares are done internally
+                - CompareAlpha() doesn't allocate memory during qsort()
+                  anymore, what a relief. :-)
 
                 - Moved DASM to sourceforge.net with a slightly cleaner
                   code base and reconstructed its history since 2.12.04
-                  (approximately anyway)
+                  (approximately anyway).
 
     2.20.10     - Fairchild Channel F (processor F8) support added.  Thanks to Thomas Mathys!
 		- Please review the readme file in the new F8 directory.
