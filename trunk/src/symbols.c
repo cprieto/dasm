@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
 DASM Assembler
 Portions of this code are Copyright (C)1988 Matthew Dillon
@@ -27,6 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "asm.h"
 
+SVNTAG("$Id$");
 
 static unsigned int hash1(char *str, int len);
 SYMBOL *allocsymbol(void);

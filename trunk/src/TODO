@@ -1,0 +1,20 @@
+$Id$
+
+===========================
+Things to fix at some point
+===========================
+
+Note: All of these are "nice to have" things, not essential
+for functionality and (hopefully) not the cause of bugs. We
+are hiding the file all the way down here for a reason...
+
+- use GNU indent to make code more consistent
+  - current .indent.pro not right, need to adjust
+  - when to do this? before 2.20.11?
+
+- hash1() exists twice, in main.c and symbol.c
+  - very similar, should be unified?
+  - hash function doesn't seem very good?
+  - NOTE: if both are used on the same global data
+    structures, there may be a bug here after all!
+

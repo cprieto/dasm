@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
     DASM Assembler
     Portions of this code are Copyright (C)1988 Matthew Dillon
@@ -19,7 +21,9 @@
 
 */
 
-   #include "asm.h"
+#include "asm.h"
+
+SVNTAG("$Id$");
 
 #define ASTD	AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX|\
 	AF_WORDADRY|AF_INDBYTEX|AF_INDBYTEY

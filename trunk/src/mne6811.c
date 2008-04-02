@@ -1,3 +1,4 @@
+/* $Id$ */
 
 /*
  *  MNE6811.C
@@ -22,6 +23,8 @@
  */
 
 #include "asm.h"
+
+SVNTAG("$Id$");
 
 #define AF_STD	 (AF_BYTEADR|AF_BYTEADRX|AF_BYTEADRY|AF_WORDADR)
 #define AF_STDI  (AF_IMM8|AF_STD)

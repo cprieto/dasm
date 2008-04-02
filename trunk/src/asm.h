@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
     DASM Assembler
     Portions of this code are Copyright (C)1988 Matthew Dillon
@@ -32,6 +34,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+/* tag object files going into dasm executable */
+#define SVNTAG(id) static const char svnid[] = id
 
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
 #define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */

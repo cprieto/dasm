@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
  * MNEMONICF8.C
  *
@@ -7,6 +9,7 @@
 #include <ctype.h>
 #include "asm.h"
 
+SVNTAG("$Id$");
 
 /*
  * special registers. must use numbers from 16 and up,

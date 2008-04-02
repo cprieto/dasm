@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
     DASM Assembler
     Portions of this code are Copyright (C)1988 Matthew Dillon
@@ -29,6 +31,8 @@
 */
 
 #include "asm.h"
+
+SVNTAG("$Id$");
 
 unsigned char Gen[256];
 unsigned char OrgFill = DEFORGFILL;
