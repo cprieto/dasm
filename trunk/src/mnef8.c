@@ -6,7 +6,10 @@
  * Fairchild F8 support code for DASM
  * 2004 by Thomas Mathys
  */
+
 #include <ctype.h>
+#include <strings.h>
+
 #include "asm.h"
 
 SVNTAG("$Id$");
