@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
     DASM Assembler
     Portions of this code are Copyright (C)1988 Matthew Dillon
@@ -38,6 +40,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static const char svnid[] = "$Id$";
 
 #define PERLINE 16
 

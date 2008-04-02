@@ -1,3 +1,5 @@
+/* $Id$ */
+
 /*
     DASM Assembler
     Portions of this code are Copyright (C)1988 Matthew Dillon
@@ -32,6 +34,8 @@
 */
 
 #include "asm.h"
+
+SVNTAG("$Id$");
 
 #define UNION	0
 
