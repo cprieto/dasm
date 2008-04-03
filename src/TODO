@@ -31,3 +31,7 @@ are hiding the file all the way down here for a reason...
   - new ftobin? obviously easy, we don't have one :-)
   - harder: compare code bases for other fixes! :-/
 
+- new copyright/license header
+  - already in Makefile, move it to all other sources
+  - should Thomas be in there because of F8 support?
+  - who else holds a copyright on some piece of dasm?
