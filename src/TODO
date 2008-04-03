@@ -11,6 +11,7 @@ are hiding the file all the way down here for a reason...
 - use GNU indent to make code more consistent
   - current .indent.pro not right, need to adjust
   - when to do this? before 2.20.11?
+  - maybe astyle is a better, more conservative choice?
 
 - hash1() exists twice, in main.c and symbol.c
   - very similar, should be unified?
@@ -20,5 +21,13 @@ are hiding the file all the way down here for a reason...
 
 - both memusage and valgrind say that we are leaking
   - however, this probably only matters for Amiga OS 3 users
-  - any other OS out there where memory is not freed on exit?
+    - even there the C library hopefully takes care of it?
+  - any OS out there where memory is not freed on exit?
+
+- Matt Dillon's fixes and extensions
+  - dasm-2.14+ contain a (partial?) patch for 65c02 support?
+  - dasm-2.15 permalloc patch for SPARC? seems simple
+  - new version of ftohex? should import easily...
+  - new ftobin? obviously easy, we don't have one :-)
+  - harder: compare code bases for other fixes! :-/
 
