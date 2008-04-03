@@ -35,4 +35,13 @@ obj: $(OBJS)
 $(OBJS): asm.h
 
 clean:
-	rm -rf *.o dasm ftohex
+	rm -rf *.o dasm ftohex dasm-alpha-*.tar.gz
+
+alpha:
+	echo "This is an incomplete alpha release of dasm source code." >README.ALPHA
+	echo "The purpose is to identify build problems, nothing more." >>README.ALPHA
+	echo "Please do *not* re-distribute this release in any form!" >>README.ALPHA
+	echo "Please do *not* distribute binaries derived from it either!" >>README.ALPHA
+	echo "See http://dasm-dillon.sf.net/ for details on dasm." >>README.ALPHA
+	tar zcvf dasm-alpha-`date +%F`.tar.gz README.ALPHA Makefile *.h *.c
+	rm -rf README.ALPHA
