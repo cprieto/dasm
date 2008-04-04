@@ -24,6 +24,25 @@ are hiding the file all the way down here for a reason...
   - the *alloc functions, used all over
   - all that should go into a separate util.c
     to properly modularize
+  - asmerr should be refactored, type for error
+    code can be enum type, does it really have
+    to return the error code? strange recursion
+    may be the root of that...
+
+- MNEMONIC tables could be simplified
+  - currently they are written directly, could
+    use a macro (or several) to fill in mostly
+    identical information
+  - a deeper issues is that the same struct is
+    use statically as is dynamically later; so
+    I think we could get rid of the whole NULL
+    for the *next if we had a version for the
+    static stuff and a version (close to the
+    current one) for the dynamic stuff; do we
+    even need the static stuff in the first
+    place? a function to add an opcode and
+    the relevant information might work just
+    as well...
 
 - extension support and error codes
   - the F8 extension set the example of extending the

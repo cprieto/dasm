@@ -236,6 +236,9 @@ MNEMONIC {
     unsigned int opcode[NUMOC];  /*    hex codes, byte or word (>xFF) opcodes    */
 };
 
+/* MNEMONIC with all fields 0, used as end-of-table marker. */
+#define MNEMONIC_NULL {NULL, NULL, NULL, 0, 0, {0,}}
+
 MACRO {
     MACRO   *next;
     void    (*vect)(char *, MACRO *);

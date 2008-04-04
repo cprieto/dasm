@@ -633,12 +633,12 @@ static void v_byteop(char *str, MNEMONIC *mne) {
 MNEMONIC MneF8[] = {
 
     /* ds is an f8 opcode, so we replace the ds directive by res */
-    {NULL, v_ds, "res", 0, 0},
+    {NULL, v_ds, "res", 0, 0, {0,}},
 
     /* add db/dw/dd directives for f8tool compatibility */
-    {NULL, v_dc, "db", 0, 0},
-    {NULL, v_dc, "dw", 0, 0},
-    {NULL, v_dc, "dd", 0, 0},
+    {NULL, v_dc, "db", 0, 0, {0,}},
+    {NULL, v_dc, "dw", 0, 0, {0,}},
+    {NULL, v_dc, "dd", 0, 0, {0,}},
 
     /*
      * f8 opcodes
@@ -689,12 +689,12 @@ MNEMONIC MneF8[] = {
     {NULL, v_ins_outs, "ins", 0, AF_IMP, {0xa0}},       /* base opcode */
     {NULL, v_wordop,   "jmp", 0, AF_IMP, {0x29}},
     {NULL, v_byteop,   "li" , 0, AF_IMP, {0x20}},
-    {NULL, v_lis,      "lis", 0, 0},
+    {NULL, v_lis,      "lis", 0, 0, {0,}},
     {NULL, v_lisu_lisl,"lisl",0, AF_IMP, {0x68}},       /* base opcode */
     {NULL, v_lisu_lisl,"lisu",0, AF_IMP, {0x60}},       /* base opcode */
     {NULL, v_mnemonic, "lm" , 0, AF_IMP, {0x16}},
     {NULL, v_mnemonic, "lnk", 0, AF_IMP, {0x19}},
-    {NULL, v_lr,       "lr" , 0, 0},
+    {NULL, v_lr,       "lr" , 0, 0, {0,}},
     {NULL, v_byteop,   "ni" , 0, AF_IMP, {0x21}},
     {NULL, v_mnemonic, "nm" , 0, AF_IMP, {0x8a}},
     {NULL, v_mnemonic, "nop", 0, AF_IMP, {0x2b}},
@@ -713,5 +713,6 @@ MNEMONIC MneF8[] = {
     {NULL, v_byteop,   "xi" , 0, AF_IMP, {0x23}},
     {NULL, v_mnemonic, "xm" , 0, AF_IMP, {0x8c}},
     {NULL, v_sreg_op,  "xs" , 0, AF_IMP, {0xe0}},       /* base opcode */
-    {NULL,}
+    MNEMONIC_NULL
 };
+

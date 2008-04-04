@@ -122,6 +122,6 @@ MNEMONIC Mne68705[] = {
     { NULL, v_mnemonic, "tsta", 0,AF_IMP, { 0x4D } },
     { NULL, v_mnemonic, "tstx", 0,AF_IMP, { 0x5D } },
     { NULL, v_mnemonic, "txa", 0, AF_IMP, { 0x9F } },
-    { NULL, }
+    MNEMONIC_NULL
 };
 

@@ -22,10 +22,20 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 GOPTI= -O # -O for more warnings; use -O0 for debugging, use -O3 for speed
+
 GWARN= -ansi -std=c99 -pedantic -Wall \
        -Wstrict-prototypes -Wdeclaration-after-statement \
        -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes \
-       -Wshadow -Wwrite-strings -Wcast-qual #-Wconversion -Wextra
+       -Wshadow -Wwrite-strings -Wcast-qual -Wnested-externs \
+       -Wcast-align -Wpointer-arith -Wbad-function-cast \
+       -Wformat-y2k -Wformat-nonliteral -Wformat-security \
+       -Wfloat-equal -Wfour-char-constants -Wundef -Winline \
+       # -Wunused # definition is weird in man gcc, effect is weird too
+       # -Wextra -Wno-unused-parameter # no-unused tames extra a little
+       # -Wunreachable-code # seems to create 4 spurious warnings?
+       # -Wconversion # too many right now
+       # -Wtraditional # too many, not sure if it's worth it anyway
+
 GDEBG= # -g # -fprofile-arcs -ftest-coverage -pg # -D_FORTIFY_SOURCE=2
 
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG)
