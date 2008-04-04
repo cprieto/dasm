@@ -8,7 +8,7 @@ Authors
 =======
 
 The following people contributed to this distribution of
-dasm over the years (alphabetical by first name):
+DASM over the years (alphabetical by first name):
 
   Andrew Davie <atari2600 at taswegian dot com>
   John Saeger <john at whimsey dot com>
@@ -17,14 +17,14 @@ dasm over the years (alphabetical by first name):
   Peter H. Froehlich <phf at acm dot org>
   Thomas Mathys <mathys66 at bluewin dot ch>
 
-The following people hacked dasm on their own, but their
+The following people hacked DASM on their own, but their
 modifications have not been integrated yet (alphabetical
 by first name):
 
   Lasse Oeoerni <loorni at gmail dot com>
 
-If you hacked on dasm but are not in either of the above
+If you hacked on DASM but are not in either of the above
 lists, please contact us!
 
-The current maintainer of dasm is Peter H. Froehlich.
+The current maintainer of DASM is Peter H. Froehlich.
 Visit http://dasm-dillon.sf.net/ for more information.
