@@ -104,8 +104,6 @@ MNEMONIC Mne6502[] = {
     { NULL, v_mnemonic, "txa", 0, AF_IMP, { 0x8A } },
     { NULL, v_mnemonic, "txs", 0, AF_IMP, { 0x9A } },
     { NULL, v_mnemonic, "tya", 0, AF_IMP, { 0x98 } },
-    { NULL, }
+    MNEMONIC_NULL
 };
-
-
 
