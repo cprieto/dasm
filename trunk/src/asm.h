@@ -36,7 +36,7 @@
 #include <stdbool.h>
 
 /* tag object files going into dasm executable */
-#define SVNTAG(id) static const char svnid[] = id
+#define SVNTAG(id) static const char _svnid[] = id
 
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
 #define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */
@@ -44,6 +44,9 @@
 #if OlafHashFormat && OlafFreeFormat
 #error This cannot be!
 #endif
+
+/* default for -T option [phf] */
+#define SORTMODE_DEFAULT 0
 
 #define DAD
 
@@ -346,6 +349,7 @@ extern unsigned long    Redo_if;
 extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
+extern int   F_sortmode; /* -T option [phf] */
 extern unsigned char    F_verbose;
 extern const char    *F_outfile;
 extern char    *F_listfile;

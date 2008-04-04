@@ -33,8 +33,19 @@
 
 SVNTAG("$Id$");
 
+static const char dasm_id[] =
+    "DASM V2.20.11 Macro Assembler Copyright (c) 1988-2008";
+
 #define MAXLINE 1024
 #define ISEGNAME    "INITIAL CODE SEGMENT"
+
+/*
+   replace old atoi() calls; I wanted to protect this using
+   #ifdef strtol but the C preprocessor doesn't recognize
+   function names, at least not GCC's; we should be safe
+   since M$ compilers document strtol as well... [phf]
+*/
+#define atoi(x) ((int)strtol(x, (char **)NULL, 10))
 
 static const char *cleanup(char *buf, bool bDisable);
 
@@ -106,7 +117,6 @@ unsigned char     F_ListAllPasses = 0;
 
 
 
-const char name[] = "DASM V2.20.10, Macro Assembler (C)1988-2004";
 
 
 
@@ -160,11 +170,11 @@ static int CompareAlpha( const void *arg1, const void *arg2 )
        The cast above is wild, thank goodness the Linux man page
        for qsort(3) has an example explaining it... :-) [phf]
 
-       Note that we compare labels case-insensitive here which is
-       not quite right; I believe we should be case-sensitive as
+       TODO: Note that we compare labels case-insensitive here which
+       is not quite right; I believe we should be case-sensitive as
        in other contexts where symbols (labels) are compared. But
        the old CompareAlpha() was case-insensitive as well, so I
-       didn't want to change that right now. [phf]
+       didn't want to change that right now... [phf]
     */
 
     return strcasecmp(sym1->name, sym2->name);
@@ -180,7 +190,7 @@ static int CompareAddress( const void *arg1, const void *arg2 )
     return sym1->value - sym2->value;
 }
 
-
+/* bTableSort true -> by address, false -> by name [phf] */
 static void ShowSymbols( FILE *file, bool bTableSort )
 {
     /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
@@ -369,12 +379,15 @@ static int MainShadow(int ac, char **av, bool *pbTableSort )
     
     addhashtable(Ops);
     pass = 1;
-    
+
     if (ac < 2)
     {
         
 fail:
-    puts("redistributable for non-profit only");
+    puts(dasm_id);
+    puts("by various authors (see file AUTHORS for details) under the");
+    puts("GNU General Public License (see file COPYING for details).");
+//    puts("DASM is free software and comes with ABSOLUTELY NO WARRANTY.");
     puts("");
     puts("DASM sourcefile [options]");
     puts(" -f#      output format");
@@ -383,7 +396,8 @@ fail:
     puts(" -Lname   list file, containing all passes");
     puts(" -sname   symbol dump");
     puts(" -v#      verboseness");
-    puts(" -T#      Symbol Table sorting preference (#1 = by address.  default #0 = alphabetic)" );
+    puts(" -T#      symbol table sorting (default 0 = alphabetical, 1 = address)");
+    puts(" -t tmppath   (temporary directory) DEPRECATED");
     puts(" -Dname=exp   define label");
     puts(" -Mname=exp   define label as in EQM");
     puts(" -Idir    search directory for include and incbin");
@@ -393,7 +407,7 @@ fail:
     return ERROR_COMMAND_LINE;
     }
     
-    puts(name);
+    puts(dasm_id);
     
     for (i = 2; i < ac; ++i)
     {
@@ -404,8 +418,11 @@ fail:
             {
                 
             case 'T':
-                /* should test range of argument? [phf] */
-                *pbTableSort = ( atoi( str ) != 0 );
+                F_sortmode = atoi(str);
+                if (F_sortmode < 0 || F_sortmode > 1 )
+                    panic("Invalid sorting mode for -T option, must be 0 or 1");
+                /* TODO: refactor into regular configuration [phf] */
+                *pbTableSort = (F_sortmode != 0);
                 break;
                 
             case 'd':
