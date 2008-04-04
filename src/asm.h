@@ -49,13 +49,6 @@
 
 #ifdef DAD
 
-#ifndef bool
-#define bool int
-#define false 0
-#define true 1
-#endif
-
-
 enum FORMAT
 {
     FORMAT_DEFAULT = 1,
