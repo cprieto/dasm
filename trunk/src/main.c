@@ -42,7 +42,7 @@ static const char dasm_id[] = "DASM 2.20.11";
    replace old atoi() calls; I wanted to protect this using
    #ifdef strtol but the C preprocessor doesn't recognize
    function names, at least not GCC's; we should be safe
-   since M$ compilers document strtol as well... [phf]
+   since MS compilers document strtol as well... [phf]
 */
 #define atoi(x) ((int)strtol(x, (char **)NULL, 10))
 
@@ -404,7 +404,7 @@ fail:
     puts(" -Idir    search directory for include and incbin");
     puts(" -p#      max number of passes");
     puts(" -P#      max number of passes, with less checks");
-    puts(" -E#      error format (default 0 = M$, 1 = Dillon, 2 = GNU)");
+    puts(" -E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
     puts("");
     puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
 
@@ -1357,11 +1357,10 @@ int asmerr(int err, bool bAbort, const char *sText )
 
         /*
             New error format selection for 2.20.11 since some
-            people *don't* use M$ products and want a useful
-            (or classic :-) format. For historical reasons we
-            currently send errors to stdout when they should
-            really go to stderr, but we'll switch eventually
-            I hope... [phf]
+            people *don't* use MS products. For historical
+            reasons we currently send errors to stdout when
+            they should really go to stderr, but we'll switch
+            eventually I hope... [phf]
         */
 
         /* determine the file pointer to use */
@@ -1372,7 +1371,7 @@ int asmerr(int err, bool bAbort, const char *sText )
         {
             case ERRORFORMAT_WOE:
                 /*
-                    Error format for M$ VisualStudio and relatives:
+                    Error format for MS VisualStudio and relatives:
                     "file (line): error: string"
                 */
                 fprintf(error_file, "%s (%lu): error: ",

@@ -32,7 +32,7 @@ The DASM News
       just look at the usage information instead. :-)
 
     * Added new -E# option to select format of error messages; -E0 is
-      the default M$ style, -E1 is "classic" style from Matthew Dillon,
+      the default MS style, -E1 is "classic" style from Matthew Dillon,
       -E2 is GNU style from their coding standards.
 
 2.20.10 -- 31 October 2004
@@ -100,7 +100,7 @@ The DASM News
     * REPEAT now detects negative loop count (used to lock up).
 
     * Errors are now in the format "file (line): Error: string" to
-      be compatible with M$ VisualStudio.
+      be compatible with MS VisualStudio.
 
     * Support files for the Atari 2600 Video Computer System (VCS)
       added.
