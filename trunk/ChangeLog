@@ -1,6 +1,6 @@
-TODO: The ChangeLog is an important file--it records the changes that are made to a package. The format of this file is quite strict
+$Id$
 
-2008-03-31  Peter H. Froehlich  <phf@acm.org>
+2008-03-31  Peter H. Froehlich  <phf at acm dot org>
 
-	* some file (some option): some comment
+	* some file (some function/variable/whatever): some comment
 
