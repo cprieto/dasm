@@ -54,6 +54,16 @@ typedef enum
   SORTMODE_MAX
 } sortmode_t;
 
+/* for -E option [phf] */
+typedef enum
+{
+  ERRORFORMAT_DEFAULT,
+  ERRORFORMAT_WOE = ERRORFORMAT_DEFAULT,
+  ERRORFORMAT_DILLON,
+  ERRORFORMAT_GNU,
+  ERRORFORMAT_MAX
+} errorformat_t;
+
 #define DAD
 
 #ifdef DAD
@@ -356,6 +366,7 @@ extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
 extern sortmode_t F_sortmode; /* -T option [phf] */
+extern errorformat_t F_errorformat; /* -E option [phf] */
 extern unsigned char    F_verbose;
 extern const char    *F_outfile;
 extern char    *F_listfile;
