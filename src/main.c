@@ -404,6 +404,7 @@ fail:
     puts(" -Idir    search directory for include and incbin");
     puts(" -p#      max number of passes");
     puts(" -P#      max number of passes, with less checks");
+    puts(" -E#      error format (default 0 = M$, 1 = Dillon, 2 = GNU)");
     puts("");
     puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
 
@@ -417,7 +418,16 @@ fail:
             char *str = av[i]+2;
             switch(av[i][1])
             {
-                
+            /* TODO: need to improve option parsing and errors for it */
+            case 'E':
+                F_errorformat = atoi(str);
+                if (F_errorformat < ERRORFORMAT_DEFAULT
+                   || F_errorformat >= ERRORFORMAT_MAX )
+                {
+                    panic("Invalid error format for -E, must be 0, 1, 2");
+                }
+                break;
+
             case 'T':
                 F_sortmode = atoi(str);
                 if (F_sortmode < SORTMODE_DEFAULT
@@ -1329,6 +1339,8 @@ int asmerr(int err, bool bAbort, const char *sText )
 {
     const char *str;
     INCFILE *pincfile;
+    /* file pointer we print error messages to */
+    FILE *error_file = NULL;
     
     if ( err >= MAX_ERROR || err < 0 )
     {
@@ -1342,39 +1354,65 @@ int asmerr(int err, bool bAbort, const char *sText )
         
         for ( pincfile = pIncfile; pincfile->flags & INF_MACRO; pincfile=pincfile->next);
         str = sErrorDef[err].sDescription;
-        
-#ifdef DAD
-        
-        /* Error output format changed to be Visual-Studio compatible.
-        Output now file (line): error: string
+
+        /*
+            New error format selection for 2.20.11 since some
+            people *don't* use M$ products and want a useful
+            (or classic :-) format. For historical reasons we
+            currently send errors to stdout when they should
+            really go to stderr, but we'll switch eventually
+            I hope... [phf]
         */
-        
-        if (F_listfile)
+
+        /* determine the file pointer to use */
+        error_file = (F_listfile != NULL) ? FI_listfile : stdout;
+
+        /* print first part of message, different formats offered */
+        switch (F_errorformat)
         {
-            fprintf(FI_listfile, "%s (%lu): error: ", pincfile->name, pincfile->lineno );
-            fprintf(FI_listfile, str, sText ? sText : "" );
-            fprintf(FI_listfile, "\n" );
+            case ERRORFORMAT_WOE:
+                /*
+                    Error format for M$ VisualStudio and relatives:
+                    "file (line): error: string"
+                */
+                fprintf(error_file, "%s (%lu): error: ",
+                        pincfile->name, pincfile->lineno);
+                break;
+            case ERRORFORMAT_DILLON:
+                /*
+                    Matthew Dillon's original format, except that
+                    we don't distinguish writing to the terminal
+                    from writing to the list file for now. Matt's
+                    2.16 uses these:
+
+                      "*line %4ld %-10s %s\n" (list file)
+                      "line %4ld %-10s %s\n" (terminal)
+                */
+                fprintf(error_file, "line %7ld %-10s ",
+                        pincfile->lineno, pincfile->name);
+                break;
+            case ERRORFORMAT_GNU:
+                /*
+                    GNU format error messages, from their coding
+                    standards.
+                */
+                fprintf(error_file, "%s:%lu: error: ",
+                        pincfile->name, pincfile->lineno);
+                break;
+            default:
+                /* TODO: really panic here? [phf] */
+                panic("Invalid error format, internal error!");
+                break;
         }
-        printf( "%s (%lu): error: ", pincfile->name, pincfile->lineno );
-        printf( str, sText ? sText : "" );
-        printf( "\n" );
-        
-        
-#else
-        
-        if (F_listfile)
-            fprintf(FI_listfile, "*line %7ld %-10s %s\n", pincfile->lineno, pincfile->name, str);
-        printf("line %7ld %-10s %s\n", pincfile->lineno, pincfile->name, str);
-        
-#endif
+
+        /* print second part of message, always the same for now */
+        fprintf(error_file, str, sText ? sText : "");
+        fprintf(error_file, "\n");
         
         if ( bAbort )
         {
-            puts("Aborting assembly");
-            if (F_listfile)
-                fputs("Aborting assembly\n", FI_listfile);
-            
-            exit( 1 );
+            fprintf(error_file, "Aborting assembly\n");
+            exit(EXIT_FAILURE);
         }
     }
     
