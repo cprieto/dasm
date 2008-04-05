@@ -21,6 +21,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# Executables will be generated in the trunk/src/ directory (the
+# "current directory" as far as this Makefile is concerned). If
+# you want to move them somewhere, trunk/bin/ say, do so in the
+# trunk/ Makefile!
+
 GOPTI= -O # -O for more warnings; use -O0 for debugging, use -O3 for speed
 
 GWARN= -ansi -std=c99 -pedantic -Wall \
