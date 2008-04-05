@@ -20,11 +20,20 @@ The DASM News
       may still be signed/unsigned problems in other areas.
 
     * Fixed the usage message to reflect that symbol table sorting is
-      controlled by -T and not by -t as the message claimed.
+      controlled by -T and not by -t as the message claimed; also the
+      format of the usage message is now more GNU-like.
 
-??? * New command line option -e# to select format of error messages;
-      # = 0 is M$ Visual Studio style (default), # = 1 is DASM's old
-      format originally devised by Matthew Dillon.
+    * The range of values for -T is now checked, you have to stick to
+      0 or 1, arbitrary numbers will not work anymore.
+
+    * Removed spurious output when running DASM. In general command
+      line tools should only make output when there's something to
+      report (a central Unix tenent). Sorry if you miss the messages,
+      just look at the usage information instead. :-)
+
+    * Added new -E# option to select format of error messages; -E0 is
+      the default M$ style, -E1 is "classic" style from Matthew Dillon,
+      -E2 is GNU style from their coding standards.
 
 2.20.10 -- 31 October 2004
 
