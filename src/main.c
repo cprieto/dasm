@@ -410,8 +410,6 @@ fail:
     return ERROR_COMMAND_LINE;
     }
     
-    puts(dasm_id);
-    
     for (i = 2; i < ac; ++i)
     {
         if ( ( av[i][0] == '-' ) || ( av[i][0] == '/' ) )
@@ -688,8 +686,6 @@ nextpass:
                 goto nextpass;
             }
     }
-    
-    printf( "Complete.\n" );
     
     return nError;
 }
