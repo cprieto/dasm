@@ -73,3 +73,9 @@ beta:
 	echo "See http://dasm-dillon.sf.net/ for details on DASM." >>README.BETA
 	-tar zcvf dasm-beta-`date +%F`.tar.gz README.BETA $(SRCS) $(TSTS) $(MACS) $(OTHS)
 	rm -rf README.BETA
+
+
+
+
+clean:
+	rm -rf dasm-beta-*.tar.gz
