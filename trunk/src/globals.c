@@ -72,7 +72,7 @@ unsigned long	CheckSum;	    /*	output data checksum		*/
 int F_format = FORMAT_DEFAULT;
 
 /* -T option [phf] */
-int F_sortmode = SORTMODE_DEFAULT;
+sortmode_t F_sortmode = SORTMODE_DEFAULT;
 
 unsigned char	 F_verbose;
 const char	*F_outfile = "a.out";

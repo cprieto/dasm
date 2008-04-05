@@ -33,8 +33,7 @@
 
 SVNTAG("$Id$");
 
-static const char dasm_id[] =
-    "DASM V2.20.11 Macro Assembler Copyright (c) 1988-2008";
+static const char dasm_id[] = "DASM 2.20.11";
 
 #define MAXLINE 1024
 #define ISEGNAME    "INITIAL CODE SEGMENT"
@@ -382,14 +381,16 @@ static int MainShadow(int ac, char **av, bool *pbTableSort )
 
     if (ac < 2)
     {
-        
+
 fail:
     puts(dasm_id);
-    puts("by various authors (see file AUTHORS for details) under the");
-    puts("GNU General Public License (see file COPYING for details).");
-//    puts("DASM is free software and comes with ABSOLUTELY NO WARRANTY.");
+    puts("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
+    puts("License GPLv2+: GNU GPL version 2 or later (see file COPYING).");
+    puts("DASM is free software: you are free to change and redistribute it.");
+    puts("There is ABSOLUTELY NO WARRANTY, to the extent permitted by law.");
     puts("");
-    puts("DASM sourcefile [options]");
+    puts("Usage: dasm sourcefile [options]");
+    puts("");
     puts(" -f#      output format");
     puts(" -oname   output file");
     puts(" -lname   list file");
@@ -403,7 +404,9 @@ fail:
     puts(" -Idir    search directory for include and incbin");
     puts(" -p#      max number of passes");
     puts(" -P#      max number of passes, with less checks");
-    
+    puts("");
+    puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
+
     return ERROR_COMMAND_LINE;
     }
     
@@ -419,10 +422,13 @@ fail:
                 
             case 'T':
                 F_sortmode = atoi(str);
-                if (F_sortmode < 0 || F_sortmode > 1 )
+                if (F_sortmode < SORTMODE_DEFAULT
+                   || F_sortmode >= SORTMODE_MAX )
+                {
                     panic("Invalid sorting mode for -T option, must be 0 or 1");
+                }
                 /* TODO: refactor into regular configuration [phf] */
-                *pbTableSort = (F_sortmode != 0);
+                *pbTableSort = (F_sortmode != SORTMODE_DEFAULT);
                 break;
                 
             case 'd':

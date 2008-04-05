@@ -45,8 +45,14 @@
 #error This cannot be!
 #endif
 
-/* default for -T option [phf] */
-#define SORTMODE_DEFAULT 0
+/* for -T option [phf] */
+typedef enum
+{
+  SORTMODE_DEFAULT,
+  SORTMODE_ALPHA = SORTMODE_DEFAULT,
+  SORTMODE_ADDRESS,
+  SORTMODE_MAX
+} sortmode_t;
 
 #define DAD
 
@@ -349,7 +355,7 @@ extern unsigned long    Redo_if;
 extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
-extern int   F_sortmode; /* -T option [phf] */
+extern sortmode_t F_sortmode; /* -T option [phf] */
 extern unsigned char    F_verbose;
 extern const char    *F_outfile;
 extern char    *F_listfile;
