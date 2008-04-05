@@ -69,6 +69,10 @@ clean:
 	dasm-alpha-*.tar.gz \
 	*.gcda *.gcno *.gcov gmon.out
 
+# prepare an alpha release containing just the source code,
+# nothing else is in the archive since it is not intended
+# for the public, just designated volunteers
+
 alpha:
 	echo "This is an incomplete alpha release of DASM source code." >README.ALPHA
 	echo "The purpose is to identify build problems, nothing more." >>README.ALPHA
