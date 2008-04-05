@@ -57,6 +57,15 @@ TSTS=test/*.asm test/*.bin test/*.hex test/Makefile
 # other files
 OTHS=Makefile
 
+# just build, don't archive anything...
+
+build:
+	(cd src; make; cd ..)
+	mkdir bin
+	cp src/dasm bin/dasm
+	cp src/ftohex bin/ftohex
+	echo "Done!"
+
 dist:
 	echo tar zcvf dasm-$(RELEASE).tar.gz $(BINS) $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
 
@@ -74,8 +83,12 @@ beta:
 	-tar zcvf dasm-beta-`date +%F`.tar.gz README.BETA $(SRCS) $(TSTS) $(MACS) $(OTHS)
 	rm -rf README.BETA
 
-
-
+# remove beta archives and bin/ directory created by
+# regular build from this Makefile; TODO need to do
+# documentation stuff as well, then we should remove
+# whatever documentation we generate automatically
+# as well...
 
 clean:
-	rm -rf dasm-beta-*.tar.gz
+	(cd src; make clean; cd ..)
+	-rm -rf dasm-beta-*.tar.gz bin
