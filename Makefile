@@ -47,13 +47,13 @@ BINARY=
 # binaries
 BINS=bin/
 # documentation
-DOCS=AUTHORS COPYING NEWS README doc/* # HACKING? ChangeLog? PATCHES?
+DOCS=AUTHORS ChangeLog COPYING NEWS README svn-eol-style.txt doc/* # HACKING?
 # support files for various machines
 MACS=machines/atari2600/* machines/channel-f/*
 # source files for dasm and ftohex
-SRCS=src/*.h src/*.c src/Makefile # src/TODO? src/HEADER?
+SRCS=src/*.h src/*.c src/Makefile # src/TODO? src/HEADER? src/PATCHES?
 # test files for dasm and ftohex
-TSTS=test/*.asm test/*.bin test/*.hex test/Makefile
+TSTS=test/*.asm test/*.bin test/*.hex test/Makefile test/atari2600/*
 # other files
 OTHS=Makefile
 
