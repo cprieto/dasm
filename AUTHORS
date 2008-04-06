@@ -1,30 +1,57 @@
 $Id$
 
-TODO: bring everybody in with proper comments from project
-README file...
+===========
+The Authors
+===========
 
-=======
-Authors
-=======
+The following people contributed to this distribution of DASM over
+the years (alphabetical by first name):
 
-The following people contributed to this distribution of
-DASM over the years (alphabetical by first name):
+    * Andrew Davie <atari2600 at taswegian dot com>
+      - maintainer (2003-2008)
 
-  Andrew Davie <atari2600 at taswegian dot com>
-  John Saeger <john at whimsey dot com>
-  Matthew Dillon <dillon at backplane dot com>
-  Olaf "Rhialto" Seibert <rhialto at falu dot nl>
-  Peter H. Froehlich <phf at acm dot org>
-  Thomas Mathys <mathys66 at bluewin dot ch>
+    * John Saeger <john at whimsey dot com>
+      - support for illegal 6502 opcodes (2003)
 
-The following people hacked DASM on their own, but their
-modifications have not been integrated yet (alphabetical
-by first name):
+    * Matthew Dillon <dillon at backplane dot com>
+      - original author (1988-2002)
 
-  Lasse Oeoerni <loorni at gmail dot com>
+    * Olaf "Rhialto" Seibert <rhialto at falu dot nl>
+      - lots of extensions (1995)
 
-If you hacked on DASM but are not in either of the above
-lists, please contact us!
+    * Peter H. Froehlich <phf at acm dot org>
+      - current maintainer (2008-)
 
-The current maintainer of DASM is Peter H. Froehlich.
+    * Thomas Mathys <mathys66 at bluewin dot ch>
+      - support for Fairchild F8 processor (2004)
+
+The following people hacked DASM, but their modifications have not
+been integrated yet (alphabetical by first name):
+
+    * Lasse Oeoerni <loorni at gmail dot com>
+      - fixed various problems (1999-2004)
+
+The following people helped by building binaries/executables for
+various platforms (alphabetical by first name):
+
+    * James Wilkinson <james at slor dot net>
+      - BeOS and Linux (2005)
+
+    * Jason Rein <jjrein at earthlink dot net>
+      - Mac OS 9 (2003)
+
+    * Jay Carlson <nop at nop dot com>
+      - MS-DOS and Unix (1993)
+
+    * Jeremy Penner <jeremy at sporktania dot com>
+      - Mac OS X (2003)
+
+    * Peter Gordon <pete at petergordon dot org dot uk>
+      - Amiga OS3 and OS4 (2003)
+
+    * Rob Kudla <webmaster at kudla dot org>
+      - Linux including RPMs (2003)
+
+If you helped with DASM but are not listed here, please contact us!
 Visit http://dasm-dillon.sf.net/ for more information.
+
