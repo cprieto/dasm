@@ -62,13 +62,11 @@ are hiding the file all the way down here for a reason...
   - any OS out there where memory is not freed on exit?
 
 - Matt Dillon's fixes and extensions
-  - dasm-2.14+ contain a (partial?) patch for 65c02 support?
   - dasm-2.15 permalloc patch for SPARC? seems simple
   - new version of ftohex? should import easily...
   - new ftobin? obviously easy, we don't have one :-)
   - harder: compare code bases for other fixes! :-/
 
 - new copyright/license header
-  - already in Makefile, move it to all other sources
   - should Thomas be in there because of F8 support?
-  - who else holds a copyright on some piece of dasm?
+  - who else holds a copyright on some piece of DASM?
