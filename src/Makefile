@@ -34,7 +34,8 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
        -Wshadow -Wwrite-strings -Wcast-qual -Wnested-externs \
        -Wcast-align -Wpointer-arith -Wbad-function-cast \
        -Wformat-y2k -Wformat-nonliteral -Wformat-security \
-       -Wfloat-equal -Wfour-char-constants -Wundef -Winline \
+       -Wfloat-equal -Wundef -Winline \
+       # -Wfour-char-constants # Apple OS X only option, not needed anyway?
        # -Wunused # definition is weird in man gcc, effect is weird too
        # -Wextra -Wno-unused-parameter # no-unused tames extra a little
        # -Wunreachable-code # seems to create 4 spurious warnings?

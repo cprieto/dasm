@@ -61,7 +61,7 @@ OTHS=Makefile
 
 build:
 	(cd src; make; cd ..)
-	mkdir bin
+	mkdir -p bin
 	cp src/dasm bin/dasm
 	cp src/ftohex bin/ftohex
 	echo "Done!"
