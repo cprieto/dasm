@@ -36,7 +36,7 @@ few short rules to ensure things go smoothly.
 
 - make sure that all your text files, including source code, fit
   nicely on 80 character wide terminals; ideally you break lines
-  at about 75 characters; if in doubt, indent will do it for you
+  at about 70 characters; if in doubt, indent will do it for you
   but maybe not the way you wanted it to...
 
 - do *not* use fancy formatting for your comments in source code,
