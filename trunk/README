@@ -1,215 +1,141 @@
-TODO: The first place a user will look to get an overview for the purpose of a package, and perhaps special installation instructions.
+$Id$
+
+===================
+DASM 2.20.11 README
+===================
+
+    Welcome to DASM, a versatile macro assembler with support for several
+    8-bit microprocessors including MOS 6502 & 6507; Motorola 6803, 68705,
+    and 68HC11; Hitachi HD6303 (extended Motorola 6801); and Fairchild F8.
+
+    This file describes the DASM distribution, how to compile and install
+    DASM, and where to get more information about DASM.
 
-    DASM    Version 2.20.11
+    DASM's homepage is http://dasm-dillon.sourceforge.net/ since release
+    2.20.11.
+
+----------------
+The Distribution
+----------------
+
+    The DASM distribution contains the following important files and
+    directories of interest to all users:
 
-    DASM was created in 1988 by Matthew Dillon <dillon at backplane dot com>,
-    modified in 1995 by Olaf 'Rhialto' Seibert <rhialto at falu dot nl>, and
-    maintained in 2003-2008 by Andrew Davie <atari2600 at taswegian dot com>.
-    The current maintainer is Peter H. Froehlich <phf at acm dot org>.
+        bin/        Executables for DASM and related tools
+                    (only if you downloaded a binary distribution)
+        doc/        Documentation and manuals
+        machines/   Support files for various 8-bit machines
+        AUTHORS     List of contributors to DASM
+        COPYING     GNU General Public License
+        FUTURE      Plans for the next releases of DASM
+        NEWS        Recent changes to DASM
+        README      The file you are reading right now :-)
+
+    In addition, developers are going to be interested in the following
+    files and directories:
+
+        src/        Source code for DASM and related tools
+        test/       Test cases for DASM and related tools
+                    (as of release 2.20.11 the test framework is incomplete)
+        ChangeLog   Source level changes to DASM
+        Makefile    Makefile to build DASM executables, run tests, and
+                    create distributions
+
+    Even more files for developers are available from the DASM Subversion
+    repository, see http://dasm-dillon.sf.net/ for details.
+
+------------------------
+Compiling and Installing
+------------------------
+
+    If you are using DASM on a Unix system, you should be able to simply
+    give the command
+
+        make
+
+    in the root directory of the DASM distribution and DASM should build.
+    A bin/ directory containing DASM executables will be created as part
+    of this process. You can also give the command
+
+        make test
+
+    to run all the test cases that come with the distribution. Note that
+    as of release 2.20.11 the test framework is incomplete and probably
+    only remotely comprehensible for developers. :-/ The often-used
+
+        make install
+
+    does not work as of release 2.20.11 either, mostly because DASM does
+    not yet use GNU autotools. You have to install DASM by hand, either
+    by adding the bin/ directory to your path, or by copying executables
+    to another directory in your path. For include files in the machines/
+    directory you currently have to use DASM's -I command line option.
+
+    NOTE: Several compiler warnings will be displayed during the build
+          process. We are confident that you can ignore these warnings.
+          They will be dealt with in a future release. (And if you know
+          how to fix them reliably, we welcome your contributions!)
+
+    DASM has been built and tested successfully on the following machines
+    and operating systems:
+
+        - SunOS 5.10 Generic_118822-11 sun4u sparc
+        - Linux 2.6.23.15-80.fc7 i386 GNU/Linux
+        - Darwin 8.11.0 powerpc
+        - NetBSD 3.0 qube mips
+        - Linux 2.6.24-1-686 i686 GNU/Linux
+        - Linux-based cross-compile for Windows/Wine
+
+    If you have successfully built and tested DASM on a different machine
+    or operating system, we would love to hear about it.
+
+----------
+Using DASM
+----------
+
+    The simplest way to get a brief introduction to DASM is to run the
+    bin/dasm executable without options, which will print a short help
+    message summarizing all available options.
+
+    The DASM distribution includes documentation in the doc/ directory.
+    However, the documentation is incomplete as of release 2.20.11. We
+    are urgently looking for volunteers to bring it up to date.
+
+    Documentation for using DASM to produce code for the F8 processor
+    is currently in the directory machines/channel-f/ but will be
+    integrated into the main documentation in the future.
+
+    The DASM website http://dasm-dillon.sf.net/ provides access to a
+    mailing list for DASM users to discuss problems, help each other,
+    and communicate with the developers.
+
+    There is also a vibrant community of developers writing games and
+    demos for the Atari 2600 VCS using DASM. The mailing lists for the
+    Stella emulator are a particularly useful resource for DASM users,
+    not only those intent on programming for the VCS.
+
+--------
+Legalese
+--------
+
+    the DASM macro assembler (aka small systems cross assembler)
+
+    Copyright (c) 1988-2002 by Matthew Dillon.
+    Copyright (c) 1995 by Olaf "Rhialto" Seibert.
+    Copyright (c) 2003-2008 by Andrew Davie.
+    Copyright (c) 2008 by Peter H. Froehlich.
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+ 
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    DASM's homepage is http://dasm-dillon.sourceforge.net/
-
-    DASM is free software; you can redistribute it and/or modify it under
-    the terms of the GNU General Public License as published by the Free
-    Software Foundation; either version 2 of the License, or (at your
-    option) any later version. (See the file COPYING for details.)
-
-    Directory structure...
-
-	bin                     Executables for various platforms
-	doc                     Documentation and manuals
-	src                     DASM Source code
-	test                    Suite of test code
-
-    This file (README) will always list the most recent updates for the
-    DASM distribution.
-
-
-VERSION HISTORY
-
-    2.20.11     - Fixed (obvious version of) the long-standing "-1 bug"
-                  that made DASM reject sources with negative integer
-                  literals; there may still be signed/unsigned problems
-                  in other areas.
-
-                - Started transitioning to C99 and fixed many warnings
-                  associated with said transition.
-
-                - CompareAlpha() doesn't allocate memory during qsort()
-                  anymore, what a relief. :-)
-
-                - Moved DASM to sourceforge.net with a slightly cleaner
-                  code base and reconstructed its history since 2.12.04
-                  (approximately anyway).
-
-    2.20.10     - Fairchild Channel F (processor F8) support added.  Thanks to Thomas Mathys!
-		- Please review the readme file in the new F8 directory.
-		- There have been a LOT of code modifications to improve readability/maintainability.
-		- ONLY the DOS binary is updated in this release;  if you are able to provide binaries for
-		  other platforms, please send to me so I can update.
-
-    2.20.09     - various cleanups and code modifications.  Switched from typedefs to actual type usage to allow
-                  Linux compatibility (Linux had ulong defined).  Various minor changes.
-                - Linux versions compiled by Brian Wilson.
-
-    2.20.08     - started to do some source code changes - I think.
-                - // comments changed/removed
-		- changed DOC files to text format.  We may go to HTML soon, but Word is definitely
-		  a thing of the past!
-
-    2.20.07     - (3rd posting, Mac OSX version included!  Thanks Jeremy Penner)
-
-    2.20.07     - (2nd posting, Amiga Version included!  Thanks, Peter Gordon)
-
-    2.20.07     - Rewrote symbol table sort to NOT use string functions
-
-                - Removed '_fmode' code altogether
-
-                - Conditional compilation around 
-
-                - Mac binary provided by Jason Rein
-
-		- I appear to have misplaced the Amiga binary???
-
-
-    2.20.05	- modified the file open from using _fmode (what was that FOR?!) to a "wb"
-		  (as suggested by ES and PG)
-		
-		- changed itoa(...) usage to sprintf (PG - Amiga)
-
-		- changed _stricmp(...) to stricmp (again, PG - amiga)
-
-		- fixed Symbol Table Dump so it outputs symbol table even if errors occur
-		
-		- symbol table now displays string symbols in string form, too
-
-		- further modifications to code (removed REGISTER keywords).
-
-		- AMIGA support (binary included! - thanks Peter Gordon)
-
-
-
-    2.20.04	- Significant reformatting of code, prelude to full documentation.
-
-		- Internal error numbers now equated (more maintanable code).
-
-		- Command-line switches now allow / as prefix (and -).
-
-		- Divide by 0 (generated equates, etc.) now treated as an unrecoverable error.
-
-		- Error messages now contain more information about the error, including
-                  the source-line where possible.  Message templates allow inclusion of select
-		  data on error output.
-
-                - reworking of the output data.  Typically, the -v switch is now un-necessary
-                  as the appropriate messages to allow you to find errors will be output.  
-                  Back compatibility with the -v options has been maintained, though there
-                  may be a few minor changes.
-
-                - Branch out of range errors now list the 'distance' to the branch.
-
-                - Undefined symbols are now *always* listed in a separate table.  If an 
-		  unresolved symbol causes an error, then the table will be automatically
-                  displayed at the end of assembly.
-
-                - new command-line switch -T# where # is 0 or 1
-		    0 = sort symbol table alphabetically (default)
-		    1 = sort symbol table by address
-		  If available memory precludes a sort, then the table will be output in a
-		  non-sorted order.
-
-		- code now in transient state between old and new formatting.  More modular, but
-		  still all over the place as far as consistency.  It'll improve as we go along.
-
-
-    2.20.02     - Inclusion of full (?) illegal opcode support using MNE6502.C by
-                  John Saeger.
-
-    2.20.01     - This version combines the modifications made by Olaf in 1995
-                  into an official release, with minor additions.  The source-code
-                  is currently being commented and/or rewritten to make future
-                  maintenance easier.
-
-                  For Olaf's changes, see the #ifdef'ed parts in DASM.DOC.
-                  These modifications have now become a part of the main code-line
-                  of DASM, so they are not optional.  Documentation will be merged
-                  in a later version.
-
-                - Machine-specific support is now provided for Atari 2600.
-                  Other machines may be added at later dates.
-
-                - 6502/7 illegal opcodes NOP zp and LAX (zp),y added
-
-    2.12.15     Matt's ultimate release, updates a memory-allocation problem on
-                SPARC systems.  This fix appears to have been fixed in Olaf's
-                version, so 2.12.14 (*not* 2.12.15) was used as the code-base
-                for 2.20.01
-
-    2.12.14     Olaf's release, including many additions - many of which are
-                conditionally-compiled.
-
-
-COMPILATION
-
-    The source code assumes that integers are LONG WORDS.  All expression
-    computation is carried out with 32 bit ints.  Additionaly, the
-    correct implementation of STDIO functions is assumed (no translation).
-
-    This code will compile with little or no modification on DOS, Amiga,
-    Mac and UNIX systems.
-
-
-FEATURES
-
-    -relatively fast
-    -processor selection (use same assembler for many processors)
-    -multi-pass (more than two passes if required)
-    -conditional assembly
-    -local labels (VERY local labels)
-    -macro capability (no stacking limit)
-    -symbolic expression capability
-    -addressing mode overides
-    -arbitrary number of named segments
-    -many pseudo-ops for repeat loops, data generation, etc....
-    -automatic checksumming accessed via the '...' symbol.
-
-
-PROCESSORS
-
-      --------------- CURRENTLY SUPPORTED MICROPROCESSORS ---------------
-
-
-6502:	    ORDER LSB,MSB   A.b    X.b	  Y.b	    RelAddr:   .+ilen+offset
-68705:	    ORDER MSB,LSB   A.b    X.b		    RelAddr:   .+ilen+offset
-6803/HD6303:ORDER MSB,LSB   A.b    B.b	  X.w	    RelAddr:   .+ilen+offset
-6811:	    ORDER MSB,LSB   A.b    B.b	  X.w  Y.w  RelAddr:   .+ilen+offset
-
-
-ADDRESSING MODES		6502	68705	6803	6811
-BYTES						HD6303
-
- 2  implied			x	x	x	x
- 2  immediate.8     #byte	x	x	x	x
- 3  immediate.16    #word			x	x
- 2  byteaddr	    byte	x	x	x	x
- 2  byteaddr,x	    byte,x	x	x	x	x
- 2  byteaddr,y	    byte,y	x			x
- 3  wordaddr	    word	x	x	x	x
- 3  wordaddr,x	    word,x	x	x
- 3  wordaddr,y	    word,y	x
- 2  relative	    byte	x	x	x	x
- 2  ind.byte.x	    (byte,x)    x
- 2  ind.byte.y	    (byte),y    x
- 3  ind.word	    (word)      x
- 1  0,x 	    [0],x		x
- 2  bitmod	    #no,badr		x		    baseinst + 2*bitno
- 3  bitbramod	    #no,badr,rel	x		    baseinst + 2*bitno
-
-NOTE:	HD6303 instruction extensions over the 6803 are:
-	    AIM OIM EIM TIM XGDX SLP
-
-I believe the 6811 is a superset of the 6803.
-For 6507 (Atari 2600) use 6502 as the selected processor.
-
-
-;EOF
