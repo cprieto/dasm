@@ -8,6 +8,9 @@ Note: All of these are "nice to have" things, not essential
 for functionality and (hopefully) not the cause of bugs. We
 are hiding the file all the way down here for a reason...
 
+- for some reason DASM doesn't exit with proper code
+  - echo $? after an error still says 0, not useful...
+
 - use GNU indent to make code more consistent
   - current .indent.pro not right, need to adjust
   - when to do this? before 2.20.11?
@@ -64,9 +67,14 @@ are hiding the file all the way down here for a reason...
 - Matt Dillon's fixes and extensions
   - dasm-2.15 permalloc patch for SPARC? seems simple
   - new version of ftohex? should import easily...
+    - actually, there's more to this as we should add options
+      - to select CTRL-Z at the end (old EEPROM programmers)
+      - CR/LF separators (Intel's standard is flexible)
+      - see Matt's email 2008/04/06
   - new ftobin? obviously easy, we don't have one :-)
   - harder: compare code bases for other fixes! :-/
 
 - new copyright/license header
   - should Thomas be in there because of F8 support?
   - who else holds a copyright on some piece of DASM?
+
