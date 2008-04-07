@@ -45,38 +45,43 @@ RELEASE=unknown-version-number
 BINARY=
 
 # binaries
-BINS=bin/
+BINS=bin/*
 # documentation
-DOCS=AUTHORS ChangeLog COPYING NEWS README svn-eol-style.txt doc/* # HACKING?
+DOCS=AUTHORS ChangeLog COPYING FUTURE NEWS README doc/* # HACKING? svn-eol-style.txt?
 # support files for various machines
 MACS=machines/atari2600/* machines/channel-f/*
 # source files for dasm and ftohex
 SRCS=src/*.h src/*.c src/Makefile # src/TODO? src/HEADER? src/PATCHES?
 # test files for dasm and ftohex
-TSTS=test/*.asm test/*.bin test/*.hex test/Makefile test/atari2600/*
+TSTS=test/*.asm test/*.bin.ref test/*.hex.ref test/Makefile test/run_tests.sh test/atari2600/*
 # other files
 OTHS=Makefile
 
 # just build, don't archive anything...
-
 build:
 	(cd src; make; cd ..)
 	mkdir -p bin
 	cp src/dasm bin/dasm
 	cp src/ftohex bin/ftohex
-	echo "Done!"
 
 # just run all the tests
 test: build
 	(cd test; make; cd ..)
 
-dist:
-	echo tar zcvf dasm-$(RELEASE).tar.gz $(BINS) $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
+# create a distribution archive for publication 
+dist: build
+ifeq ($(strip $(BINARY)),)
+	# source release, no binaries
+	tar zcvf dasm-$(RELEASE).tar.gz $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
+else
+	# binary release for specific platform
+	tar zcvf dasm-$(RELEASE)-$(BINARY).tar.gz $(BINS) $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
+endif
 
 # prepare a beta release containing source code and tests;
-# machine files are included since tests may need them in
-# the future; nothing else is in the archive since it is
-# not intended for the public, just designated volunteers
+# machine files are included since tests may need them;
+# nothing else is in the archive since it is not intended
+# for the public, just designated volunteers
 
 beta:
 	echo "This is an incomplete beta release of the DASM assembler." >README.BETA
@@ -84,7 +89,7 @@ beta:
 	echo "Please do *not* re-distribute this release in any form!" >>README.BETA
 	echo "Please do *not* distribute binaries derived from it either!" >>README.BETA
 	echo "See http://dasm-dillon.sf.net/ for details on DASM." >>README.BETA
-	-tar zcvf dasm-beta-`date +%F`.tar.gz README.BETA $(SRCS) $(TSTS) $(MACS) $(OTHS)
+	-tar zcvf dasm-beta-`date +%F`.tar.gz README.BETA $(MACS) $(OTHS) $(SRCS) $(TSTS)
 	rm -rf README.BETA
 
 # remove beta archives and bin/ directory created by
@@ -96,4 +101,4 @@ beta:
 clean:
 	(cd src; make clean; cd ..)
 	(cd test; make clean; cd ..)
-	-rm -rf dasm-beta-*.tar.gz bin
+	-rm -rf dasm-beta-*.tar.gz bin/
