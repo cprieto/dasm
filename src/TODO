@@ -11,6 +11,9 @@ are hiding the file all the way down here for a reason...
 - for some reason DASM doesn't exit with proper code
   - echo $? after an error still says 0, not useful...
 
+- negative.asm test case still not quite right
+  - need to make range checking for literals fool proof
+
 - use GNU indent to make code more consistent
   - current .indent.pro not right, need to adjust
   - when to do this? before 2.20.11?

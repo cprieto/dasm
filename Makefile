@@ -94,7 +94,7 @@ endif
 # create a distribution archive for publication 
 dist: build
 	mkdir $(DIRNAME)
-	cp -r --parents $(CONTENTS) $(DIRNAME)
+	cp -p -r --parents $(CONTENTS) $(DIRNAME)
 	tar cvf - $(DIRNAME) | gzip -9 >$(ZIPNAME).tar.gz
 #	tar cvf - $(DIRNAME) | bzip2 -9 >$(ZIPNAME).tar.bz2
 	rm -rf $(DIRNAME)
