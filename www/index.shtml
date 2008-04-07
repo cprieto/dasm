@@ -106,6 +106,13 @@
      <a href="http://apollo.backplane.com/">Matthew Dillon</a>'s
      <a href="http://apollo.backplane.com/FreeSrc/">dasm</a> page
     </li>
+    <li>
+     <a href="http://en.wikipedia.org/wiki/Intel_HEX">Intel HEX Format</a>
+    </li>
+    <li>
+     <a href="http://en.wikipedia.org/wiki/SREC_%28file_format%29">Motorola
+       S-record Format</a>
+    </li>
    </ul>
 
   </div>
