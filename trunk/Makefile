@@ -21,12 +21,34 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# Simple hack to make a beta or final distribution.
-# TODO: complete the dist target, beta works already...
+# Simple hack to build everything, test everything, make a beta
+# distribution, or make a real distribution. Default is to just
+# build everything. Installation is not implemented yet.
 
-all:
-	echo "No default target!"
-	echo "Read the Makefile and decide what you want..."
+# TODO: need to do documentation stuff as well; don't forget to
+# delete automatically generated documentation in clean: below
+
+# just an alias for build really...
+all: build
+	echo "Build complete, use 'make test' to run tests."
+
+# install, currently not implemented
+install: build
+	echo "Installation not implemented, you're on your own, sorry."
+
+# just run all the tests
+test: build
+	echo "Running tests..."
+	(cd test; make; cd ..)
+	echo "Tests were run, but testing is not fully automated yet."
+	echo "In other words, don't rely on what you saw too much."
+
+# just build everything and copy binaries to trunk/bin/
+build:
+	(cd src; make; cd ..)
+	mkdir -p bin
+	cp src/dasm bin/dasm
+	cp src/ftohex bin/ftohex
 
 # release version to use for archive name
 # supply this to make when you run it as
@@ -57,17 +79,6 @@ TSTS=test/*.asm test/*.bin.ref test/*.hex.ref test/Makefile test/run_tests.sh te
 # other files
 OTHS=Makefile
 
-# just build, don't archive anything...
-build:
-	(cd src; make; cd ..)
-	mkdir -p bin
-	cp src/dasm bin/dasm
-	cp src/ftohex bin/ftohex
-
-# just run all the tests
-test: build
-	(cd test; make; cd ..)
-
 # create a distribution archive for publication 
 dist: build
 ifeq ($(strip $(BINARY)),)
@@ -82,7 +93,6 @@ endif
 # machine files are included since tests may need them;
 # nothing else is in the archive since it is not intended
 # for the public, just designated volunteers
-
 beta:
 	echo "This is an incomplete beta release of the DASM assembler." >README.BETA
 	echo "The purpose is to identify regressions, nothing more." >>README.BETA
@@ -93,11 +103,8 @@ beta:
 	rm -rf README.BETA
 
 # remove beta archives and bin/ directory created by
-# regular build from this Makefile; TODO need to do
-# documentation stuff as well, then we should remove
-# whatever documentation we generate automatically
-# as well...
-
+# regular build from this Makefile; don't delete the
+# "real" distribution archives
 clean:
 	(cd src; make clean; cd ..)
 	(cd test; make clean; cd ..)
