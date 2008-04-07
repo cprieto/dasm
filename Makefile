@@ -95,4 +95,5 @@ beta:
 
 clean:
 	(cd src; make clean; cd ..)
+	(cd test; make clean; cd ..)
 	-rm -rf dasm-beta-*.tar.gz bin
