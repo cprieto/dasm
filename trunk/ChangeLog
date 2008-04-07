@@ -5,10 +5,28 @@ closely related files (Makefile, test cases) only, this
 is *not* a complete record of every single change ever
 made. Check the Subversion logs for that. :-)
 
+2008-04-07  Peter H. Froehlich  <phf at acm dot org>
+
+	* Makefile: added README.ANDREW to dist target
+
 2008-04-06  Peter H. Froehlich  <phf at acm dot org>
+
+	* Makefile: removed Apple specific warning option, added
+	  -p to mkdir in build target (thanks to Andrew Davie);
+	  added a test target to run all tests from trunk; added
+	  "recursive clean" for test directory to clean target;
+	  fixed dist target to allow for correctly structured
+	  source and binary releases; default target now builds
+	  DASM; install target added but just prints a warning
+
+	* test/*: imported Matt Dillon's original test cases from
+	  his 2.16 release
 
 	* test/atari2600/*: added two "real" Atari 2600 programs as
 	  test cases and created a trivial testing framework
+
+	* test/Makefile, test/run_tests.sh: created a slightly more
+	  advanced testing framework, still far from decent though
 
 	* ChangeLog: finally wrote this file for everything that
 	  happened since I took over :-)
@@ -82,7 +100,7 @@ made. Check the Subversion logs for that. :-)
 	  standard strcasecmp()
 
 	* src/asm.h (SYMBOL): made "value" field signed again, fixing
-	  the long-standing "-1 bug"
+	  the long-standing "-1 bug" (partially for sure)
 
 	* src/asm.h: switched to stdbool.h from custom define for bool
 

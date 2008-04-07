@@ -105,9 +105,11 @@ Using DASM
     is currently in the directory machines/channel-f/ but will be
     integrated into the main documentation in the future.
 
-    The DASM website http://dasm-dillon.sf.net/ provides access to a
-    mailing list for DASM users to discuss problems, help each other,
-    and communicate with the developers.
+    The sourceforge.net project page provides access to two mailing
+    lists, one for announcements from the developers and one for DASM
+    users to discuss problems, help each other, and communicate with
+    the developers. See http://sourceforge.net/projects/dasm-dillon/
+    for details.
 
     There is also a vibrant community of developers writing games and
     demos for the Atari 2600 VCS using DASM. The mailing lists for the

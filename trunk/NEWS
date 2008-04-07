@@ -7,17 +7,18 @@ file records all internal changes as well (almost all anyway).
 The DASM News
 =============
 
-2.20.11 -- ?? April 2008
+2.20.11 -- 07 April 2008
 
     * Peter H. Froehlich <phf at acm dot org> took over as maintainer
       from Andrew Davie, but both Andrew and Thomas Mathys still help.
 
     * DASM moved to sourceforge.net, the new website for DASM is now
-      available at <http://dasm-dillon.sf.net/>.
+      available at <http://dasm-dillon.sourceforge.net/>.
 
     * Fixed (the obvious version of) the long-standing "-1 bug" that
       made DASM reject sources with negative integer literals; there
-      may still be signed/unsigned problems in other areas.
+      may still be signed/unsigned problems in other areas; there is
+      certainly still a range checking error.
 
     * Fixed the usage message to reflect that symbol table sorting is
       controlled by -T and not by -t as the message claimed; also the
