@@ -66,6 +66,10 @@ build:
 	cp src/ftohex bin/ftohex
 	echo "Done!"
 
+# just run all the tests
+test: build
+	(cd test; make; cd ..)
+
 dist:
 	echo tar zcvf dasm-$(RELEASE).tar.gz $(BINS) $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
 
