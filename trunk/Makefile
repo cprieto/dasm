@@ -58,7 +58,7 @@ build:
 RELEASE=unknown-version-number
 # architecture for including binaries/executables
 # supply this to make when you run it as
-#   BINARY=windows  or  BINARY=beos  or  ...
+#   BINARY=osx-ppc  or  BINARY=beos-x86  or  ...
 # on the command line, that's the easiest
 # thing to do; note that this only affects
 # the name of the archive, the binaries
@@ -79,15 +79,25 @@ TSTS=test/*.asm test/*.bin.ref test/*.hex.ref test/Makefile test/run_tests.sh te
 # other files
 OTHS=Makefile
 
+ifeq ($(strip $(BINARY)),)
+# source release, no binaries
+CONTENTS=$(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
+DIRNAME=dasm-$(RELEASE)
+ZIPNAME=dasm-$(RELEASE)
+else
+# binary release for specific platform
+CONTENTS=$(BINS) $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
+DIRNAME=dasm-$(RELEASE)
+ZIPNAME=dasm-$(RELEASE)-$(BINARY)
+endif
+
 # create a distribution archive for publication 
 dist: build
-ifeq ($(strip $(BINARY)),)
-	# source release, no binaries
-	tar zcvf dasm-$(RELEASE).tar.gz $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
-else
-	# binary release for specific platform
-	tar zcvf dasm-$(RELEASE)-$(BINARY).tar.gz $(BINS) $(DOCS) $(MACS) $(SRCS) $(TSTS) $(OTHS)
-endif
+	mkdir $(DIRNAME)
+	cp -r --parents $(CONTENTS) $(DIRNAME)
+	tar cvf - $(DIRNAME) | gzip -9 >$(ZIPNAME).tar.gz
+#	tar cvf - $(DIRNAME) | bzip2 -9 >$(ZIPNAME).tar.bz2
+	rm -rf $(DIRNAME)
 
 # prepare a beta release containing source code and tests;
 # machine files are included since tests may need them;
