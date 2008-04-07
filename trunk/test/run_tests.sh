@@ -10,7 +10,21 @@ do
   NAME=`basename $i .asm`
   echo "----- $NAME -----"
   ../bin/dasm $i -f1 -o$NAME.bin -DINEEPROM
-  diff $NAME.bin $NAME.bin.ref
+  # echo "dasm returned $?"
+  cmp -s $NAME.bin $NAME.bin.ref
+  if [ $? == 0 ]
+  then
+    echo "------------------------good"
+  else
+    echo "------------------------error"
+  fi
   ../bin/ftohex 1 $NAME.bin $NAME.hex
-  diff $NAME.hex $NAME.hex.ref
+  # echo "ftohex returned $?"
+  cmp -s $NAME.hex $NAME.hex.ref
+  if [ $? == 0 ]
+  then
+    echo "------------------------good"
+  else
+    echo "------------------------error"
+  fi
 done
