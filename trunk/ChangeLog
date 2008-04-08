@@ -7,7 +7,8 @@ made. Check the Subversion logs for that. :-)
 
 2008-04-07  Peter H. Froehlich  <phf at acm dot org>
 
-	* Makefile: added README.ANDREW to dist target
+	* Makefile: added README.ANDREW to dist target; added
+	  CREDITS to dist target
 
 	* test/atari2600/*: removed one Atari 2600 test case
 	  due to concerns about the original Atari copyright
