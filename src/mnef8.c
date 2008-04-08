@@ -27,7 +27,7 @@
  *  MNEF8.C
  *
  *  Fairchild F8 support code for DASM
- *  2004 by Thomas Mathys
+ *  Copyright (c) 2004 by Thomas Mathys.
  */
 
 #include <ctype.h>

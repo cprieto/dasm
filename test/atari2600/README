@@ -2,16 +2,9 @@ $Id$
 
 Some DASM test cases for Atari 2600 software
 
-I am not too sure about the status if these, i.e. if it is okay to
-distribute them as part of DASM. It should be since their license
-doesn't state any restriction and they are available all over the
-net, but I am not sure. If you have concerns about this, please
-let me know.
+For all of these examples, I received express written permission
+from all authors to include the code in the DASM distribution.
 
-berzerk.asm
-  Commented disassembly by Dennis Debro from http://www.qotile.net/minidig/
-berzerk.bin.ref
-  Original (?) cartridge ROM by Dan Hitchens from http://www.atariage.com/
 boing26.asm
   Rob Kudla's Amiga Boing! demo from http://www.qotile.net/minidig/
 boing26.bin.ref

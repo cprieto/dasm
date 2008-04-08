@@ -31,11 +31,8 @@
  *  format: format used when assembling (asm705/asm65)
  *	    1,2,3	    -generate straight hex file
  *
- *  compilable on an ibm-pc or Amiga  _fmode is for Lattice C on the ibm,
- *  is IGNORED by Aztec C on the Amiga.  Note that INT and CHAR are not
- *  used as ibm's lattice C uses 16 bit ints and unsigned chars.  Change
- *  as needed.	No guarentees for the IBMPC version.
- *  FTOHEX format infile [outfile]
+ *  Note that int and char are not used as Lattice C on IBM PCs uses
+ *  16 bit ints and unsigned chars.
  */
 
 #include <stdio.h>
@@ -50,8 +47,6 @@ void convert(int format, FILE *in, FILE *out);
 unsigned int getwlh(FILE *in);
 void puth(unsigned char c, FILE *out);
 
-unsigned int _fmode = 0;
-
 int
 main(int ac, char **av)
 {
@@ -59,11 +54,10 @@ main(int ac, char **av)
     FILE *infile;
     FILE *outfile;
 
-    _fmode = 0x8000;
     if (ac < 3) {
 	puts("FTOHEX format infile [outfile]");
 	puts("format 1,2, or 3.  3=raw");
-	puts("(C)Copyright 1987 by Matthew Dillon, All Rights Reserved");
+	puts("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
 	exit(1);
     }
     format = atoi(av[1]);
