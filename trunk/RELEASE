@@ -67,3 +67,4 @@ dasm-2.20.11
      - strcasecmp warning when building for Windows
        + but dasm worked :-)
  - dasm-2.20.11-beta SKIPPED because of lack of responses to alpha
+ - dasm-2.20.11 released 2008/04/07 around 11:00 pm (EST)
