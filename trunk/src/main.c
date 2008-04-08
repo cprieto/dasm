@@ -393,20 +393,21 @@ fail:
     puts("");
     puts("Usage: dasm sourcefile [options]");
     puts("");
-    puts(" -f#      output format");
-    puts(" -oname   output file");
-    puts(" -lname   list file");
-    puts(" -Lname   list file, containing all passes");
-    puts(" -sname   symbol dump");
-    puts(" -v#      verboseness");
-    puts(" -T#      symbol table sorting (default 0 = alphabetical, 1 = address)");
-    puts(" -t tmppath   (temporary directory) DEPRECATED");
-    puts(" -Dname=exp   define label");
-    puts(" -Mname=exp   define label as in EQM");
-    puts(" -Idir    search directory for include and incbin");
-    puts(" -p#      max number of passes");
-    puts(" -P#      max number of passes, with less checks");
-    puts(" -E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
+    puts("-f#      output format 1-3 (default 1)");
+    puts("-oname   output file name (else a.out)");
+    puts("-lname   list file name (else none generated)");
+    puts("-Lname   list file, containing all passes");
+    puts("-sname   symbol dump file name (else none generated)");
+    puts("-v#      verboseness 0-4 (default 0)");
+    puts("-d       debug mode (for developers)");
+    puts("-Dsymbol              define symbol, set to 0");
+    puts("-Dsymbol=expression   define symbol, set to expression");
+    puts("-Msymbol=expression   define symbol using EQM (same as -D)");
+    puts("-Idir    search directory for INCLUDE and INCBIN");
+    puts("-p#      maximum number of passes");
+    puts("-P#      maximum number of passes, with fewer checks");
+    puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
+    puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
     puts("");
     puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
 
@@ -501,9 +502,6 @@ nofile:
                 goto nofile;
             case 'v':   /*  F_verbose   */
                 F_verbose = atoi(str);
-                break;
-                
-            case 't':   /*  F_temppath  */
                 break;
                 
             case 'I':

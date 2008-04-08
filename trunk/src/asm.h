@@ -26,9 +26,6 @@
 /*
  *  ASM65.H
  *
- *  (c)Copyright 1988, Matthew Dillon, All Rights Reserved.
- *  Modifications Copyright 1995 by Olaf Seibert. All Rights Reserved.
- *
  *  Structures and definitions
  */
 
