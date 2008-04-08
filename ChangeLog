@@ -9,6 +9,18 @@ made. Check the Subversion logs for that. :-)
 
 	* Makefile: added README.ANDREW to dist target
 
+	* test/atari2600/*: removed one Atari 2600 test case
+	  due to concerns about the original Atari copyright
+	  on the code; adjusted Makefile accordingly
+
+	* src/main.c, doc/dasm.txt: synchronized usage information
+	  between dasm itself and the documentation for dasm
+
+	* src/main.c: completely removed deprecated -t option
+
+	* src/ftohex.c: removed _fmode stuff that was necessary
+	  for ancient C compilers for DOS
+
 2008-04-06  Peter H. Froehlich  <phf at acm dot org>
 
 	* Makefile: removed Apple specific warning option, added
