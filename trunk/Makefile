@@ -69,7 +69,7 @@ BINARY=
 # binaries
 BINS=bin/*
 # documentation
-DOCS=AUTHORS ChangeLog COPYING FUTURE NEWS README README.ANDREW doc/* # HACKING? svn-eol-style.txt?
+DOCS=AUTHORS ChangeLog COPYING CREDITS FUTURE NEWS README README.ANDREW doc/* # HACKING? svn-eol-style.txt?
 # support files for various machines
 MACS=machines/atari2600/* machines/channel-f/*
 # source files for dasm and ftohex
