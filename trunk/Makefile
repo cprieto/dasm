@@ -75,7 +75,7 @@ MACS=machines/atari2600/* machines/channel-f/*
 # source files for dasm and ftohex
 SRCS=src/*.h src/*.c src/Makefile # src/TODO? src/HEADER? src/PATCHES?
 # test files for dasm and ftohex
-TSTS=test/*.asm test/*.bin.ref test/*.hex.ref test/Makefile test/run_tests.sh test/atari2600/*
+TSTS=test/*.asm test/*.bin.ref test/*.hex.ref test/Makefile test/run_tests.sh test/atari2600/Makefile test/atari2600/README test/atari2600/*.asm test/atari2600/*.ref
 # other files
 OTHS=Makefile
 
