@@ -63,6 +63,24 @@ def hash_silly(s):
     hash = hash + ord(c)
   return hash
 
+def hash_silly2(s):
+  hash = 0
+  i = 1
+  for c in s:
+    hash = hash + i*ord(c)
+    i += 1
+  return hash
+
+def hash_silly3(s):
+  hash = 0
+  i = 1
+  for c in s:
+    # these work pretty well for some reason (for opcodes anyway)
+    #hash = hash + i**1*ord(c)**3
+    hash = hash + i**2*ord(c)**3
+    i += 1
+  return hash
+
 def hash_knuth(s):
   hash = len(s)
   for c in s:
@@ -109,7 +127,8 @@ for l in f:
   WORDS.append(l)
 f.close()
 
-FUNCS = [hash_dillon, hash_djb1, hash_djb2, hash_sdbm, hash_silly,
+FUNCS = [hash_dillon, hash_djb1, hash_djb2, hash_sdbm,
+         hash_silly, hash_silly2, hash_silly3,
          hash_knuth, hash_kankowski]
 
 # TODO: generate some nice graphics with PyX?
