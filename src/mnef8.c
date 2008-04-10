@@ -30,8 +30,7 @@
  *  Copyright (c) 2004 by Thomas Mathys.
  */
 
-#include <ctype.h>
-#include <strings.h>
+#include <ctype.h> /* for isspace() */
 
 #include "asm.h"
 

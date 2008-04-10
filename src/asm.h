@@ -32,7 +32,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+/*
+    Hack for Windows compatibilty (or at least Visual Studio
+    compatibility I guess?). Note that I have no idea if the
+    __WINDOWS__ symbol is really the right one to check for,
+    please let me know if it's not. [phf]
+*/
+#if defined(__WINDOWS__)
+/* no stdbool.h so fake it */
+#define bool int
+#define false (0==1)
+#define true (!false)
+/* no strcasecmp so fake it using stricmp */
+#define strcasecmp stricmp
+#else
 #include <stdbool.h>
+#include <strings.h>
+#endif
 
 /* tag object files going into dasm executable */
 #define SVNTAG(id) static const char _svnid[] = id

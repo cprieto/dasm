@@ -29,8 +29,6 @@
  *  NOTE: must handle mnemonic extensions and expression decode/compare.
  */
 
-#include <strings.h>
-
 #include "asm.h"
 
 SVNTAG("$Id$");
