@@ -1,5 +1,5 @@
 # $Id$
-CFLAGS=-O3 # try -O3 for fun...
+CFLAGS=-O0 # try -O3 for fun...
 
 all: compare_mod_and
 

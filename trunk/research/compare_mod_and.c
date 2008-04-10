@@ -2,7 +2,9 @@
     $Id$
 
     Simple hack to compare performance of % and & on modern
-    machines.
+    machines. Seems that & still wins on a wide variety of
+    machines, so we'll stick with it for DASM's compression
+    step in hashing.
 
     1.5 GHz PowerPC G4:
 
@@ -17,12 +19,26 @@
             Takes 11 seconds to do 134217728*4 modulos.
             Takes 3 seconds to do 134217728*4 ands.
         ?   Takes 2 seconds to do 134217728*4 ands and minuses.
+
+    ugradx i686:
+
+        -O3, MAX 1<<31
+
+            Takes 2 seconds to do 2147483648*4 modulos.
+            Takes 1 seconds to do 2147483648*4 ands.
+            Takes 1 seconds to do 2147483648*4 ands and minuses.
+
+        -O0, MAX 1<<27
+
+            Takes 8 seconds to do 134217728*4 modulos.
+            Takes 1 seconds to do 134217728*4 ands.
+            Takes 1 seconds to do 134217728*4 ands and minuses.
 */
 
 #include <stdio.h>
 #include <time.h>
 
-#define MAX 1<<31
+#define MAX 1<<27
 
 double time_mod(void)
 {
