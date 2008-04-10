@@ -85,6 +85,7 @@ Compiling and Installing
         - NetBSD 3.0 qube mips
         - Linux 2.6.24-1-686 i686 GNU/Linux
         - Linux-based cross-compile for Windows/Wine
+        - Windows using MinGW (see http://www.mingw.org/ for details)
 
     If you have successfully built and tested DASM on a different machine
     or operating system, we would love to hear about it.
