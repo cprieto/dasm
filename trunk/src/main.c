@@ -118,6 +118,67 @@ unsigned char     F_ListAllPasses = 0;
 
 
 
+/* debugging helper for hash collisions */
+/*
+    Using ./dasm ../test/example.asm for all of these...
+
+    Original hash functions and 1024 sizes:
+
+      Collisions for MNEMONICS: 15
+      Collisions for SYMBOLS: 27
+
+    Original hash functions and 4096 sizes:
+
+      Collisions for MNEMONICS: 11
+      Collisions for SYMBOLS: 16
+
+    DJB hash function and 1024 sizes:
+
+      Collisions for MNEMONICS: 5
+      Collisions for SYMBOLS: 11
+
+    DJB hash function and 4096 sizes:
+
+      Collisions for MNEMONICS: 1
+      Collisions for SYMBOLS: 4
+*/
+static void debug_hash_collisions(void)
+{
+    SYMBOL *sym;
+    int sym_collisions = 0;
+    MNEMONIC *mne;
+    int mne_collisions = 0;
+    int i;
+    bool first;
+
+    for (i = 0; i < MHASHSIZE; i++)
+    {
+      first = true;
+      for (mne = MHash[i]; mne != NULL; mne = mne->next)
+      {
+        if (!first) {
+          mne_collisions += 1;
+        }
+        first = false;
+      }
+    }
+
+    printf("Collisions for MNEMONICS: %d\n", mne_collisions);
+
+    for (i = 0; i < SHASHSIZE; i++)
+    {
+      first = true;
+      for (sym = SHash[i]; sym != NULL; sym = sym->next)
+      {
+        if (!first) {
+          sym_collisions += 1;
+        }
+        first = false;
+      }
+    }
+
+    printf("Collisions for SYMBOLS: %d\n", sym_collisions);
+}
 
 static int CountUnresolvedSymbols(void)
 {
@@ -694,7 +755,10 @@ nextpass:
                 goto nextpass;
             }
     }
-    
+
+    if (Xdebug)
+        debug_hash_collisions();
+
     return nError;
 }
 
@@ -1491,4 +1555,3 @@ int main(int ac, char **av)
     
     return nError;
 }
-
