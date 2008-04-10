@@ -184,8 +184,8 @@ enum FORMAT
 #define DEFORGFILL  255
 #define SHASHSIZE   1024
 #define MHASHSIZE   1024
-#define SHASHAND    0x03FF
-#define MHASHAND    0x03FF
+#define SHASHAND    (SHASHSIZE-1) /*0x03FF*/
+#define MHASHAND    (MHASHSIZE-1) /*0x03FF*/
 #define ALLOCSIZE   16384
 #define MAXMACLEVEL 32
 #define TAB        9
