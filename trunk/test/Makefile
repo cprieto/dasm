@@ -8,6 +8,7 @@ FTOHEX=../bin/ftohex
 
 test:
 	(cd atari2600; make test; cd ..)
+	(cd channel-f; make test; cd ..)
 	./run_tests.sh
 
 %.bin: %.asm
@@ -18,4 +19,5 @@ test:
 
 clean:
 	(cd atari2600; make clean; cd ..)
+	(cd channel-f; make clean; cd ..)
 	rm -rf *.bin *.hex
