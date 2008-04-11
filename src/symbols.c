@@ -28,10 +28,11 @@
  */
 
 #include "asm.h"
+#include "util.h"
 
 SVNTAG("$Id$");
 
-static unsigned int hash1(const char *str, int len);
+static unsigned int hash_symbol(const char *str, int len);
 SYMBOL *allocsymbol(void);
 
 static SYMBOL org;
@@ -89,7 +90,7 @@ SYMBOL *findsymbol(const char *str, int len)
         str = buf;
     }
     
-    h1 = hash1(str, len);
+    h1 = hash_symbol(str, len);
     for (sym = SHash[h1]; sym; sym = sym->next)
     {
         if ((sym->namelen == len) && !memcmp(sym->name, str, len))
@@ -126,20 +127,16 @@ SYMBOL *CreateSymbol( const char *str, int len )
     sym->name = permalloc(len+1);
     memcpy(sym->name, str, len);    /*	permalloc zeros the array for us */
     sym->namelen = len;
-    h1 = hash1(str, len);
+    h1 = hash_symbol(str, len);
     sym->next = SHash[h1];
     sym->flags= SYM_UNKNOWN;
     SHash[h1] = sym;
     return sym;
 }
 
-static unsigned int hash1(const char *str, int len)
+static unsigned int hash_symbol(const char *str, int len)
 {
-    unsigned int result = 0;
-    
-    while (len--)
-        result = (result << 2) ^ *str++;
-    return result & SHASHAND;
+    return hash_string(str, len) & SHASHAND;
 }
 
 /*

@@ -30,6 +30,7 @@
  */
 
 #include "asm.h"
+#include "util.h"
 
 SVNTAG("$Id$");
 
@@ -374,7 +375,7 @@ getfilename(char *str)
         char	*buf;
         
         str++;
-        buf = ckmalloc(strlen(str)+1);
+        buf = checked_malloc(strlen(str)+1);
         strcpy(buf, str);
         
         for (str = buf; *str && *str != '\"'; ++str);
@@ -452,9 +453,9 @@ v_seg(char *str, MNEMONIC *dummy)
             return;
         }
     }
-    Csegment = seg = (SEGMENT *)zmalloc(sizeof(SEGMENT));
+    Csegment = seg = zero_malloc(sizeof(SEGMENT));
     seg->next = Seglist;
-    seg->name = strcpy(ckmalloc(strlen(str)+1), str);
+    seg->name = strcpy(checked_malloc(strlen(str)+1), str);
     seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
     Seglist = seg;
     if (Mnext == AM_BSS)
@@ -918,7 +919,7 @@ v_eqm(char *str, MNEMONIC *dummy)
     }
     lab->value = 0;
     lab->flags = SYM_STRING | SYM_SET | SYM_MACRO;
-    lab->string = strcpy(ckmalloc(strlen(str)+1), str);
+    lab->string = strcpy(checked_malloc(strlen(str)+1), str);
 }
 
 void
@@ -974,7 +975,7 @@ v_execmac(char *str, MACRO *mac)
         return;
     }
     ++Mlevel;
-    base = (STRLIST *)ckmalloc(sizeof(STRLIST)-STRLISTSIZE+strlen(str)+1);
+    base = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+strlen(str)+1);
     base->next = NULL;
     strcpy(base->buf, str);
     psl = &base->next;
@@ -982,7 +983,7 @@ v_execmac(char *str, MACRO *mac)
         s1 = str;
         while (*str && *str != '\n' && *str != ',')
             ++str;
-        sl = (STRLIST *)ckmalloc(sizeof(STRLIST)-STRLISTSIZE+1+(str-s1));
+        sl = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+1+(str-s1));
         sl->next = NULL;
         *psl = sl;
         psl = &sl->next;
@@ -994,7 +995,7 @@ v_execmac(char *str, MACRO *mac)
             ++str;
     }
     
-    inc = (INCFILE *)zmalloc(sizeof(INCFILE));
+    inc = zero_malloc(sizeof(INCFILE));
     inc->next = pIncfile;
     inc->name = mac->name;
     inc->fi   = pIncfile->fi;	/* garbage */
@@ -1164,7 +1165,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
     
 #endif
     
-    rp = (REPLOOP *)zmalloc(sizeof(REPLOOP));
+    rp = zero_malloc(sizeof(REPLOOP));
     rp->next = Reploop;
     rp->file = pIncfile;
     if (pIncfile->flags & INF_MACRO)
@@ -1274,7 +1275,7 @@ pfopen(const char *name, const char *mode)
     if (strchr(name, ':'))
         return NULL;
     
-    buf = zmalloc(512);
+    buf = zero_malloc(512);
     
     for (incdir = incdirlist; incdir; incdir = incdir->next) {
         addpart(buf, incdir->buf, name);
@@ -1476,7 +1477,7 @@ genfill(long fill, long entries, int size)
 void
 pushif(bool xbool)
 {
-    IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
+    IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
     ifs->next = Ifstack;
     ifs->file = pIncfile;
     ifs->flags = 0;
