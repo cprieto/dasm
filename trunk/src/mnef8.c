@@ -33,6 +33,7 @@
 #include <ctype.h> /* for isspace() */
 
 #include "asm.h"
+#include "util.h"
 
 SVNTAG("$Id$");
 
@@ -75,7 +76,7 @@ static void f8err(int err, const char *mnename, const char *opstring, bool bAbor
 
     char *buf;
 
-    buf = ckmalloc(strlen(mnename) + strlen(opstring) + 64);
+    buf = checked_malloc(strlen(mnename) + strlen(opstring) + 64);
     strcpy(buf, mnename);
     strcat(buf, " ");
     strcat(buf, opstring);

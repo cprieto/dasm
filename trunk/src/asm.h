@@ -407,8 +407,6 @@ void    rmnode(void **base, int bytes);
 void    addhashtable(MNEMONIC *mne);
 void    pushinclude(char *str);
 char   *permalloc(int bytes);
-char   *zmalloc(int bytes);
-char   *ckmalloc(int bytes);
 char   *strlower(char *str);
 
 /* symbols.c */

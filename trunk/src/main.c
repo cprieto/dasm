@@ -30,6 +30,7 @@
  */
 
 #include "asm.h"
+#include "util.h"
 
 SVNTAG("$Id$");
 
@@ -49,12 +50,11 @@ static const char dasm_id[] = "DASM 2.20.11";
 static const char *cleanup(char *buf, bool bDisable);
 
 MNEMONIC *parse(char *buf);
-void panic(const char *str);
 MNEMONIC *findmne(char *str);
 void clearsegs(void);
 void clearrefs(void);
 
-static unsigned int hash1(const char *str);
+static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
 
 
@@ -271,7 +271,7 @@ static void ShowSymbols( FILE *file, bool bTableSort )
         
         /* Malloc an array of pointers to data */
         
-        symArray = (SYMBOL **)ckmalloc( sizeof( SYMBOL * ) * nSymbols );
+        symArray = (SYMBOL **)checked_malloc( sizeof( SYMBOL * ) * nSymbols );
         if ( !symArray )
         {
             fprintf( file, " (unsorted - not enough memory to sort!)\n" );
@@ -585,7 +585,7 @@ nofile:
     }
     /*    TOP LEVEL IF    */
     {
-        IFSTACK *ifs = (IFSTACK *)zmalloc(sizeof(IFSTACK));
+        IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
         ifs->file = NULL;
         ifs->flags = IFF_BASE;
         ifs->acctrue = 1;
@@ -1037,12 +1037,6 @@ br2:
     return comment;
 }
 
-void panic(const char *str)
-{
-    puts(str);
-    exit(1);
-}
-
 /*
 *  .dir    direct              x
 *  .ext    extended              x
@@ -1272,7 +1266,7 @@ MNEMONIC *findmne(char *str)
         buf[i] = c;
     }
     buf[i] = 0;
-    for (mne = MHash[hash1(buf)]; mne; mne = mne->next) {
+    for (mne = MHash[hash_mnemonic(buf)]; mne; mne = mne->next) {
         if (strcmp(buf, mne->name) == 0)
             break;
     }
@@ -1302,7 +1296,7 @@ void v_macro(char *str, MNEMONIC *dummy)
         base = NULL;
         slp = &base;
         mac = (MACRO *)permalloc(sizeof(MACRO));
-        i = hash1(str);
+        i = hash_mnemonic(str);
         mac->next = (MACRO *)MHash[i];
         mac->vect = v_execmac;
         mac->name = strcpy(permalloc(strlen(str)+1), str);
@@ -1353,20 +1347,16 @@ void addhashtable(MNEMONIC *mne)
             if (mne->okmask & (1L << i))
                 mne->opcode[i] = opcode[j++];
         }
-        i = hash1(mne->name);
+        i = hash_mnemonic(mne->name);
         mne->next = MHash[i];
         MHash[i] = mne;
     }
 }
 
 
-static unsigned int hash1(const char *str)
+static unsigned int hash_mnemonic(const char *str)
 {
-    unsigned int result = 0;
-    
-    while (*str)
-        result = (result << 2) ^ *str++;
-    return result & MHASHAND;
+    return hash_string(str, strlen(str)) & MHASHAND;
 }
 
 void pushinclude(char *str)
@@ -1382,9 +1372,9 @@ void pushinclude(char *str)
         if (F_listfile)
             fprintf(FI_listfile, "------- FILE %s LEVEL %d PASS %d\n", str, Inclevel, pass);
         
-        inf = (INCFILE *)zmalloc(sizeof(INCFILE));
+        inf = zero_malloc(sizeof(INCFILE));
         inf->next    = pIncfile;
-        inf->name    = strcpy(ckmalloc(strlen(str)+1), str);
+        inf->name    = strcpy(checked_malloc(strlen(str)+1), str);
         inf->fi = fi;
         inf->lineno = 0;
         pIncfile = inf;
@@ -1478,25 +1468,6 @@ int asmerr(int err, bool bAbort, const char *sText )
     }
     
     return err;
-}
-
-char *zmalloc(int bytes)
-{
-    char *ptr = ckmalloc(bytes);
-    if ( ptr )
-        memset(ptr, 0, bytes);
-    return ptr;
-}
-
-char *ckmalloc(int bytes)
-{
-    char *ptr = malloc(bytes);
-    if (ptr)
-    {
-        return ptr;
-    }
-    panic("unable to malloc");
-    return NULL;
 }
 
 char *permalloc(int bytes)

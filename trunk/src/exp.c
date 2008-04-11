@@ -34,6 +34,7 @@
  */
 
 #include "asm.h"
+#include "util.h"
 
 SVNTAG("$Id$");
 
@@ -378,7 +379,7 @@ SYMBOL *eval(const char *str, int wantmode)
                 if (Argflags[Argi-1] == 0)
                 {
                     sprintf(buf,"%ld",Argstack[Argi-1]);
-                    Argstring[Argi-1] = strcpy(ckmalloc(strlen(buf)+1),buf);
+                    Argstring[Argi-1] = strcpy(checked_malloc(strlen(buf)+1),buf);
                 }
             }
             break;
@@ -572,7 +573,7 @@ static void stackarg(long val, int flags, const char *ptr1)
             ++ptr;
             ++len;
         }
-        new = ckmalloc(len + 1);
+        new = checked_malloc(len + 1);
         memcpy(new, ptr1, len);
         new[len] = 0;
         flags &= ~SYM_STRING;
