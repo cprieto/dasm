@@ -94,6 +94,42 @@ double time_and_minus(void)
   return difftime(after, before);
 }
 
+double time_dillon(void)
+{
+  unsigned a = 0, b, d = 13, *c = &d, i;
+  time_t before, after;
+
+  before = time(NULL);
+
+  for (i = 0; i < MAX; i++) {
+    a = (a << 2) + *c; /* ++ is missing :-/ */
+    a = (a << 2) + *c;
+    a = (a << 2) + *c;
+    a = (a << 2) + *c;
+  }
+
+  after = time(NULL);
+  return difftime(after, before);
+}
+
+double time_bernstein(void)
+{
+  unsigned a = 0, b, d = 13, *c = &d, i;
+  time_t before, after;
+
+  before = time(NULL);
+
+  for (i = 0; i < MAX; i++) {
+    a = ((a << 5) + a) + *c; /* ++ is missing :-/ */
+    a = ((a << 5) + a) + *c; /* ++ is missing :-/ */
+    a = ((a << 5) + a) + *c; /* ++ is missing :-/ */
+    a = ((a << 5) + a) + *c; /* ++ is missing :-/ */
+  }
+
+  after = time(NULL);
+  return difftime(after, before);
+}
+
 int main(void)
 {
   printf("Takes %g seconds to do %u*4 modulos.\n",
@@ -102,4 +138,8 @@ int main(void)
          time_and(), MAX);
   printf("Takes %g seconds to do %u*4 ands and minuses.\n",
          time_and_minus(), MAX);
+  printf("Takes %g seconds to do %u*4 dillons.\n",
+         time_dillon(), MAX);
+  printf("Takes %g seconds to do %u*4 bernsteins.\n",
+         time_bernstein(), MAX);
 }
