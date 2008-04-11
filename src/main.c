@@ -1501,19 +1501,6 @@ char *permalloc(int bytes)
     return ptr;
 }
 
-char *strlower(char *str)
-{
-    char c;
-    char *ptr;
-    
-    for (ptr = str; (c = *ptr); ++ptr)
-    {
-        if (c >= 'A' && c <= 'Z')
-            *ptr = c | 0x20;
-    }
-    return str;
-}
-
 int main(int ac, char **av)
 {
     bool bTableSort = false;

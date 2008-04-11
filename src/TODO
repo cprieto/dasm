@@ -19,17 +19,19 @@ are hiding the file all the way down here for a reason...
   - when to do this? before 2.20.11?
   - maybe astyle is a better, more conservative choice?
 
-- hash1() exists twice, in main.c and symbol.c
-  - very similar, should be unified?
-  - hash function doesn't seem very good?
-  - NOTE: if both are used on the same global data
-    structures, there may be a bug here after all!
+- work on refactoring hash?() has found some problems
+  - first hash_symbols() has a length argument because DASM
+    doesn't seem to do enough parsing to properly split off
+    only symbols to look up, how weird
+  - second the hash functions are sometimes called with
+    empty strings, probably from findmne, which seems like
+    a bug or at least is ugly
 
 - several things in main.c are dubious
   - strlower() exported, not used outside
   - the *alloc functions, used all over
-  - all that should go into a separate util.c
-    to properly modularize
+  - some of this already moved to a seperate util module,
+    more needs to move
   - asmerr should be refactored, type for error
     code can be enum type, does it really have
     to return the error code? strange recursion
@@ -66,6 +68,10 @@ are hiding the file all the way down here for a reason...
   - however, this probably only matters for Amiga OS 3 users
     - even there the C library hopefully takes care of it?
   - any OS out there where memory is not freed on exit?
+  - I think the reason is permalloc() which doesn't have a
+    corresponding free(), I already had some replacement
+    code that can free() but it ended up to complicated to
+    be a good replacement for now :-/
 
 - Matt Dillon's fixes and extensions
   - dasm-2.15 permalloc patch for SPARC? seems simple
