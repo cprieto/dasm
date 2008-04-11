@@ -66,6 +66,12 @@ void *zero_malloc(size_t bytes);
 
 unsigned int hash_string(const char *string, size_t length);
 
+/**
+ * @brief Convert string to lower case, destructively.
+ */
+
+char *strlower(char *str);
+
 #if !defined(__APPLE__) && !defined(__BSD__)
 
 /**

@@ -134,6 +134,18 @@ unsigned int hash_string(const char *string, size_t length)
     return hash;
 }
 
+char *strlower(char *str)
+{
+    char *ptr = str;
+
+    while (*ptr != '\0')
+    {
+        *ptr = tolower(*ptr);
+    }
+
+    return str;
+}
+
 #if !defined(__APPLE__) && !defined(__BSD__)
 
 /*
