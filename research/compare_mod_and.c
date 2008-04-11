@@ -94,6 +94,14 @@ double time_and_minus(void)
   return difftime(after, before);
 }
 
+/*
+    Added approximations of the actual hash functions that
+    would be used. Seems that Dan's is a *tiny* bit slower
+    (figures since there's an extra + in there) but in the
+    actual program we have to weigh better distribution of
+    hash values against that. Still to actually measure...
+*/
+
 double time_dillon(void)
 {
   unsigned a = 0, b, d = 13, *c = &d, i;
