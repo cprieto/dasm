@@ -138,7 +138,7 @@ char *strlower(char *str)
 {
     char *ptr = str;
 
-    while (*ptr != '\0')
+    for ( ; *ptr != '\0'; ptr++)
     {
         *ptr = tolower(*ptr);
     }
