@@ -46,6 +46,7 @@ void panic(const char *str);
  * memory is available.
  */
 
+/*@null@*/
 void *checked_malloc(size_t bytes);
 
 /**
@@ -56,6 +57,7 @@ void *checked_malloc(size_t bytes);
  * or floats/doubles correctly to NULL or 0.0 on some (strange) machines.
  */
 
+/*@null@*/
 void *zero_malloc(size_t bytes);
 
 /**

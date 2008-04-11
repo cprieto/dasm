@@ -37,7 +37,8 @@
         ftp://ftp.openbsd.org/pub/OpenBSD/src/lib/libc/string/strlcpy.c
           $OpenBSD: strlcpy.c,v 1.11 2006/05/05 15:27:38 millert Exp $
 
-    The code was modified to include assertions but is otherwise unchanged.
+    The code was modified to include assertions and to make splint happier
+    but is otherwise unchanged.
     The documentation comments were moved into the util.h header file for
     consistency and were reformatted for Doxygen.
 
@@ -57,6 +58,7 @@
 #include "asm.h"
 #include "util.h"
 
+/*@unused@*/
 SVNTAG("$Id$");
 
 #include <assert.h>
@@ -67,13 +69,14 @@ SVNTAG("$Id$");
 
 void panic(const char *s)
 {
-    printf("Panic: %s\n", s);
+    (void) printf("Panic: %s\n", s);
 #if !defined(TEST)
 /* hack for unit tests where we don't want to exit! */
     exit(EXIT_FAILURE);
 #endif /* !defined(TEST) */
 }
 
+/*@null@*/
 void *checked_malloc(size_t bytes)
 {
     void *p;
@@ -88,6 +91,7 @@ void *checked_malloc(size_t bytes)
     return p;
 }
 
+/*@null@*/
 void *zero_malloc(size_t bytes)
 {
     void *p;
@@ -106,7 +110,7 @@ unsigned int hash_string(const char *string, size_t length)
 {
     unsigned int hash = 5381;
 
-    printf("string=='%s', length==%zu\n", string, length);
+    /*printf("string=='%s', length==%zu\n", string, length);*/
 
     assert(string != NULL && length <= strlen(string));
 
@@ -215,7 +219,7 @@ strlcpy(char *dst, const char *src, size_t siz)
 	if (n == 0) {
 		if (siz != 0)
 			*d = '\0';		/* NUL-terminate dst */
-		while (*s++)
+		while (*s++ != '\0') /* splinted [phf] */
 			;
 	}
 
