@@ -1,9 +1,30 @@
+/*
+    $Id$
+
+    the DASM macro assembler (aka small systems cross assembler)
+
+    Copyright (c) 1988-2002 by Matthew Dillon.
+    Copyright (c) 1995 by Olaf "Rhialto" Seibert.
+    Copyright (c) 2003-2008 by Andrew Davie.
+    Copyright (c) 2008 by Peter H. Froehlich.
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 
 /*
  *  FTOBIN.C
- *
- *  (c)Copyright 1988, Matthew Dillon, All Rights Reserved.  See terms in
- *  README file.
  *
  *  FTOBIN format infile [outfile]
  *
@@ -17,19 +38,12 @@
  *  done with format 2.
  *
  *  Restrictions:   Lowest address must be referenced first.
- *
- *  compilable on an ibm-pc or Amiga  _fmode is for Lattice C on the ibm,
- *  is IGNORED by Aztec C on the Amiga.  Note that INT and CHAR are not
- *  used as ibm's lattice C uses 16 bit ints and unsigned chars.  Change
- *  as needed.	No guarentees for the IBMPC version.
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#define IBM
 
 typedef unsigned char ubyte;
 typedef unsigned short uword;
@@ -40,8 +54,6 @@ static uword getwlh(FILE *in);
 static void exiterr(const char *str);
 static void convert(short format, FILE *in, FILE *out);
 
-uword _fmode = 0;
-
 int
 main(int ac, char **av)
 {
@@ -49,7 +61,6 @@ main(int ac, char **av)
     FILE *infile;
     FILE *outfile;
 
-    _fmode = 0x8000;
     if (ac < 3) {
 	puts("FTOBIN format infile [outfile]");
 	puts("format 1,2, or 3.  3=raw");
