@@ -13,6 +13,14 @@ are hiding the file all the way down here for a reason...
 
 - negative.asm test case still not quite right
   - need to make range checking for literals fool proof
+  - this is painful for lots of reasons
+    - there are checks in ops.c AND mnef8.c (since that
+      replaces a lot more than just opcodes?)
+    - the structure of opcodes and addressing modes is
+      confusing
+    - there's no centralized and clear range checking
+      - probably hard since it can differ by opcode of
+        course, given a certain machine...
 
 - use GNU indent to make code more consistent
   - current .indent.pro not right, need to adjust
