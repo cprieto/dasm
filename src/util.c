@@ -57,6 +57,7 @@
 
 #include "asm.h"
 #include "util.h"
+#include "version.h"
 
 /*@unused@*/
 SVNTAG("$Id$");

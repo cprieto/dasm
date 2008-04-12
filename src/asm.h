@@ -51,9 +51,6 @@
 #include <strings.h>
 #endif
 
-/* tag object files going into dasm executable */
-#define SVNTAG(id) static const char _svnid[] = id
-
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
 #define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */
 

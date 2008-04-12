@@ -28,6 +28,7 @@
  */
 
 #include "asm.h"
+#include "version.h"
 
 SVNTAG("$Id$");
 
