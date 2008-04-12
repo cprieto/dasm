@@ -52,14 +52,17 @@ OBJS= main.o ops.o globals.o exp.o symbols.o util.o \
 SRCS= main.c ops.c globals.c exp.c symbols.c util.c \
       mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
-ALL= dasm ftohex
+ALL= dasm ftohex ftobin
 
 all: $(ALL)
 
 dasm: $(OBJS)
 	$(CC) $(OBJS) -o dasm
 
+# TODO: are these two lines really needed? GNU make
+# seems to build ftohex/ftobin fine without them...
 ftohex: ftohex.o
+ftobin: ftobin.o
 
 obj: $(OBJS)
 
