@@ -454,7 +454,7 @@ fail:
     puts("-Lname   list file, containing all passes");
     puts("-sname   symbol dump file name (else none generated)");
     puts("-v#      verboseness 0-4 (default 0)");
-    puts("-d       debug mode (for developers)");
+    puts("-d#      debug mode (for developers)");
     puts("-Dsymbol              define symbol, set to 0");
     puts("-Dsymbol=expression   define symbol, set to expression");
     puts("-Msymbol=expression   define symbol using EQM (same as -D)");
@@ -498,6 +498,7 @@ fail:
                 break;
                 
             case 'd':
+                /* TODO: change like -T to allow 0 or 1 only (for now) [phf] */
                 Xdebug = atoi(str) != 0;
                 printf( "Debug trace %s\n", Xdebug ? "ON" : "OFF" );
                 break;
