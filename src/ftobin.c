@@ -36,9 +36,9 @@ typedef unsigned short uword;
 
 #define PERLINE 16
 
-uword getwlh(FILE *in);
-void exiterr(ubyte *str);
-void convert(short format, FILE *in, FILE *out);
+static uword getwlh(FILE *in);
+static void exiterr(const char *str);
+static void convert(short format, FILE *in, FILE *out);
 
 uword _fmode = 0;
 
@@ -75,8 +75,9 @@ main(int ac, char **av)
     return(0);
 }
 
+static
 void
-exiterr(ubyte *str)
+exiterr(const char *str)
 {
     fputs(str, stderr);
     fputs("\n", stderr);
@@ -97,6 +98,7 @@ exiterr(ubyte *str)
  *					  cc=invert of checksum all codes
  */
 
+static
 void
 convert(short format, FILE *in, FILE *out)
 {
@@ -164,6 +166,7 @@ convert(short format, FILE *in, FILE *out)
     }
 }
 
+static
 uword
 getwlh(FILE *in)
 {
