@@ -83,15 +83,19 @@ are hiding the file all the way down here for a reason...
 
 - Matt Dillon's fixes and extensions
   - dasm-2.15 permalloc patch for SPARC? seems simple
+    - actually, the union hack in our DASM seems to make it
+      superflous after all; did Olaf come up with that or
+      Andrew? nice either way... :-)
   - new version of ftohex? should import easily...
     - actually, there's more to this as we should add options
       - to select CTRL-Z at the end (old EEPROM programmers)
       - CR/LF separators (Intel's standard is flexible)
       - see Matt's email 2008/04/06
-  - new ftobin? obviously easy, we don't have one :-)
-  - harder: compare code bases for other fixes! :-/
+  - harder: compare DASM code bases for other fixes! :-/
 
 - new copyright/license header
   - should Thomas be in there because of F8 support?
   - who else holds a copyright on some piece of DASM?
 
+- remember the >> issue for signed left operands
+  - details in ftohex.c
