@@ -57,7 +57,7 @@
  * at 1987 even in his 2.16 release. We should settle this...
  */
 #define DASM_PRINT_COPYRIGHT \
-  puts("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
+  (void) puts("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
 
 /**
  * @brief Macro to print standard DASM legalese, including
@@ -65,16 +65,16 @@
  */
 #define DASM_PRINT_LEGAL \
   DASM_PRINT_COPYRIGHT \
-  puts("License GPLv2+: GNU GPL version 2 or later (see file COPYING)."); \
-  puts("DASM is free software: you are free to change and redistribute it."); \
-  puts("There is ABSOLUTELY NO WARRANTY, to the extent permitted by law."); \
+  (void) puts("License GPLv2+: GNU GPL version 2 or later (see file COPYING)."); \
+  (void) puts("DASM is free software: you are free to change and redistribute it."); \
+  (void) puts("There is ABSOLUTELY NO WARRANTY, to the extent permitted by law."); \
 
 /**
  * @brief Macro to print bug report message, once again for
  * usage messages.
  */
 #define DASM_PRINT_BUGS \
-  puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
+  (void) puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
 
 #endif /* _DASM_VERSION_H */
 
