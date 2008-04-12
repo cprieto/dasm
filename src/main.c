@@ -31,10 +31,9 @@
 
 #include "asm.h"
 #include "util.h"
+#include "version.h"
 
 SVNTAG("$Id$");
-
-static const char dasm_id[] = "DASM 2.20.11";
 
 #define MAXLINE 1024
 #define ISEGNAME    "INITIAL CODE SEGMENT"
@@ -444,11 +443,8 @@ static int MainShadow(int ac, char **av, bool *pbTableSort )
     {
 
 fail:
-    puts(dasm_id);
-    puts("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
-    puts("License GPLv2+: GNU GPL version 2 or later (see file COPYING).");
-    puts("DASM is free software: you are free to change and redistribute it.");
-    puts("There is ABSOLUTELY NO WARRANTY, to the extent permitted by law.");
+    puts(DASM_ID);
+    DASM_PRINT_LEGAL
     puts("");
     puts("Usage: dasm sourcefile [options]");
     puts("");
@@ -468,7 +464,7 @@ fail:
     puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
     puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
     puts("");
-    puts("Report bugs to dasm-dillon-discuss@lists.sf.net please!");
+    DASM_PRINT_BUGS
 
     return ERROR_COMMAND_LINE;
     }
