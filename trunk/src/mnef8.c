@@ -34,6 +34,7 @@
 
 #include "asm.h"
 #include "util.h"
+#include "version.h"
 
 SVNTAG("$Id$");
 
