@@ -787,7 +787,7 @@ v_align(char *str, MNEMONIC *dummy)
         }
         else
         {
-            fill = sym->value;
+            fill = sym->next->value;
         }
     }
     if (rorg) {
