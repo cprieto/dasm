@@ -594,7 +594,7 @@ v_dc(char *str, MNEMONIC *mne)
                     FreeSymbolList(tmp);
                 }
                 switch(Mnext) {
-                default:
+                default: /* TODO: defense? [phf] */
                 case AM_BYTE:
                     Gen[Glen++] = value & 0xFF;
                     break;
@@ -641,7 +641,7 @@ v_dc(char *str, MNEMONIC *mne)
                 FreeSymbolList(tmp);
             }
             switch(Mnext) {
-            default:
+            default: /* TODO: defense? [phf] */
             case AM_BYTE:
                 Gen[Glen++] = value & 0xFF;
                 break;
@@ -1337,10 +1337,9 @@ generate(void)
             
             switch(F_format)
             {
-            
             default:
-
-                asmerr( ERROR_BAD_FORMAT, true, "Unhandled internal format specifier" );
+                asmerr(ERROR_BAD_FORMAT, true,
+                       "Unhandled internal format specifier!");
                 break;
 
             case FORMAT_RAW:
@@ -1426,6 +1425,10 @@ genfill(long fill, long entries, int size)
     c0 = fill;
     switch(size)
     {
+    default: /* defensive programming! [phf] */
+        asmerr(ERROR_BAD_FORMAT, true, "Unhandled internal size specifier!");
+        break;
+
     case 1:
         memset(Gen, c0, sizeof(Gen));
         break;
