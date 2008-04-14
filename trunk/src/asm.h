@@ -85,54 +85,22 @@ enum FORMAT
     FORMAT_MAX
 };
 
-
+/* ??? [phf] */
 #define MAX_SYM_LEN 1024
+/* maximum length genfill() will generate */
+#define MAX_FILL_LEN 64*1024
 
-    enum ASM_ERROR_EQUATES
-    {
-        ERROR_NONE = 0,
-        ERROR_COMMAND_LINE,                             /* Check format of command-line */
-        ERROR_FILE_ERROR,                               /* Unable to open file */
-        ERROR_NOT_RESOLVABLE,                           /* Source is not resolvable */
-        ERROR_TOO_MANY_PASSES,                          /* Too many passes - something wrong */
-
-        ERROR_SYNTAX_ERROR,                             /*  0 */
-        ERROR_EXPRESSION_TABLE_OVERFLOW,                /*  1 */
-        ERROR_UNBALANCED_BRACES,                        /*  2 */
-        ERROR_DIVISION_BY_0,                            /*  3 */
-        ERROR_UNKNOWN_MNEMONIC,                         /*  4 */
-        ERROR_ILLEGAL_ADDRESSING_MODE,                  /*  5 */
-        ERROR_ILLEGAL_FORCED_ADDRESSING_MODE,           /*  6 */
-        ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO,     /*  7 */
-        ERROR_PREMATURE_EOF,                            /*  8 */
-        ERROR_ILLEGAL_CHARACTER,                        /*  9 */
-        ERROR_BRANCH_OUT_OF_RANGE,                      /* 10 */
-        ERROR_ERR_PSEUDO_OP_ENCOUNTERED,                /* 11 */
-        ERROR_ORIGIN_REVERSE_INDEXED,                   /* 12 */
-        ERROR_EQU_VALUE_MISMATCH,                       /* 13 */
-        ERROR_ADDRESS_MUST_BE_LT_100,                   /* 14 */
-        ERROR_ILLEGAL_BIT_SPECIFICATION,                /* 15 */
-        ERROR_NOT_ENOUGH_ARGS,                          /* 16 */
-        ERROR_LABEL_MISMATCH,                           /* 17 */
-        ERROR_VALUE_UNDEFINED,                          /* 18 */
-        ERROR_PROCESSOR_NOT_SUPPORTED,                  /* 20 */
-        ERROR_REPEAT_NEGATIVE,                          /* 21 */
-        ERROR_BADERROR,                                 /* 22 */
-        ERROR_ONLY_ONE_PROCESSOR_SUPPORTED,             /* Only allow one type of processor */
-        ERROR_BAD_FORMAT,                               /* Bad format specifier */
-
-		/* F8 support... */
-
-        ERROR_VALUE_MUST_BE_1_OR_4,                     /* 25 */
-        ERROR_VALUE_MUST_BE_LT_10,                      /* 26 */
-        ERROR_VALUE_MUST_BE_LT_8,                       /* 27 */
-        ERROR_VALUE_MUST_BE_LT_F,                       /* 28 */
-        ERROR_VALUE_MUST_BE_LT_10000,                   /* 29 */
-        ERROR_ILLEGAL_OPERAND_COMBINATION,              /* 30 */
-	
-	
-	
-	};
+/* define the error codes for asmerr() from errors.x */
+#if defined(X)
+#error infamous X macro already defined; aborting
+#else
+#define X(a,b,c) a,
+#endif
+typedef enum
+{
+#include "errors.x"
+} error_t;
+#undef X
 
     typedef struct ERRORSTRUCT
     {
@@ -392,7 +360,7 @@ extern unsigned long  CheckSum;
 /* main.c */
 /*extern unsigned char Listing;*/
 void    findext(char *str);
-int    asmerr(int err, bool bAbort, const char *sText);
+int    asmerr(error_t err, bool bAbort, const char *sText);
 char   *sftos(long val, int flags);
 void    rmnode(void **base, int bytes);
 void    addhashtable(MNEMONIC *mne);

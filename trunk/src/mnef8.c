@@ -73,7 +73,7 @@ enum REGISTERS {
  * abort    : false = don't abort assembly
  *            true = abort assembly
  */
-static void f8err(int err, const char *mnename, const char *opstring, bool bAbort) {
+static void f8err(error_t err, const char *mnename, const char *opstring, bool bAbort) {
 
     char *buf;
 
