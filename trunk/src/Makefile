@@ -73,6 +73,9 @@ clean:
 	dasm-alpha-*.tar.gz \
 	*.gcda *.gcno *.gcov gmon.out
 
+cscope:
+	ls *.h *.c *.x >cscope.files
+
 # prepare an alpha release containing just the source code,
 # nothing else is in the archive since it is not intended
 # for the public, just designated volunteers
@@ -83,5 +86,5 @@ alpha:
 	echo "Please do *not* re-distribute this release in any form!" >>README.ALPHA
 	echo "Please do *not* distribute binaries derived from it either!" >>README.ALPHA
 	echo "See http://dasm-dillon.sf.net/ for details on DASM." >>README.ALPHA
-	tar zcvf dasm-alpha-`date +%F`.tar.gz README.ALPHA Makefile *.h *.c
+	tar zcvf dasm-alpha-`date +%F`.tar.gz README.ALPHA Makefile *.h *.c *.x
 	rm -rf README.ALPHA

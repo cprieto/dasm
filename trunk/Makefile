@@ -73,7 +73,7 @@ DOCS=AUTHORS ChangeLog COPYING CREDITS FUTURE NEWS README README.ANDREW doc/* # 
 # support files for various machines
 MACS=machines/atari2600/* machines/channel-f/*
 # source files for dasm and ftohex
-SRCS=src/*.h src/*.c src/Makefile # src/TODO? src/HEADER? src/PATCHES?
+SRCS=src/*.h src/*.c src/*.x src/Makefile # src/TODO? src/HEADER? src/PATCHES?
 # test files for dasm and ftohex
 TSTS=test/*.asm test/*.bin.ref test/*.hex.ref test/Makefile test/run_tests.sh test/atari2600/Makefile test/atari2600/README test/atari2600/*.asm test/atari2600/*.ref test/channel-f/Makefile test/channel-f/README test/channel-f/*.asm test/channel-f/*.ref
 # other files
