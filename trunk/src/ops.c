@@ -1151,9 +1151,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
         return;
     }
     
-#ifdef DAD
-    
-    /* Don't allow negative values for REPEAT loops */
+    /* Don't allow negative values for REPEAT loops [AD] */
     
     if ( sym->value < 0 )
     {
@@ -1163,8 +1161,6 @@ void v_repeat(char *str, MNEMONIC *dummy)
         asmerr( ERROR_REPEAT_NEGATIVE, false, NULL );
         return;
     }
-    
-#endif
     
     rp = zero_malloc(sizeof(REPLOOP));
     rp->next = Reploop;

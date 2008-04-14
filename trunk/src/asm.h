@@ -77,10 +77,6 @@ typedef enum
   ERRORFORMAT_MAX
 } errorformat_t;
 
-#define DAD
-
-#ifdef DAD
-
 enum FORMAT
 {
     FORMAT_DEFAULT = 1,
@@ -166,8 +162,6 @@ enum FORMAT
         REASON_PHASE_ERROR = 1 << 14
     };
 
-
-#endif
 
 #define MNEMONIC    struct _MNE
 #define MACRO       struct _MACRO
