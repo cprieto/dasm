@@ -56,53 +56,17 @@ void clearrefs(void);
 static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
 
-
-
-/* Table encapsulates errors, descriptions, and fatality flags. */
-
-ERROR_DEFINITION sErrorDef[] = {
-    
-    /* Error #, STOPEND, Description */
-    
-    { ERROR_NONE,                                   true,   "OK"   },
-    { ERROR_COMMAND_LINE,                           true,   "Check command-line format."   },
-    { ERROR_FILE_ERROR,                             true,   "Unable to open file."   },
-    { ERROR_NOT_RESOLVABLE,                         true,   "Source is not resolvable."   },
-    { ERROR_TOO_MANY_PASSES,                        true,   "Too many passes (%s)."   },
-    { ERROR_SYNTAX_ERROR,                           true,   "Syntax Error '%s'."   },
-    { ERROR_EXPRESSION_TABLE_OVERFLOW,              true,   "Expression table overflow."   },
-    { ERROR_UNBALANCED_BRACES,                      true,   "Unbalanced Braces []."   },
-    { ERROR_DIVISION_BY_0,                          true,   "Division by zero."  },
-    { ERROR_UNKNOWN_MNEMONIC,                       true,   "Unknown Mnemonic '%s'."   },
-    { ERROR_ILLEGAL_ADDRESSING_MODE,                false,  "Illegal Addressing mode '%s'."   },
-    { ERROR_ILLEGAL_FORCED_ADDRESSING_MODE,         true,   "Illegal forced Addressing mode on '%s'."   },
-    { ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO,   true,   "Not enough args passed to Macro."   },
-    { ERROR_PREMATURE_EOF,                          false,  "Premature EOF."   },
-    { ERROR_ILLEGAL_CHARACTER,                      true,   "Illegal character '%s'."   },
-    { ERROR_BRANCH_OUT_OF_RANGE,                    true,   "Branch out of range (%s bytes)."   },
-    { ERROR_ERR_PSEUDO_OP_ENCOUNTERED,              true,   "ERR pseudo-op encountered."  },
-    { ERROR_ORIGIN_REVERSE_INDEXED,                 false,  "Origin Reverse-indexed."   },
-    { ERROR_EQU_VALUE_MISMATCH,                     false,  "EQU: Value mismatch."   },
-    { ERROR_ADDRESS_MUST_BE_LT_100,                 true,   "Value in '%s' must be <$100."  },
-    { ERROR_ILLEGAL_BIT_SPECIFICATION,              true,   "Illegal bit specification."   },
-    { ERROR_NOT_ENOUGH_ARGS,                        true,   "Not enough arguments."   },
-    { ERROR_LABEL_MISMATCH,                         true,   "Label mismatch...\n --> %s"  },
-    { ERROR_VALUE_UNDEFINED,                        true,   "Value Undefined."   },
-    { ERROR_PROCESSOR_NOT_SUPPORTED,                true,   "Processor '%s' not supported."  },
-    { ERROR_REPEAT_NEGATIVE,                        false,  "REPEAT parameter < 0 (ignored)."   },
-    { ERROR_BADERROR,                               true,   "Bad error value (internal error)." },
-    { ERROR_ONLY_ONE_PROCESSOR_SUPPORTED,           true,   "Only one processor type may be selected." },
-    { ERROR_BAD_FORMAT,                             true,   "Bad output format specified." },
-	{ ERROR_VALUE_MUST_BE_1_OR_4,					true,	"Value in '%s' must be 1 or 4." },
-	{ ERROR_VALUE_MUST_BE_LT_10,					true,	"Value in '%s' must be <$10." },
-	{ ERROR_VALUE_MUST_BE_LT_8,						true,	"Value in '%s' must be <$8." },
-	{ ERROR_VALUE_MUST_BE_LT_F,						true,	"Value in '%s' must be <$f." },
-	{ ERROR_VALUE_MUST_BE_LT_10000,					true,	"Value in '%s' must be <$10000." },
-	{ ERROR_ILLEGAL_OPERAND_COMBINATION,			true,	"Illegal combination of operands '%s'" },
-    {-1, true, "Doh! Internal end-of-table marker, report the bug!"}
+/* define the error table for asmerr() from errors.x */
+#if defined(X)
+#error infamous X macro already defined; aborting
+#else
+#define X(a,b,c) {a, b, c},
+#endif
+ERROR_DEFINITION sErrorDef[] =
+{
+#include "errors.x"
 };
-
-#define MAX_ERROR (( sizeof( sErrorDef ) / sizeof( ERROR_DEFINITION )))
+#undef X
 
 bool bStopAtEnd = false;
 
@@ -1384,14 +1348,14 @@ void pushinclude(char *str)
 
 
 
-int asmerr(int err, bool bAbort, const char *sText )
+int asmerr(error_t err, bool bAbort, const char *sText )
 {
     const char *str;
     INCFILE *pincfile;
     /* file pointer we print error messages to */
     FILE *error_file = NULL;
-    
-    if ( err >= MAX_ERROR || err < 0 )
+
+    if ( err >= ERROR_MAX || err < 0 )
     {
         return asmerr( ERROR_BADERROR, true, "Bad error ERROR!" );
     }
@@ -1502,7 +1466,7 @@ int main(int ac, char **av)
 {
     bool bTableSort = false;
     int nError = MainShadow( ac, av, &bTableSort );
-    
+
     if ( nError )
         printf( "Fatal assembly error: %s\n", sErrorDef[nError].sDescription );
     
