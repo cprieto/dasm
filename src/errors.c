@@ -331,4 +331,4 @@ int main(void)
 }
 #endif /* defined(TEST) */
 
-/* vim: set syntax=c tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

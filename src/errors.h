@@ -177,4 +177,4 @@ void new_panic(error_t _error, const char *detail);
 
 #endif /* _DASM_ERRORS_H */
 
-/* vim: set syntax=c tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

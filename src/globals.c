@@ -132,3 +132,4 @@ MNEMONIC Ops[] = {
     MNEMONIC_NULL
 };
 
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

@@ -188,3 +188,4 @@ getwlh(FILE *in)
     return(result);
 }
 
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
