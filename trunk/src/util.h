@@ -31,15 +31,7 @@
  * @brief Utility functions for string manipulation and memory allocation.
  */
 
-/**
- * @brief A fatal error occurred, print a message and terminate process
- * with EXIT_FAILURE.
- *
- * @warning You really don't want to call this. Not ever. We should have
- * REAL error handling instead.
- */
-
-void panic(const char *str);
+#include <string.h>
 
 /**
  * @brief Wrapper for malloc(3) that terminates DASM with panic() if no

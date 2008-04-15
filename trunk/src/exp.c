@@ -34,9 +34,11 @@
  */
 
 #include "asm.h"
+#include "errors.h"
 #include "util.h"
 #include "version.h"
 
+/*@unused@*/
 SVNTAG("$Id$");
 
 #define UNION	0

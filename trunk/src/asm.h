@@ -67,16 +67,6 @@ typedef enum
   SORTMODE_MAX
 } sortmode_t;
 
-/* for -E option [phf] */
-typedef enum
-{
-  ERRORFORMAT_DEFAULT,
-  ERRORFORMAT_WOE = ERRORFORMAT_DEFAULT,
-  ERRORFORMAT_DILLON,
-  ERRORFORMAT_GNU,
-  ERRORFORMAT_MAX
-} errorformat_t;
-
 enum FORMAT
 {
     FORMAT_DEFAULT = 1,
@@ -89,27 +79,6 @@ enum FORMAT
 #define MAX_SYM_LEN 1024
 /* maximum length genfill() will generate */
 #define MAX_FILL_LEN 64*1024
-
-/* define the error codes for asmerr() from errors.x */
-#if defined(X)
-#error infamous X macro already defined; aborting
-#else
-#define X(a,b,c) a,
-#endif
-typedef enum
-{
-#include "errors.x"
-} error_t;
-#undef X
-
-    typedef struct ERRORSTRUCT
-    {
-        int nErrorType;                                 /* ASM_ERROR_EQUATES value */
-        bool bFatal;                                    /* 0 = OK, non-zero = cannot continue compilation */
-        const char *sDescription;                             /* Error message */
-
-    } ERROR_DEFINITION;
-
 
     enum REASON_CODES
     {
@@ -341,7 +310,6 @@ extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
 extern sortmode_t F_sortmode; /* -T option [phf] */
-extern errorformat_t F_errorformat; /* -E option [phf] */
 extern unsigned char    F_verbose;
 extern const char    *F_outfile;
 extern char    *F_listfile;
@@ -360,7 +328,6 @@ extern unsigned long  CheckSum;
 /* main.c */
 /*extern unsigned char Listing;*/
 void    findext(char *str);
-int    asmerr(error_t err, bool bAbort, const char *sText);
 char   *sftos(long val, int flags);
 void    rmnode(void **base, int bytes);
 void    addhashtable(MNEMONIC *mne);
