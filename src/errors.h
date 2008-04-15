@@ -48,20 +48,24 @@ error_format_t;
 
 /**
  * @brief Global that holds current error format for -E option.
+ * @todo global to allow main.c command line parsing to write, fix this
  */
 extern error_format_t F_error_format;
 
 /**
- * @brief Global that tells us whether to stop after the current
- * pass? not sure [phf]
- *
- * @todo somehow get rid of this... :-/
+ * @brief Global that tells us whether to stop after the current pass?
  */
 extern bool bStopAtEnd;
 
 /**
+ * @brief Globals to track number of errors and warnings.
+ * @todo Unused so far in output, but might be useful?
+ */
+extern unsigned int nof_errors;
+extern unsigned int nof_warnings;
+
+/**
  * @brief Severity of error messages.
- * @todo not used so far... :-/
  */
 typedef enum
 {
@@ -76,7 +80,7 @@ typedef enum
     ERRORLEVEL_WARNING = ERRORLEVEL_DEFAULT,
     /* regular error, always displayed, assembly continues */
     ERRORLEVEL_ERROR,
-    /* fatal error, always displayed, assembly stops */
+    /* fatal error, always displayed, assembly stops after current pass */
     ERRORLEVEL_FATAL,
     /* panic insanity, always displayed, breaks out right away */
     ERRORLEVEL_PANIC,
@@ -84,6 +88,15 @@ typedef enum
     ERRORLEVEL_MAX
 }
 error_level_t;
+
+/**
+ * @brief Global that holds current error level, messages
+ * down to and including this level are printed.
+ * @todo Currently command line options don't affect this
+ * thing yet, need to adapt main.c and then all the code
+ * of course... :-/
+ */
+extern error_level_t F_error_level;
 
 /* define the error codes for asmerr() from errors.x */
 #if defined(X)
@@ -114,16 +127,20 @@ typedef struct
     /* Error message */
     const char *sDescription;
 }
-ERROR_DEFINITION;
+error_info_t;
 
 /**
- * @todo temporarily exported to get main.c to compile...
+ * @todo temporarily exported to get main.c to compile, main.c
+ * should not access this at all... :-/
  */
-extern ERROR_DEFINITION sErrorDef[];
+extern error_info_t sErrorDef[];
 
 /**
  * @brief An insane problem occurred, print message and terminate
  * DASM with EXIT_FAILURE immediately.
+ *
+ * @todo the old panic, need to refactor to new use where an error
+ * code is required
  *
  * @warning You really don't want to call this. Not ever. We should
  * have REAL error handling instead.
@@ -139,6 +156,24 @@ void panic(const char *str);
  */
 
 error_t asmerr(error_t err, bool bAbort, const char *sText);
+
+/**
+ * @brief Generic interface for error handling framework.
+ */
+
+void notify(error_t error, error_level_t level, const char *detail);
+
+/**
+ * @brief Helpers to make common levels easier to read.
+ */
+
+void debug(error_t _error, const char *detail);
+void info(error_t _error, const char *detail);
+void notice(error_t _error, const char *detail);
+void warning(error_t _error, const char *detail);
+void error(error_t _error, const char *detail);
+void fatal(error_t _error, const char *detail);
+void new_panic(error_t _error, const char *detail);
 
 #endif /* _DASM_ERRORS_H */
 
