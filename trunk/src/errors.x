@@ -67,10 +67,20 @@ X(ERROR_BADERROR, true, "Bad error value (internal error).")
 X(ERROR_ONLY_ONE_PROCESSOR_SUPPORTED, true,
     "Only one processor type may be selected.")
 X(ERROR_BAD_FORMAT, true, "Bad output format specified.")
+
+/* new for genfill() check? TODO: refactor others to this one?[phf] */
 X(ERROR_INVALID_RANGE, true, "Invalid range, %s.")
 
+/* new generic errors when we don't want to define explicit ones [phf] */
+X(ERROR_GENERIC_DEBUG, false, "%s (generic).")
+X(ERROR_GENERIC_INFO, false, "%s (generic).")
+X(ERROR_GENERIC_NOTICE, false, "%s (generic).")
+X(ERROR_GENERIC_WARNING, false, "%s (generic).")
+X(ERROR_GENERIC_ERROR, false, "%s (generic).")
+X(ERROR_GENERIC_FATAL, true, "%s (generic).")
+X(ERROR_GENERIC_PANIC, true, "%s (generic).")
+
 /* F8 errors */
-/* TODO: should include "F8" in name... */
 X(ERROR_VALUE_MUST_BE_1_OR_4, true, "Value in '%s' must be 1 or 4.")
 X(ERROR_VALUE_MUST_BE_LT_10, true, "Value in '%s' must be <$10.")
 X(ERROR_VALUE_MUST_BE_LT_8, true, "Value in '%s' must be <$8.")
