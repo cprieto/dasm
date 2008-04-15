@@ -1379,3 +1379,5 @@ int main(int ac, char **av)
     
     return nError;
 }
+
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

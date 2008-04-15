@@ -913,4 +913,4 @@ const char *pushsymbol(const char *str)
     return ptr;
 }
 
-
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

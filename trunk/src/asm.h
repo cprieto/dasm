@@ -390,8 +390,6 @@ FILE *pfopen(const char *, const char *);
 /* exp.c */
 SYMBOL *eval(const char *str, int wantmode);
 
-
-
-
-
 /* end of asm.h */
+
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

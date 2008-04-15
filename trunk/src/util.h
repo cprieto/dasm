@@ -94,3 +94,4 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 
 #endif /* _DASM_UTIL_H */
 
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
