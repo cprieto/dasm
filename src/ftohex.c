@@ -52,6 +52,7 @@
 #include <assert.h>
 #include "version.h"
 
+/*@unused@*/
 SVNTAG("$Id$");
 
 #define PERLINE 16

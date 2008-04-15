@@ -55,8 +55,10 @@
  *   and memory allocation.
  */
 
-#include "asm.h"
 #include "util.h"
+
+#include "asm.h"
+#include "errors.h"
 #include "version.h"
 
 /*@unused@*/
@@ -68,14 +70,13 @@ SVNTAG("$Id$");
 #include <string.h>
 #include <sys/types.h>
 
+#if defined(TEST)
+/* hack for unit tests where we don't want to exit! */
 void panic(const char *s)
 {
-    (void) printf("Panic: %s\n", s);
-#if !defined(TEST)
-/* hack for unit tests where we don't want to exit! */
-    exit(EXIT_FAILURE);
-#endif /* !defined(TEST) */
+    (void) printf("Simulated Panic: %s\n", s);
 }
+#endif /* defined(TEST) */
 
 /*@null@*/
 void *checked_malloc(size_t bytes)

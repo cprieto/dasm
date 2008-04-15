@@ -47,9 +47,9 @@ GDEBG= # -g # -fprofile-arcs -ftest-coverage -pg # -D_FORTIFY_SOURCE=2
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG)
 CC= gcc
 
-OBJS= main.o ops.o globals.o exp.o symbols.o util.o \
+OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
       mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
-SRCS= main.c ops.c globals.c exp.c symbols.c util.c \
+SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c \
       mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
 ALL= dasm ftohex ftobin

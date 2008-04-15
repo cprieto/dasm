@@ -30,9 +30,11 @@
  */
 
 #include "asm.h"
+#include "errors.h"
 #include "util.h"
 #include "version.h"
 
+/*@unused@*/
 SVNTAG("$Id$");
 
 #define MAXLINE 1024
@@ -55,21 +57,6 @@ void clearrefs(void);
 
 static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
-
-/* define the error table for asmerr() from errors.x */
-#if defined(X)
-#error infamous X macro already defined; aborting
-#else
-#define X(a,b,c) {a, b, c},
-#endif
-ERROR_DEFINITION sErrorDef[] =
-{
-#include "errors.x"
-};
-#undef X
-
-bool bStopAtEnd = false;
-
 
 char     *Extstr;
 /*unsigned char     Listing = 1;*/
@@ -442,9 +429,9 @@ fail:
             {
             /* TODO: need to improve option parsing and errors for it */
             case 'E':
-                F_errorformat = atoi(str);
-                if (F_errorformat < ERRORFORMAT_DEFAULT
-                   || F_errorformat >= ERRORFORMAT_MAX )
+                F_error_format = atoi(str);
+                if (F_error_format < ERRORFORMAT_DEFAULT
+                   || F_error_format >= ERRORFORMAT_MAX )
                 {
                     panic("Invalid error format for -E, must be 0, 1, 2");
                 }
@@ -1348,88 +1335,6 @@ void pushinclude(char *str)
 
 
 
-int asmerr(error_t err, bool bAbort, const char *sText )
-{
-    const char *str;
-    INCFILE *pincfile;
-    /* file pointer we print error messages to */
-    FILE *error_file = NULL;
-
-    if ( err >= ERROR_MAX || err < 0 )
-    {
-        return asmerr( ERROR_BADERROR, true, "Bad error ERROR!" );
-    }
-    else
-    {
-        
-        if (sErrorDef[err].bFatal)
-            bStopAtEnd = true;
-        
-        for ( pincfile = pIncfile; pincfile->flags & INF_MACRO; pincfile=pincfile->next);
-        str = sErrorDef[err].sDescription;
-
-        /*
-            New error format selection for 2.20.11 since some
-            people *don't* use MS products. For historical
-            reasons we currently send errors to stdout when
-            they should really go to stderr, but we'll switch
-            eventually I hope... [phf]
-        */
-
-        /* determine the file pointer to use */
-        error_file = (F_listfile != NULL) ? FI_listfile : stdout;
-
-        /* print first part of message, different formats offered */
-        switch (F_errorformat)
-        {
-            case ERRORFORMAT_WOE:
-                /*
-                    Error format for MS VisualStudio and relatives:
-                    "file (line): error: string"
-                */
-                fprintf(error_file, "%s (%lu): error: ",
-                        pincfile->name, pincfile->lineno);
-                break;
-            case ERRORFORMAT_DILLON:
-                /*
-                    Matthew Dillon's original format, except that
-                    we don't distinguish writing to the terminal
-                    from writing to the list file for now. Matt's
-                    2.16 uses these:
-
-                      "*line %4ld %-10s %s\n" (list file)
-                      "line %4ld %-10s %s\n" (terminal)
-                */
-                fprintf(error_file, "line %7ld %-10s ",
-                        pincfile->lineno, pincfile->name);
-                break;
-            case ERRORFORMAT_GNU:
-                /*
-                    GNU format error messages, from their coding
-                    standards.
-                */
-                fprintf(error_file, "%s:%lu: error: ",
-                        pincfile->name, pincfile->lineno);
-                break;
-            default:
-                /* TODO: really panic here? [phf] */
-                panic("Invalid error format, internal error!");
-                break;
-        }
-
-        /* print second part of message, always the same for now */
-        fprintf(error_file, str, sText ? sText : "");
-        fprintf(error_file, "\n");
-        
-        if ( bAbort )
-        {
-            fprintf(error_file, "Aborting assembly\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    
-    return err;
-}
 
 char *permalloc(int bytes)
 {

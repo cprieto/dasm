@@ -26,36 +26,13 @@
 /**
  * @brief Use the X-macro trick to define error codes and tables.
  *
- * @warning Format is as follows: X(code, fatal, message); this
- * file is used in asm.h and main.c for now.
+ * @see http://www.ddj.com/cpp/184401387
  *
- * @todo Distinguish fatal errors, regular errors, warnings? Or
- * simply use panic() for fatal ones?
+ * @warning Format is as follows: X(code, fatal, message) for now.
+ *
+ * @todo Distinguish error levels, introduce generic message on each
+ * level, refactor, etc.
  */
-
-/*
-    from syslog():
-
-    LOG_EMERG
-        A panic condition. This is normally broadcast to all users.
-    LOG_ALERT
-        A condition that should be corrected immediately, such as a
-        corrupted system database.
-    LOG_CRIT
-        Critical conditions, e.g., hard device errors.
-    LOG_ERR
-        Errors.
-    LOG_WARNING
-        Warning messages.
-    LOG_NOTICE
-        Conditions that are not error conditions, but should possibly be
-        handled specially.
-    LOG_INFO
-        Informational messages.
-    LOG_DEBUG
-        Messages that contain information normally of use only when
-        debugging a program.
-*/
 
 /* core DASM errors */
 X(ERROR_NONE, true, "OK")
