@@ -24,7 +24,7 @@ are hiding the file all the way down here for a reason...
 
 - use GNU indent to make code more consistent
   - current .indent.pro not right, need to adjust
-  - when to do this? before 2.20.11?
+  - when to do this? before 2.20.12?
   - maybe astyle is a better, more conservative choice?
 
 - work on refactoring hash?() has found some problems
@@ -99,3 +99,6 @@ are hiding the file all the way down here for a reason...
 
 - remember the >> issue for signed left operands
   - details in ftohex.c
+
+- strlcpy/strlcat should be used throughout instead of strcpy/strcat
+  - huge job to adjust everything, not even started... :-/
