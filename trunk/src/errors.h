@@ -116,7 +116,14 @@ error_t;
 
 /**
  * @brief Severity and message for each error code.
- * @todo refactor! don't need error code again, severity enum type
+ * @todo refactor! don't need error code again, severity is passed
+ * and not stored, all that really remains is the string; unless
+ * we want to double-check that we have the proper number of things
+ * to fill in, in which case we should add a number that tells us
+ * how many substitutions we make; right now that would always be
+ * 0 or 1, but Thomas Mathys wanted to go for multiple substitutions
+ * eventually (nicer error messages) so that would go in the right
+ * direction I guess? [phf]
  */
 typedef struct
 {

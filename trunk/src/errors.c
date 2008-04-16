@@ -161,6 +161,66 @@ static error_t dasmerr(error_t err, bool bAbort, const char *sText)
     return err;
 }
 
+/* helper to print the first part of an error message */
+static void print_part_one(FILE *out, const INCFILE *file, const char *level)
+{
+    /*
+        New error format selection for 2.20.11 since some
+        people *don't* use MS products. [phf]
+    */
+
+    /*
+        TODO: I simply replaced "error" with the current level,
+        not sure that works for WOE? Let's check... GNU is fine
+        btw, doesn't requite "error" in the message... [phf]
+    */
+
+    /*
+        TODO: What if we're to produce an error message before
+        there's even one file open, so we have no INCFILE? We
+        need a different format for that, even if just in case!
+        Error handling should not depend purely on source code
+        analysis, right? Command line options come to mind... [phf]
+    */
+
+    switch (F_error_format)
+    {
+        case ERRORFORMAT_WOE:
+            /*
+                Error format for MS VisualStudio and relatives:
+                "file (line): error: string"
+            */
+            fprintf(out, "%s (%lu): %s: ", file->name, file->lineno, level);
+            break;
+
+        case ERRORFORMAT_DILLON:
+            /*
+                Matthew Dillon's original format, except that
+                we don't distinguish writing to the terminal
+                from writing to the list file for now. Matt's
+                2.16 uses these:
+
+                  "*line %4ld %-10s %s\n" (list file)
+                  "line %4ld %-10s %s\n" (terminal)
+            */
+            fprintf(out, "line %7ld %-10s ", file->lineno, file->name);
+            break;
+
+        case ERRORFORMAT_GNU:
+            /*
+                GNU format error messages, from their coding
+                standards: "source-file-name:lineno: message"
+            */
+            fprintf(out, "%s:%lu: %s: ", file->name, file->lineno, level);
+            break;
+
+        default:
+            /* TODO: good idea? [phf] */
+            assert(false);
+            break;
+    }
+}
+
 void notify(error_t _error, error_level_t level, const char *detail)
 {
     /* normalized detail message */
@@ -198,42 +258,7 @@ void notify(error_t _error, error_level_t level, const char *detail)
     */
 
     /* print first part of message, different formats offered */
-    switch (F_error_format)
-    {
-        case ERRORFORMAT_WOE:
-            /*
-                Error format for MS VisualStudio and relatives:
-                "file (line): error: string"
-            */
-            fprintf(out, "%s (%lu): %s: ", file->name, file->lineno, lev);
-            break;
-
-        case ERRORFORMAT_DILLON:
-            /*
-                Matthew Dillon's original format, except that
-                we don't distinguish writing to the terminal
-                from writing to the list file for now. Matt's
-                2.16 uses these:
-
-                  "*line %4ld %-10s %s\n" (list file)
-                  "line %4ld %-10s %s\n" (terminal)
-            */
-            fprintf(out, "line %7ld %-10s ", file->lineno, file->name);
-            break;
-
-        case ERRORFORMAT_GNU:
-            /*
-                GNU format error messages, from their coding
-                standards.
-            */
-            fprintf(out, "%s:%lu: %s: ", file->name, file->lineno, lev);
-            break;
-
-        default:
-            /* TODO: good idea? [phf] */
-            assert(false);
-            break;
-    }
+    print_part_one(out, file, lev);
 
     /* print second part of message, always the same for now */
     fprintf(out, sErrorDef[_error].sDescription, msg);
