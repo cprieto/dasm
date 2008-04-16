@@ -72,7 +72,7 @@ SVNTAG("$Id$");
 
 #if defined(TEST)
 /* hack for unit tests where we don't want to exit! */
-void panic(const char *s)
+void new_panic(error_t _error, const char *s)
 {
     (void) printf("Simulated Panic: %s\n", s);
 }
@@ -81,13 +81,14 @@ void panic(const char *s)
 /*@null@*/
 void *checked_malloc(size_t bytes)
 {
-    void *p;
+    void *p = NULL;
     assert(bytes > 0); /* size_t usually unsigned, but rule out 0! */
 
     p = malloc(bytes);
     if (p == NULL)
     {
-        panic("Unable to allocate memory!");
+        SNAPSHOT_SOURCE_LOCATION(location);
+        new_panic(ERROR_OUT_OF_MEMORY, location);
     }
 
     return p;
@@ -96,7 +97,7 @@ void *checked_malloc(size_t bytes)
 /*@null@*/
 void *zero_malloc(size_t bytes)
 {
-    void *p;
+    void *p = NULL;
     assert(bytes > 0); /* size_t usually unsigned, but rule out 0! */
 
     p = checked_malloc(bytes);

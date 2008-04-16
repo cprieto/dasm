@@ -71,6 +71,9 @@ X(ERROR_BAD_FORMAT, true, "Bad output format specified.")
 /* new for genfill() check? TODO: refactor others to this one?[phf] */
 X(ERROR_INVALID_RANGE, true, "Invalid range, %s.")
 
+/* new for memory allocation panic */
+X(ERROR_OUT_OF_MEMORY, true, "Unable to allocate memory (%s)!")
+
 /* new generic errors when we don't want to define explicit ones [phf] */
 X(ERROR_GENERIC_DEBUG, false, "%s (generic).")
 X(ERROR_GENERIC_INFO, false, "%s (generic).")

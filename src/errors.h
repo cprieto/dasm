@@ -129,6 +129,21 @@ typedef struct
 }
 error_info_t;
 
+#define SNAPSHOT_SOURCE_LENGTH 256
+/**
+ * @brief Macro to capture current location in the C source
+ * into a string buffer, useful for some internal conditions
+ * like panic().
+ * @warning The macro defines the string buffer you name, so
+ * don't use it twice in the same block.
+ * @note We have to use snprintf() because __func__ doesn't
+ * expand into a string literal for some reason... :-/
+ */
+#define SNAPSHOT_SOURCE_LOCATION(buffer) \
+    char buffer[SNAPSHOT_SOURCE_LENGTH]; \
+    snprintf(buffer, SNAPSHOT_SOURCE_LENGTH, "%s/%s()/%d", \
+             __FILE__, __func__, __LINE__)
+
 /**
  * @todo temporarily exported to get main.c to compile, main.c
  * should not access this at all... :-/
