@@ -52,7 +52,9 @@ OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
 SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c \
       mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
-ALL= dasm ftohex ftobin
+TEST= util errors
+
+ALL= dasm ftohex ftobin $(TEST)
 
 all: $(ALL)
 
@@ -63,6 +65,13 @@ dasm: $(OBJS)
 # seems to build ftohex/ftobin fine without them...
 ftohex: ftohex.o
 ftobin: ftobin.o
+
+# produce executables for simple unit tests of certain
+# modules
+util: util.c util.h
+	gcc -DTEST util.c -o util
+errors: errors.c errors.h errors.x
+	gcc -DTEST errors.c -o errors
 
 obj: $(OBJS)
 
