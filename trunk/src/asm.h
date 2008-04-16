@@ -100,15 +100,6 @@ enum FORMAT
     };
 
 
-#define MNEMONIC    struct _MNE
-#define MACRO       struct _MACRO
-#define INCFILE     struct _INCFILE
-#define REPLOOP     struct _REPLOOP
-#define IFSTACK     struct _IFSTACK
-#define SEGMENT     struct _SEGMENT
-#define SYMBOL        struct _SYMBOL
-#define STRLIST     struct _STRLIST
-
 #define DEFORGFILL  255
 #define SHASHSIZE   1024
 #define MHASHSIZE   1024
@@ -168,10 +159,20 @@ enum FORMAT
 #define AM_WORD					AM_WORDADR
 
 
-
-STRLIST {
+typedef struct _STRLIST STRLIST;
+struct _STRLIST
+{
+    /* next string in list? [phf] */
     STRLIST *next;
-    char    buf[4];
+    /* the actual string? [phf] */
+    char buf[4];
+    /*
+        TODO: actual code in main.c and ops.c where STRLIST gets
+        malloc()ed indicates that buf[4] is a hack that basically
+        emulates a "flexible array member" of C99 fame; should be
+        replaced with a properly allocated buffer! the main.c use
+        is probably wrong btw... [phf]
+    */
 };
 
 #define STRLISTSIZE    4
@@ -183,83 +184,127 @@ STRLIST {
 #define MF_IMOD					0x40    /*  instruction byte mod.    */
 #define MF_ENDM					0x80    /*  is v_endm            */
 
-MNEMONIC {
-    MNEMONIC     *next;        /*    hash        */
-    void    (*vect)(char *, MNEMONIC *);    /*  dispatch        */
-    const char    *name;        /*    actual name    */
-    unsigned char   flags;        /*    special flags    */
-    unsigned long   okmask;
-    unsigned int opcode[NUMOC];  /*    hex codes, byte or word (>xFF) opcodes    */
+typedef struct _MNEMONIC MNEMONIC;
+struct _MNEMONIC
+{
+    /* next mnemonic in hash list */
+    MNEMONIC *next;
+    /* dispatch */
+    void (*vect)(char *, MNEMONIC *);
+    /* actual name */
+    const char *name;
+    /* special flags */
+    unsigned char flags;
+    /* TODO: ??? [phf] */
+    unsigned long okmask;
+    /* hex codes, byte or word (>xFF) opcodes */
+    unsigned int opcode[NUMOC];
 };
 
 /* MNEMONIC with all fields 0, used as end-of-table marker. */
 #define MNEMONIC_NULL {NULL, NULL, NULL, 0, 0, {0,}}
 
-MACRO {
-    MACRO   *next;
-    void    (*vect)(char *, MACRO *);
-    char    *name;
-    unsigned char   flags;
+typedef struct _MACRO MACRO;
+struct _MACRO
+{
+    MACRO *next;
+    void (*vect)(char *, MACRO *);
+    char *name;
+    unsigned char flags;
     STRLIST *strlist;
 };
 
 #define INF_MACRO   0x01
 #define INF_NOLIST  0x02
 
-INCFILE {
-    INCFILE *next;  /*      previously pushed context */
-    char    *name;  /*      file name            */
-    FILE    *fi;    /*      file handle            */
-    unsigned long   lineno; /*      line number in file        */
-    unsigned char   flags;  /*      flags (macro)         */
+typedef struct _INCFILE INCFILE;
+struct _INCFILE
+{
+    /* previously pushed context */
+    INCFILE *next;
+    /* file name */
+    char *name;
+    /* file handle */
+    FILE *fi;
+    /* line number in file */
+    unsigned long lineno;
+    /* flags (macro) */
+    unsigned char flags;
 
-    /*    Only if Macro    */
+    /* Only if Macro */
 
-    STRLIST *args;    /*  arguments to macro        */
-    STRLIST *strlist;    /*  current string list     */
-    unsigned long   saveidx;    /*  save localindex        */
-    unsigned long   savedolidx; /*  save localdollarindex   */
-
+    /* arguments to macro */
+    STRLIST *args;
+    /* current string list */
+    STRLIST *strlist;
+    /* save localindex */
+    unsigned long saveidx;
+    /* save localdollarindex */
+    unsigned long savedolidx;
 };
 
 #define RPF_UNKNOWN 0x01    /*      value unknown     */
 
-REPLOOP {
-    REPLOOP *next;  /*      previously pushed context */
-    unsigned long   count;  /*      repeat count            */
-    unsigned long   seek;   /*      seek to top of repeat     */
-    unsigned long   lineno; /*      line number of line before  */
-    INCFILE *file;  /*      which include file are we in*/
-    unsigned char   flags;
+typedef struct _REPLOOP REPLOOP;
+struct _REPLOOP
+{
+    /* previously pushed context */
+    REPLOOP *next;
+    /* repeat count */
+    unsigned long count;
+    /* seek to top of repeat */
+    unsigned long seek;
+    /* line number of line before */
+    unsigned long lineno;
+    /* which include file are we in */
+    INCFILE *file;
+    /* TODO: ??? [phf] */
+    unsigned char flags;
 };
 
 #define IFF_UNKNOWN 0x01    /*      value unknown        */
 #define IFF_BASE    0x04
 
-IFSTACK {
-    IFSTACK *next;  /*      previous IF            */
-    INCFILE *file;  /*      which include file are we in*/
-    unsigned char   flags;
-    unsigned char   xtrue;   /*      1 if true, 0 if false     */
-    unsigned char   acctrue;/*      accumulatively true (not incl this one) */
+typedef struct _IFSTACK IFSTACK;
+struct _IFSTACK
+{
+    /* previous IF */
+    IFSTACK *next;
+    /* which include file are we in */
+    INCFILE *file;
+    /* TODO: ??? [phf] */
+    unsigned char flags;
+    /* 1 if true, 0 if false */
+    unsigned char xtrue;
+    /* accumulatively true (not incl this one) */
+    unsigned char acctrue;
 };
 
-#define SF_UNKNOWN  0x01    /*      ORG unknown            */
-#define SF_REF        0x04    /*      ORG referenced        */
-#define SF_BSS        0x10    /*      uninitialized area (U flag)    */
-#define SF_RORG     0x20    /*      relocatable origin active    */
+#define SF_UNKNOWN  0x01    /* ORG unknown */
+#define SF_REF      0x04    /* ORG referenced */
+#define SF_BSS      0x10    /* uninitialized area (U flag) */
+#define SF_RORG     0x20    /* relocatable origin active */
 
-SEGMENT {
-    SEGMENT *next;  /*      next segment in segment list    */
-    char    *name;  /*      name of segment        */
-    unsigned char   flags;  /*      for ORG            */
-    unsigned char   rflags; /*      for RORG            */
-    unsigned long   org;    /*      current org            */
-    unsigned long   rorg;   /*      current rorg            */
-    unsigned long   initorg;
-    unsigned long   initrorg;
-    unsigned char   initflags;
-    unsigned char   initrflags;
+typedef struct _SEGMENT SEGMENT;
+struct _SEGMENT
+{
+    /* next segment in segment list */
+    SEGMENT *next;
+    /* name of segment */
+    char *name;
+    /* for ORG */
+    unsigned char flags;
+    /* for RORG */
+    unsigned char rflags;
+    /* current org */
+    unsigned long org;
+    /* current rorg */
+    unsigned long rorg;
+    /* TODO: ??? all these ??? [phf] */
+    unsigned long initorg;
+    unsigned long initrorg;
+    unsigned char initflags;
+    unsigned char initrflags;
 };
 
 #define SYM_UNKNOWN 0x01    /*      value unknown     */
@@ -269,14 +314,23 @@ SEGMENT {
 #define SYM_MACRO   0x20    /*      symbol is a macro    */
 #define SYM_MASREF  0x40    /*      master reference    */
 
-SYMBOL {
-    SYMBOL  *next;    /*  next symbol in hash list        */
-    char    *name;    /*  symbol name or string if expr.  */
-    char    *string;    /*  if symbol is actually a string  */
-    unsigned char   flags;    /*  flags                */
-    unsigned char   addrmode;    /*  addressing mode (expressions)   */
-    long value; /* current value, never EVER change this to unsigned! */
-    unsigned int namelen;    /*  name length             */
+typedef struct _SYMBOL SYMBOL;
+struct _SYMBOL
+{
+    /* next symbol in hash list */
+    SYMBOL *next;
+    /* symbol name or string if expr. */
+    char *name;
+    /* if symbol is actually a string */
+    char *string;
+    /* flags */
+    unsigned char flags;
+    /* addressing mode (expressions) */
+    unsigned char addrmode;
+    /* current value, never EVER change this to unsigned! [phf] */
+    long value;
+    /* name length */
+    unsigned int namelen;
 };
 
 extern SYMBOL    *SHash[];
