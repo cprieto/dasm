@@ -526,8 +526,8 @@ nofile:
     /*    INITIAL SEGMENT */
     
     {
-        SEGMENT *seg = (SEGMENT *)permalloc(sizeof(SEGMENT));
-        seg->name = strcpy(permalloc(sizeof(ISEGNAME)), ISEGNAME);
+        SEGMENT *seg = small_alloc(sizeof(SEGMENT));
+        seg->name = strcpy(small_alloc(sizeof(ISEGNAME)), ISEGNAME);
         seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
         Csegment = Seglist = seg;
     }
@@ -1241,11 +1241,11 @@ void v_macro(char *str, MNEMONIC *dummy)
     if (!defined) {
         base = NULL;
         slp = &base;
-        mac = (MACRO *)permalloc(sizeof(MACRO));
+        mac = small_alloc(sizeof(MACRO));
         i = hash_mnemonic(str);
         mac->next = (MACRO *)MHash[i];
         mac->vect = v_execmac;
-        mac->name = strcpy(permalloc(strlen(str)+1), str);
+        mac->name = strcpy(small_alloc(strlen(str)+1), str);
         mac->flags = MF_MACRO;
         MHash[i] = (MNEMONIC *)mac;
     }
@@ -1271,7 +1271,7 @@ void v_macro(char *str, MNEMONIC *dummy)
         if (!skipit && F_listfile && ListMode)
             outlistfile(comment);
         if (!defined) {
-            sl = (STRLIST *)permalloc(STRLISTSIZE+1+strlen(buf));
+            sl = small_alloc(STRLISTSIZE+1+strlen(buf));
             strcpy(sl->buf, buf);
             *slp = sl;
             slp = &sl->next;
@@ -1298,7 +1298,6 @@ void addhashtable(MNEMONIC *mne)
         MHash[i] = mne;
     }
 }
-
 
 static unsigned int hash_mnemonic(const char *str)
 {
@@ -1330,50 +1329,38 @@ void pushinclude(char *str)
     return;
 }
 
-
-
-
-
-char *permalloc(int bytes)
+/**
+ * @brief Function that runs right before DASM exits.
+ */
+static void exit_handler(void)
 {
-    static char *buf;
-    static int left;
-    char *ptr;
-    
-    /* Assume sizeof(union align) is a power of 2 */
-    
-    union align
-    {
-        long l;
-        void *p;
-        void (*fp)(void);
-    };
-    
-    bytes = (bytes + sizeof(union align)-1) & ~(sizeof(union align)-1);
-    if (bytes > left)
-    {
-        if ((buf = malloc(ALLOCSIZE)) == NULL)
-            panic("unable to malloc");
-        memset(buf, 0, ALLOCSIZE);
-        left = ALLOCSIZE;
-        if (bytes > left)
-            panic("software error");
-    }
-    ptr = buf;
-    buf += bytes;
-    left -= bytes;
-    return ptr;
+    debug(ERROR_GENERIC_DEBUG, __func__);
+
+    /* free all small allocations we ever made */
+    small_free_all();
+
+    /* TODO: more cleanup actions here? */
 }
 
-int main(int ac, char **av)
+int main(int argc, char **argv)
 {
     bool bTableSort = false;
-    int nError = MainShadow( ac, av, &bTableSort );
+    int nError;
 
-    if ( nError )
-        printf( "Fatal assembly error: %s\n", sErrorDef[nError].sDescription );
+    if (atexit(exit_handler) != 0)
+    {
+        panic("Could not install exit handler!");
+    }
+
+    nError = MainShadow(argc, argv, &bTableSort);
+
+    /* TODO: avoid accessing error table here! */
+    if (nError)
+    {
+        printf("Fatal assembly error: %s\n", sErrorDef[nError].sDescription);
+    }
     
-    DumpSymbolTable( bTableSort );
+    DumpSymbolTable(bTableSort);
     
     return nError;
 }

@@ -127,8 +127,8 @@ SYMBOL *CreateSymbol( const char *str, int len )
     }
     
     sym = allocsymbol();
-    sym->name = permalloc(len+1);
-    memcpy(sym->name, str, len);    /*	permalloc zeros the array for us */
+    sym->name = small_alloc(len+1);
+    memcpy(sym->name, str, len); /* small_alloc zeros the array for us */
     sym->namelen = len;
     h1 = hash_symbol(str, len);
     sym->next = SHash[h1];
@@ -238,7 +238,7 @@ SYMBOL *allocsymbol(void)
     }
     else
     {
-        sym = (SYMBOL *)permalloc(sizeof(SYMBOL));
+        sym = small_alloc(sizeof(SYMBOL));
     }
     return sym;
 }
