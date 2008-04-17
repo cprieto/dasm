@@ -48,11 +48,7 @@
 */
 
 /**
- * @file
- *   util.c
- * @brief
- *   Generic utility functions for string manipulation
- *   and memory allocation.
+ * @file util.c
  */
 
 #include "util.h"
@@ -68,6 +64,7 @@ SVNTAG("$Id$");
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #if defined(TEST)
@@ -107,6 +104,86 @@ void *zero_malloc(size_t bytes)
     }
 
     return p;
+}
+
+struct new_perm_block
+{
+  struct new_perm_block *next;
+  char data[];
+};
+
+static struct new_perm_block *new_permalloc_stack = NULL;
+
+#define ROUNDUP(x) ((x + alignment-1) & ~(alignment-1))
+
+void *small_alloc(size_t bytes)
+{
+    /* Assume sizeof(union align) is a power of 2 */
+    union align { long l; void *p; void (*fp)(void); };
+
+    static void *buf = NULL;
+    static int left = 0;
+    void *ptr;
+    struct new_perm_block *block;
+    size_t alignment = sizeof(union align);
+
+    assert(bytes > 0); /* size_t usually unsigned, but rule out 0! */
+
+    /* round up bytes for proper alignment */
+    bytes = ROUNDUP(bytes);
+
+    /* do we not have enough left in the current block? */
+    if (bytes > left)
+    {
+        puts("small_alloc: new block needed");
+        /* allocate a new block */
+        block = zero_malloc(ALLOCSIZE);
+        printf("small_alloc: block @ %p\n", (void*) block);
+
+        /* calculate bytes we have left */
+        left = ALLOCSIZE - ROUNDUP(sizeof(block->next));
+
+        /* check again if we have enough space */
+        if (bytes > left)
+        {
+            SNAPSHOT_SOURCE_LOCATION(location);
+            new_panic(ERROR_OUT_OF_MEMORY, location);
+        }
+
+        /* insert at top of stack */
+        block->next = new_permalloc_stack;
+        new_permalloc_stack = block;
+
+        /* setup buf to point to actual memory area */
+        buf = ((char*)block) + ROUNDUP(sizeof(block->next));
+        printf("small_alloc: initial buf @ %p\n", buf);
+    }
+
+    ptr = buf;
+    buf = ((char*)buf) + bytes;
+    printf("small_alloc: adjusted buf @ %p\n", buf);
+    assert(ptr < buf);
+    left -= bytes;
+    return ptr;
+}
+
+void small_free_all(void)
+{
+    /* the block we are about to free() */
+    struct new_perm_block *current = NULL;
+
+    /* as long as we have block left */
+    while (new_permalloc_stack != NULL)
+    {
+        /* remember the top block */
+        current = new_permalloc_stack;
+        /* pop the top block, stack possibly empty after this */
+        new_permalloc_stack = current->next;
+        /* free() the block we popped */
+        free(current);
+        /* TODO: debug() message */
+        printf("small_free_all: freed block @ %p\n", (void*) current);
+    }
 }
 
 unsigned int hash_string(const char *string, size_t length)
@@ -249,7 +326,7 @@ int main(void)
 {
   char *one;
   char *two;
-  union align { long l; long long ll; void *p; void (*fp)(void); };
+  union align { long l; void *p; void (*fp)(void); };
   printf("sizeof(align)==%zu\n", sizeof(union align));
   one = checked_malloc(1<<31);
   puts("First malloc()ed!");
@@ -259,6 +336,13 @@ int main(void)
   puts("Second free()d!");
   if (one) free(one);
   puts("First free()d!");
+  one = small_alloc(4096);
+  printf("First small_alloc()ed returned %p!\n", one);
+  two = small_alloc(4096);
+  assert(one < two);
+  printf("Second small_alloc()ed returned %p!\n", two);
+  one = small_alloc(10240);
+  small_free_all();
   return EXIT_SUCCESS;
 }
 #endif /* defined(TEST) */
