@@ -27,64 +27,126 @@
 */
 
 /**
- * @file util.h
- * @brief Utility functions for string manipulation and memory allocation.
+ * @file
+ *   util.h
+ *
+ * @brief
+ *   Utility functions for string manipulation and memory allocation.
  */
 
 #include <string.h>
 
 /**
- * @brief Wrapper for malloc(3) that terminates DASM with panic() if no
- * memory is available.
+ * @brief
+ *   Wrapper for malloc(3) that terminates DASM with panic() if no
+ *   memory is available.
+ *
+ * @pre
+ *   bytes > 0
  */
 
 /*@null@*/
 void *checked_malloc(size_t bytes);
 
 /**
- * @brief Wrapper for checked_malloc() that zero's the allocated chunk
- * of memory.
+ * @brief
+ *   Wrapper for checked_malloc() that zero's the allocated memory
+ *   using memset(3).
  *
- * @warning Uses memset(3) internally, which may not initialize pointers
- * or floats/doubles correctly to NULL or 0.0 on some (strange) machines.
+ * @pre
+ *   bytes > 0
+ *
+ * @warning
+ *   memset(3) may not initialize pointers or floats/doubles
+ *   correctly to NULL or 0.0 on some (very strange) machines.
  */
 
 /*@null@*/
 void *zero_malloc(size_t bytes);
 
 /**
- * @brief A hash function for strings.
+ * @brief
+ *   Efficiently allocate small amounts of memory.
+ *
+ * @pre
+ *   bytes > 0
+ *
+ * @warning
+ *   You can only request *small* amounts of memory from this
+ *   function, less than 1024 bytes at a time is a good rule of
+ *   thumb.
+ *   You *cannot* free(3) the pointer returned by small_alloc(),
+ *   truly bad things will happen if you try.
+ *   You can *only* free *all* the memory ever allocated through
+ *   small_alloc() using small_free_all() below.
+ */
+
+void *small_alloc(size_t bytes);
+
+/**
+ * @brief
+ *   Free *all* memory allocated by small_alloc() so far.
+ *
+ * @warning
+ *   This function should only be called when your process is
+ *   about to exit(3) or if you *really* know what you're doing.
+ */
+
+void small_free_all(void);
+
+/**
+ * @brief
+ *   An excellent hash function for strings.
+ *
+ * @pre
+ *   string != NULL && length > 0 && length <= strlen(string)
  */
 
 unsigned int hash_string(const char *string, size_t length);
 
 /**
- * @brief Convert string to lower case, destructively.
+ * @brief
+ *   Convert string to lower case, destructively.
+ *
+ * @pre
+ *   string != NULL
  */
 
-char *strlower(char *str);
+char *strlower(char *string);
 
 #if !defined(__APPLE__) && !defined(__BSD__)
 
 /**
- * Appends src to string dst of size siz (unlike strncat, siz is the
- * full size of dst, not space left).  At most siz-1 characters
- * will be copied.  Always NUL terminates (unless siz <= strlen(dst)).
+ * @brief
+ *   Append src to string dst of size siz.
+ *
+ * Unlike in strncat(3), siz is the full size of dst, not space left.
+ * At most siz-1 characters will be copied.
+ * Always NUL terminates (unless siz <= strlen(dst)).
  * Returns strlen(src) + MIN(siz, strlen(initial dst)).
  * If retval >= siz, truncation occurred.
  *
- * @warning
+ * @pre
+ *   dst != NULL && src != NULL && siz > 0
+ *
+ * @note
  *   On BSD (including OS X) this function is defined in the C library!
  */
 
 size_t strlcat(char *dst, const char *src, size_t siz);
 
 /**
- * Copy src to string dst of size siz.  At most siz-1 characters
- * will be copied.  Always NUL terminates (unless siz == 0).
+ * @brief
+ *   Copy src to string dst of size siz.
+ *
+ * At most siz-1 characters will be copied.
+ * Always NUL terminates (unless siz == 0).
  * Returns strlen(src); if retval >= siz, truncation occurred.
  *
- * @warning
+ * @pre
+ *   dst != NULL && src != NULL && siz > 0
+ *
+ * @note
  *   On BSD (including OS X) this function is defined in the C library!
  */
 
