@@ -555,9 +555,7 @@ nextpass:
     
     Localdollarindex = Lastlocaldollarindex = 0;
     
-    /*_fmode = 0x8000;*/
     FI_temp = fopen(F_outfile, "wb");
-    /*_fmode = 0;*/
     Fisclear = 1;
     CheckSum = 0;
     if (FI_temp == NULL) {

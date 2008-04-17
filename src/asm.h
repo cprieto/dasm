@@ -376,7 +376,6 @@ extern char    Inclevel;
 extern char    ListMode;
 extern unsigned long    Processor;
 
-/*extern unsigned int _fmode;*/
 extern unsigned long  CheckSum;
 
 /* main.c */
