@@ -1227,8 +1227,8 @@ v_incdir(char *str, MNEMONIC *dummy)
     
     if (!found) {
         STRLIST *newdir;
-        
-        newdir = (STRLIST *)permalloc(STRLISTSIZE + 1 + strlen(buf));
+        /* TODO: I think size is calculated wrong here, too big... [phf] */
+        newdir = small_alloc(STRLISTSIZE + 1 + strlen(buf));
         strcpy(newdir->buf, buf);
         *tail = newdir;
     }

@@ -385,7 +385,6 @@ char   *sftos(long val, int flags);
 void    rmnode(void **base, int bytes);
 void    addhashtable(MNEMONIC *mne);
 void    pushinclude(char *str);
-char   *permalloc(int bytes);
 
 /* symbols.c */
 void    setspecial(int value, int flags);

@@ -250,6 +250,7 @@ void notify(error_t _error, error_level_t level, const char *detail)
     {
         file = file->next;
     }
+    /* TODO: this will fail if we have no INCFILE yet! */
     assert(file != NULL);
 
     /*
