@@ -55,7 +55,7 @@ int main(void)
     /* test new API */
     notify(ERROR_PROCESSOR_NOT_SUPPORTED, ERRORLEVEL_ERROR, "new API notify()");
     debug(ERROR_PROCESSOR_NOT_SUPPORTED, "new API debug()");
-      info(ERROR_PROCESSOR_NOT_SUPPORTED, "new API info()");
+    info(ERROR_PROCESSOR_NOT_SUPPORTED, "new API info()");
     notice(ERROR_PROCESSOR_NOT_SUPPORTED, "new API notice()");
     warning(ERROR_PROCESSOR_NOT_SUPPORTED, "new API warning()");
     error(ERROR_PROCESSOR_NOT_SUPPORTED, "new API error()");
