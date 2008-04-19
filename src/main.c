@@ -1349,6 +1349,8 @@ int main(int argc, char **argv)
     bool bTableSort = false;
     int nError;
 
+    setprogname(argv[0]);
+
     if (atexit(exit_handler) != 0)
     {
         panic("Could not install exit handler!");

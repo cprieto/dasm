@@ -152,6 +152,9 @@ size_t strlcat(char *dst, const char *src, size_t siz);
 
 size_t strlcpy(char *dst, const char *src, size_t siz);
 
+const char * getprogname(void);
+void setprogname(const char *name);
+
 #endif /* !defined(__APPLE__) && !defined(__BSD__) */
 
 #endif /* _DASM_UTIL_H */
