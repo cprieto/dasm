@@ -1,4 +1,13 @@
-/* test get/setprogname(3) functions */
+/*
+    $Id$
+
+    Test potentially unportable get/setprogname(3) functions.
+
+    WORKS:
+        OS X
+    TODO:
+        Windows, Linux, NetBSD, Solaris, ...
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
