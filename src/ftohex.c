@@ -236,7 +236,7 @@ static
 void
 put_hex(uint8_t c, FILE *out)
 {
-    const static char digits[] = {"0123456789ABCDEF"};
+    static const char digits[] = {"0123456789ABCDEF"};
 
     /* shift high to low, mask (>> portability, see above), write high digit */
     if (putc(digits[(c >> 4) & 0x0F], out) == EOF)
