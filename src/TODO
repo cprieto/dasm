@@ -102,3 +102,13 @@ are hiding the file all the way down here for a reason...
 
 - strlcpy/strlcat should be used throughout instead of strcpy/strcat
   - huge job to adjust everything, not even started... :-/
+
+- need to address unit testing (and system testing)
+  - minunit looks too simplistic to be useful
+    - however, it would be better than what we have
+  - CUnit looks decent
+    - however it doesn't fork
+  - Check looks perfect
+    - however it wants autotools for almost everything
+  - at least add coverage analysis darn it
+    - gcov is not hard to add to current scripts
