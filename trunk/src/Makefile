@@ -52,7 +52,7 @@ OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
 SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c \
       mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
-TEST= util errors
+TEST= util test_errors
 
 ALL= dasm ftohex ftobin $(TEST)
 
@@ -69,9 +69,8 @@ ftobin: ftobin.o
 # produce executables for simple unit tests of certain
 # modules
 util: util.c util.h
-	gcc -DTEST util.c -o util
-errors: errors.c errors.h errors.x
-	gcc -DTEST errors.c -o errors
+	gcc -DTEST -Wall util.c errors.o -o util
+test_errors: test_errors.c errors.o
 
 obj: $(OBJS)
 
@@ -84,6 +83,11 @@ clean:
 
 cscope:
 	ls *.h *.c *.x >cscope.files
+
+# target to test compiles when neither __BSD__ nor __APPLE__ are
+# defined
+nobsd:
+	gcc -U__BSD__ -U__APPLE__ util.c -o util.o -Wall -Wextra -c
 
 # prepare an alpha release containing just the source code,
 # nothing else is in the archive since it is not intended
