@@ -122,7 +122,7 @@ void *small_alloc(size_t bytes)
     union align { long l; void *p; void (*fp)(void); };
 
     static void *buf = NULL;
-    static int left = 0;
+    static size_t left = 0;
     void *ptr;
     struct new_perm_block *block;
     size_t alignment = sizeof(union align);
@@ -155,14 +155,14 @@ void *small_alloc(size_t bytes)
         new_permalloc_stack = block;
 
         /* setup buf to point to actual memory area */
-        buf = ((char*)block) + ROUNDUP(sizeof(block->next));
+        buf = ((char*)block) + ROUNDUP(sizeof(block->next)); /* char cast important! */
         printf("small_alloc: initial buf @ %p\n", buf);
     }
 
     ptr = buf;
-    buf = ((char*)buf) + bytes;
+    buf = ((char*)buf) + bytes; /* char cast important! */
     printf("small_alloc: adjusted buf @ %p\n", buf);
-    assert(ptr < buf);
+    assert(ptr < buf); /* TODO: good idea? [phf] */
     left -= bytes;
     return ptr;
 }
