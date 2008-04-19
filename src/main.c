@@ -427,11 +427,13 @@ fail:
             char *str = av[i]+2;
             switch(av[i][1])
             {
-            /* TODO: need to improve option parsing and errors for it */
+            /* TODO: need to improve option parsing and errors for it [phf] */
+            /* TODO: fixed range checking for -Wextra below, but what if
+               enum is *not* unsigned in other compilers? hmmm... [phf] */
             case 'E':
                 F_error_format = atoi(str);
-                if (F_error_format < ERRORFORMAT_DEFAULT
-                   || F_error_format >= ERRORFORMAT_MAX )
+                if (/*F_error_format < ERRORFORMAT_DEFAULT
+                   ||*/ F_error_format >= ERRORFORMAT_MAX )
                 {
                     panic("Invalid error format for -E, must be 0, 1, 2");
                 }
@@ -439,8 +441,8 @@ fail:
 
             case 'T':
                 F_sortmode = atoi(str);
-                if (F_sortmode < SORTMODE_DEFAULT
-                   || F_sortmode >= SORTMODE_MAX )
+                if (/*F_sortmode < SORTMODE_DEFAULT
+                   ||*/ F_sortmode >= SORTMODE_MAX )
                 {
                     panic("Invalid sorting mode for -T option, must be 0 or 1");
                 }
@@ -1334,7 +1336,7 @@ void pushinclude(char *str)
  */
 static void exit_handler(void)
 {
-    debug(ERROR_GENERIC_DEBUG, __func__);
+    debug(ERROR_DEBUG_ENTER, __func__);
 
     /* free all small allocations we ever made */
     small_free_all();
