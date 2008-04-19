@@ -5,8 +5,10 @@
 
     WORKS:
         OS X
+    BREAKS:
+        Linux, Solaris
     TODO:
-        Windows, Linux, NetBSD, Solaris, ...
+        Windows, NetBSD, ...
 */
 
 #include <stdlib.h>
