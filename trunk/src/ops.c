@@ -144,7 +144,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     unsigned int opcode;
     short opidx;
     SYMBOL *symbase;
-    int     opsize;
+    unsigned int opsize;
     
     Csegment->flags |= SF_REF;
     programlabel();
