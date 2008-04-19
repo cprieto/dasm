@@ -75,6 +75,7 @@ X(ERROR_INVALID_RANGE, true, "Invalid range, %s.")
 X(ERROR_OUT_OF_MEMORY, true, "Unable to allocate memory (%s)!")
 
 /* new generic errors when we don't want to define explicit ones [phf] */
+/* TODO: turn around, as in DEBUG_GENERIC, INFO_GENERIC, etc.? */
 X(ERROR_GENERIC_DEBUG, false, "%s (generic).")
 X(ERROR_GENERIC_INFO, false, "%s (generic).")
 X(ERROR_GENERIC_NOTICE, false, "%s (generic).")
@@ -82,6 +83,12 @@ X(ERROR_GENERIC_WARNING, false, "%s (generic).")
 X(ERROR_GENERIC_ERROR, false, "%s (generic).")
 X(ERROR_GENERIC_FATAL, true, "%s (generic).")
 X(ERROR_GENERIC_PANIC, true, "%s (generic).")
+
+/* debug "errors" are labeled by module, eventually allowing filter [phf] */
+X(ERROR_DEBUG_MAIN, false, "%s (module main).")
+X(ERROR_DEBUG_UTIL, false, "%s (module util).")
+X(ERROR_DEBUG_ENTER, false, "Function %s entered.")
+X(ERROR_DEBUG_LEAVE, false, "Function %s left.")
 
 /* F8 errors */
 X(ERROR_VALUE_MUST_BE_1_OR_4, true, "Value in '%s' must be 1 or 4.")
