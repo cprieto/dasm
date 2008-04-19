@@ -318,15 +318,35 @@ strlcpy(char *dst, const char *src, size_t siz)
 	return(s - src - 1);	/* count does not include NUL */
 }
 
+static const char *__dasm_progname = NULL;
+
+const char *getprogname(void)
+{
+    return (__dasm_progname != NULL) ? __dasm_progname : "(unknown progname)";
+}
+
+void setprogname(const char *name)
+{
+    char *slash = strrchr(name, '/');
+    if (slash != NULL)
+    {
+        name = slash+1;
+    }
+    __dasm_progname = name;
+}
+
 #endif /* !defined(__APPLE__) && !defined(__BSD__) */
 
 #if defined(TEST)
 /* unit tests */
-int main(void)
+int main(int argc, char *argv[])
 {
   char *one;
   char *two;
   union align { long l; void *p; void (*fp)(void); };
+  puts(getprogname());
+  setprogname(argv[0]);
+  puts(getprogname());
   printf("sizeof(align)==%zu\n", sizeof(union align));
   one = checked_malloc(1<<31);
   puts("First malloc()ed!");
