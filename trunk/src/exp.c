@@ -37,6 +37,7 @@
 #include "errors.h"
 #include "util.h"
 #include "version.h"
+#include <assert.h>
 
 /*@unused@*/
 SVNTAG("$Id$");
@@ -880,6 +881,12 @@ const char *pushsymbol(const char *str)
 
     if (*ptr == '$')
         ptr++;
+
+    /*
+        make sure we pass non-negative here, maybe we can change
+        findsymbol() signature [phf]
+    */
+    assert((ptr-str) >= 0);
 
     if ((sym = findsymbol(str, ptr - str)) != NULL)
     {
