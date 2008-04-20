@@ -28,6 +28,11 @@
 
 #include <stdbool.h>
 
+/* remove cool GNU stuff for other compilers */
+#ifndef __GNUC__
+#define __attribute__(x)  /* GNU C __attribute__ removed */
+#endif
+
 /**
  * @file errors.h
  * @brief Error handling for DASM.
@@ -136,20 +141,33 @@ typedef struct
 }
 error_info_t;
 
-#define SNAPSHOT_SOURCE_LENGTH 256
+/**
+ * @brief Length of buffer for source locations.
+ */
+#define SOURCE_LOCATION_LENGTH 256
+
+/**
+ * @brief Global buffer for source locations.
+ */
+extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
+
 /**
  * @brief Macro to capture current location in the C source
  * into a string buffer, useful for some internal conditions
- * like panic().
- * @warning The macro defines the string buffer you name, so
- * don't use it twice in the same block.
- * @note We have to use snprintf() because __func__ doesn't
- * expand into a string literal for some reason... :-/
+ * like panic() and debug().
+ * @example SOURCE_LOCATION printf("You're at %s\n", SOURCE_LOCATION);
+ * @warning Since there is only one global buffer, our
+ * SOURCE_LOCATION macro is not "reentrant"; never use
+ * SOURCE_LOCATION more than once in a single evaluation
+ * context!
+ * @note We have to use snprintf() and a global buffer
+ * because __func__ is not expanded into a string literal
+ * by the preprocessor! :-/
  */
-#define SNAPSHOT_SOURCE_LOCATION(buffer) \
-    char buffer[SNAPSHOT_SOURCE_LENGTH]; \
-    snprintf(buffer, SNAPSHOT_SOURCE_LENGTH, "%s/%s()/%d", \
-             __FILE__, __func__, __LINE__)
+#define SOURCE_LOCATION \
+    (snprintf(source_location_buffer, SOURCE_LOCATION_LENGTH, \
+              "%s/%s()/%d", __FILE__, __func__, __LINE__), \
+              source_location_buffer)
 
 /**
  * @todo temporarily exported to get main.c to compile, main.c
@@ -196,6 +214,28 @@ void warning(error_t _error, const char *detail);
 void error(error_t _error, const char *detail);
 void fatal(error_t _error, const char *detail);
 void new_panic(error_t _error, const char *detail);
+
+/**
+ * @brief New error handling in printf(3) style.
+ * @note turned down dprintf, iprintf, wprintf convention
+ * as well as debugf, infof, warningf convention
+ * @see http://ocliteracy.com/techtips/gnu-c-attributes.html
+ */
+
+void notify_fmt(error_level_t level, const char *fmt, ...)
+  __attribute__((format(printf, 2, 3)));
+void debug_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void info_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void notice_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void warning_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void error_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void fatal_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+
+#define MESSAGE_NOTHING "Nothing to tell you, which is a bug you should report!"
+#define MESSAGE_GENERIC "%s (generic)."
+#define MESSAGE_RANGE "The %s value in '%s' must be between %d and %d!"
+#define MESSAGE_MEMORY "Failed to allocate %d bytes of memory in %s!"
 
 #endif /* _DASM_ERRORS_H */
 
