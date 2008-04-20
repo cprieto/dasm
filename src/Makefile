@@ -61,6 +61,9 @@ all: $(ALL)
 dasm: $(OBJS)
 	$(CC) $(OBJS) -o dasm
 
+errors.o: errors.c errors.h errors.x
+util.o: util.c util.h errors.h
+
 # TODO: are these two lines really needed? GNU make
 # seems to build ftohex/ftobin fine without them...
 ftohex: ftohex.o
