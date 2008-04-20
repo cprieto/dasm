@@ -23,6 +23,20 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/*
+    TODO: I may have made a big mistake in trying to cram everything
+    DASM has to say into one single interface called notify(). There
+    *is* a difference between DASM errors (like out of memory, can't
+    open file, etc.) and ASSEMBLY errors (like wrong opcodes, can't
+    open INCLUDE file, etc.) which comes down to whether there is a
+    current file or not. Right now I have to "fake" things when we
+    don't have a current file, but I am not sure that's good. Maybe
+    there should be *one* function to deal with DASM errors, and
+    *another* to deal with ASSEMBLY erros... DASM errors don't need
+    (for the most part) codes either, they can just take printf()
+    form (e.g. eprintf/dprintf/iprintf whatnot in TPOP sense).
+*/
+
 #include "errors.h"
 
 #include "asm.h"
@@ -33,6 +47,7 @@ SVNTAG("$Id$");
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 /* define the error table for asmerr() from errors.x */
 #if defined(X)
@@ -52,6 +67,7 @@ error_format_t F_error_format = ERRORFORMAT_DEFAULT;
 error_level_t F_error_level = ERRORLEVEL_DEFAULT;
 unsigned int nof_errors = 0;
 unsigned int nof_warnings = 0;
+char source_location_buffer[SOURCE_LOCATION_LENGTH];
 
 /* TODO: another X macro hack? or just leave it? */
 static const char *levels[] =
@@ -85,16 +101,17 @@ static error_t dasmerr(error_t err, bool bAbort, const char *sText)
     /* file pointer we print error messages to */
     FILE *error_file = NULL;
 
-    if ( err >= ERROR_MAX || err < 0 )
+    /* TODO: fixed range checking for -Wextra below, but what if
+       enum is *not* unsigned in other compilers? hmmm... [phf] */
+    if ( err >= ERROR_MAX /*|| err < 0*/ )
     {
         return asmerr( ERROR_BADERROR, true, "Bad error ERROR!" );
     }
     else
     {
-        
         if (sErrorDef[err].bFatal)
             bStopAtEnd = true;
-        
+
         for ( pincfile = pIncfile; pincfile->flags & INF_MACRO; pincfile=pincfile->next);
         str = sErrorDef[err].sDescription;
 
@@ -190,7 +207,14 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
                 Error format for MS VisualStudio and relatives:
                 "file (line): error: string"
             */
-            fprintf(out, "%s (%lu): %s: ", file->name, file->lineno, level);
+            if (file != NULL)
+            {
+                fprintf(out, "%s (%lu): %s: ", file->name, file->lineno, level);
+            }
+            else
+            {
+                fprintf(out, "%s: ", level);
+            }
             break;
 
         case ERRORFORMAT_DILLON:
@@ -203,7 +227,14 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
                   "*line %4ld %-10s %s\n" (list file)
                   "line %4ld %-10s %s\n" (terminal)
             */
-            fprintf(out, "line %7ld %-10s ", file->lineno, file->name);
+            if (file != NULL)
+            {
+                fprintf(out, "line %7ld %-10s ", file->lineno, file->name);
+            }
+            else
+            {
+                /* nothing to print in this case... */
+            }
             break;
 
         case ERRORFORMAT_GNU:
@@ -211,7 +242,14 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
                 GNU format error messages, from their coding
                 standards: "source-file-name:lineno: message"
             */
-            fprintf(out, "%s:%lu: %s: ", file->name, file->lineno, level);
+            if (file != NULL)
+            {
+                fprintf(out, "%s:%lu: %s: ", file->name, file->lineno, level);
+            }
+            else
+            {
+                fprintf(out, "dasm: %s: ", level);
+            }
             break;
 
         default:
@@ -232,8 +270,10 @@ void notify(error_t _error, error_level_t level, const char *detail)
     /* level of severity description, grab from "levels" table later */
     const char *lev = NULL;
 
-    assert(ERROR_NONE <= _error && _error < ERROR_MAX);
-    assert(ERRORLEVEL_DEBUG <= level && level < ERRORLEVEL_MAX);
+    /* TODO: fixed range checking for -Wextra below, but what if
+       enum is *not* unsigned in other compilers? hmmm... [phf] */
+    assert(/*ERROR_NONE <= _error &&*/ _error < ERROR_MAX);
+    assert(/*ERRORLEVEL_DEBUG <= level &&*/ level < ERRORLEVEL_MAX);
 
     if (level < F_error_level)
     {
@@ -250,13 +290,11 @@ void notify(error_t _error, error_level_t level, const char *detail)
     {
         file = file->next;
     }
-    /* TODO: this will fail if we have no INCFILE yet! */
-    assert(file != NULL);
-
     /*
-        New error format selection for 2.20.11 since some
-        people *don't* use MS products. [phf]
+        took this out to accomodate the fact that there might not be
+        a file yet... [phf]
     */
+    /*assert(file != NULL);*/
 
     /* print first part of message, different formats offered */
     print_part_one(out, file, lev);
@@ -283,10 +321,7 @@ void notify(error_t _error, error_level_t level, const char *detail)
     }
     if (level == ERRORLEVEL_PANIC)
     {
-#if !defined(TEST)
-/* hack for unit tests where we don't want to exit! */
         exit(EXIT_FAILURE); /* stop right now! */
-#endif /* !defined(TEST) */
     }
 }
 
@@ -327,34 +362,53 @@ void new_panic(error_t _error, const char *detail)
     notify(_error, ERRORLEVEL_PANIC, detail);
 }
 
-#if defined(TEST)
-/* unit tests */
-FILE *FI_listfile = NULL;
-char *F_listfile = NULL;
-INCFILE *pIncfile = NULL;
-int main(void)
+/****** NEW SHIT *******/
+
+#define NOTIFY_BUFFER_SIZE 1024
+static char notify_buffer[NOTIFY_BUFFER_SIZE];
+
+static void vnotify(error_level_t level, const char *fmt, va_list ap)
 {
-  /* fake a current file */
-  pIncfile = malloc(sizeof(INCFILE));
-  pIncfile->next = NULL;
-  pIncfile->name = "someFileName";
-  pIncfile->lineno = 47;
-  /* enable all messages */
-  F_error_level = ERRORLEVEL_DEBUG;
-  /* test new API */
-  notify(ERROR_PROCESSOR_NOT_SUPPORTED, ERRORLEVEL_ERROR, "new API notify()");
-  debug(ERROR_PROCESSOR_NOT_SUPPORTED, "new API debug()");
-  info(ERROR_PROCESSOR_NOT_SUPPORTED, "new API info()");
-  notice(ERROR_PROCESSOR_NOT_SUPPORTED, "new API notice()");
-  warning(ERROR_PROCESSOR_NOT_SUPPORTED, "new API warning()");
-  error(ERROR_PROCESSOR_NOT_SUPPORTED, "new API error()");
-  fatal(ERROR_PROCESSOR_NOT_SUPPORTED, "new API fatal()");
-  new_panic(ERROR_PROCESSOR_NOT_SUPPORTED, "new API panic()");
-  /* test wrappers for old API */
-  panic("old API panic()");
-  asmerr(ERROR_PROCESSOR_NOT_SUPPORTED, true, "old API asmerr()");
-  return EXIT_SUCCESS;
+    /*
+        used to call vasprintf()/free() but we switched to a
+        global buffer with less overhead for this frequently
+        called function [phf]
+    */
+    const int max = NOTIFY_BUFFER_SIZE;
+
+    if (level < F_error_level) { return; }
+
+    if (vsnprintf(notify_buffer, max, fmt, ap) >= max)
+    {
+        panic("Buffer overflow in vnotify()!");
+    }
+
+    notify(ERROR_GENERIC_DEBUG, level, notify_buffer);
 }
-#endif /* defined(TEST) */
+
+/* avoid code replication through macros, sweet [phf] */
+#define IMPLEMENT_FMT(level) \
+    va_list ap; \
+    va_start(ap, fmt); \
+    vnotify(level, fmt, ap); \
+    va_end(ap)
+#define DEFINE_FMT(name, level) \
+void name(const char *fmt, ...) \
+{ \
+    IMPLEMENT_FMT(ERRORLEVEL_DEBUG); \
+}
+
+void notify_fmt(error_level_t level, const char *fmt, ...)
+{
+    IMPLEMENT_FMT(level);
+}
+
+DEFINE_FMT(debug_fmt, ERRORLEVEL_DEBUG)
+DEFINE_FMT(info_fmt, ERRORLEVEL_INFO)
+DEFINE_FMT(notice_fmt, ERRORLEVEL_NOTICE)
+DEFINE_FMT(warning_fmt, ERRORLEVEL_WARNING)
+DEFINE_FMT(error_fmt, ERRORLEVEL_ERROR)
+DEFINE_FMT(fatal_fmt, ERRORLEVEL_FATAL)
+DEFINE_FMT(panic_fmt, ERRORLEVEL_PANIC)
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
