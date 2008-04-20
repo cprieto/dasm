@@ -67,25 +67,16 @@ SVNTAG("$Id$");
 #include <stdint.h>
 #include <sys/types.h>
 
-#if defined(TEST)
-/* hack for unit tests where we don't want to exit! */
-void new_panic(error_t _error, const char *s)
-{
-    (void) printf("Simulated Panic: %s\n", s);
-}
-#endif /* defined(TEST) */
-
 /*@null@*/
 void *checked_malloc(size_t bytes)
 {
     void *p = NULL;
-    assert(bytes > 0); /* size_t usually unsigned, but rule out 0! */
+    assert(bytes > 0); /* size_t unsigned, but rule out 0! */
 
     p = malloc(bytes);
     if (p == NULL)
     {
-        SNAPSHOT_SOURCE_LOCATION(location);
-        new_panic(ERROR_OUT_OF_MEMORY, location);
+        panic_fmt(PANIC_MEMORY, bytes, SOURCE_LOCATION);
     }
 
     return p;
@@ -95,7 +86,7 @@ void *checked_malloc(size_t bytes)
 void *zero_malloc(size_t bytes)
 {
     void *p = NULL;
-    assert(bytes > 0); /* size_t usually unsigned, but rule out 0! */
+    assert(bytes > 0); /* size_t unsigned, but rule out 0! */
 
     p = checked_malloc(bytes);
     if (p != NULL)
@@ -127,7 +118,10 @@ void *small_alloc(size_t bytes)
     struct new_perm_block *block;
     size_t alignment = sizeof(union align);
 
-    assert(bytes > 0); /* size_t usually unsigned, but rule out 0! */
+    assert(bytes > 0); /* size_t unsigned, but rule out 0! */
+    /* could sanity check upper bound here, but we're doing it below anyway */
+
+    debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
 
     /* round up bytes for proper alignment */
     bytes = ROUNDUP(bytes);
@@ -135,10 +129,11 @@ void *small_alloc(size_t bytes)
     /* do we not have enough left in the current block? */
     if (bytes > left)
     {
-        puts("small_alloc: new block needed");
+        debug_fmt("%s: new block needed", SOURCE_LOCATION);
+
         /* allocate a new block */
         block = zero_malloc(ALLOCSIZE);
-        printf("small_alloc: block @ %p\n", (void*) block);
+        debug_fmt("%s: block @ %p", SOURCE_LOCATION, (void*) block);
 
         /* calculate bytes we have left */
         left = ALLOCSIZE - ROUNDUP(sizeof(block->next));
@@ -146,8 +141,8 @@ void *small_alloc(size_t bytes)
         /* check again if we have enough space */
         if (bytes > left)
         {
-            SNAPSHOT_SOURCE_LOCATION(location);
-            new_panic(ERROR_OUT_OF_MEMORY, location);
+            /* TODO: custom message since too large only for small_alloc? */
+            panic_fmt(PANIC_MEMORY, bytes, SOURCE_LOCATION);
         }
 
         /* insert at top of stack */
@@ -156,14 +151,15 @@ void *small_alloc(size_t bytes)
 
         /* setup buf to point to actual memory area */
         buf = ((char*)block) + ROUNDUP(sizeof(block->next)); /* char cast important! */
-        printf("small_alloc: initial buf @ %p\n", buf);
+        debug_fmt("%s: initial buf @ %p", SOURCE_LOCATION, (void*) buf);
     }
 
     ptr = buf;
     buf = ((char*)buf) + bytes; /* char cast important! */
-    printf("small_alloc: adjusted buf @ %p\n", buf);
+    debug_fmt("%s: adjusted buf @ %p", SOURCE_LOCATION, (void*) buf);
     assert(ptr < buf); /* TODO: good idea? [phf] */
     left -= bytes;
+    debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
     return ptr;
 }
 
@@ -171,6 +167,8 @@ void small_free_all(void)
 {
     /* the block we are about to free() */
     struct new_perm_block *current = NULL;
+
+    debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
 
     /* as long as we have block left */
     while (new_permalloc_stack != NULL)
@@ -181,9 +179,10 @@ void small_free_all(void)
         new_permalloc_stack = current->next;
         /* free() the block we popped */
         free(current);
-        /* TODO: debug() message */
-        printf("small_free_all: freed block @ %p\n", (void*) current);
+        debug_fmt("%s: freed block @ %p", SOURCE_LOCATION, (void*) current);
     }
+
+    debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
 }
 
 unsigned int hash_string(const char *string, size_t length)
@@ -336,35 +335,5 @@ void setprogname(const char *name)
 }
 
 #endif /* !defined(__APPLE__) && !defined(__BSD__) */
-
-#if defined(TEST)
-/* unit tests */
-int main(int argc, char *argv[])
-{
-  char *one;
-  char *two;
-  union align { long l; void *p; void (*fp)(void); };
-  puts(getprogname());
-  setprogname(argv[0]);
-  puts(getprogname());
-  printf("sizeof(align)==%zu\n", sizeof(union align));
-  one = checked_malloc(1<<31);
-  puts("First malloc()ed!");
-  two = checked_malloc(1<<31);
-  puts("Second malloc()ed! Should have caused a panic?");
-  if (two) free(two);
-  puts("Second free()d!");
-  if (one) free(one);
-  puts("First free()d!");
-  one = small_alloc(4096);
-  printf("First small_alloc()ed returned %p!\n", one);
-  two = small_alloc(4096);
-  assert(one < two);
-  printf("Second small_alloc()ed returned %p!\n", two);
-  one = small_alloc(10240);
-  small_free_all();
-  return EXIT_SUCCESS;
-}
-#endif /* defined(TEST) */
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

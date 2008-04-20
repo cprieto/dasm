@@ -52,7 +52,7 @@ OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
 SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c \
       mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
-TEST= util test_errors
+TEST= test_errors test_util
 
 ALL= dasm ftohex ftobin $(TEST)
 
@@ -71,8 +71,7 @@ ftobin: ftobin.o
 
 # produce executables for simple unit tests of certain
 # modules
-util: util.c util.h
-	gcc -DTEST -Wall util.c errors.o -o util
+test_util: test_util.c util.o errors.o
 test_errors: test_errors.c errors.o
 
 obj: $(OBJS)
