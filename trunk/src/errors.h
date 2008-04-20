@@ -235,7 +235,11 @@ void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 #define MESSAGE_NOTHING "Nothing to tell you, which is a bug you should report!"
 #define MESSAGE_GENERIC "%s (generic)."
 #define MESSAGE_RANGE "The %s value in '%s' must be between %d and %d!"
-#define MESSAGE_MEMORY "Failed to allocate %d bytes of memory in %s!"
+
+#define PANIC_MEMORY "Failed to allocate %zu bytes of memory in %s!"
+
+#define DEBUG_ENTER "<<< Entered function %s."
+#define DEBUG_LEAVE ">>> Left function %s."
 
 #endif /* _DASM_ERRORS_H */
 
