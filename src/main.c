@@ -1336,12 +1336,14 @@ void pushinclude(char *str)
  */
 static void exit_handler(void)
 {
-    debug(ERROR_DEBUG_ENTER, __func__);
+    debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
 
     /* free all small allocations we ever made */
     small_free_all();
 
     /* TODO: more cleanup actions here? */
+
+    debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
 }
 
 int main(int argc, char **argv)
