@@ -46,10 +46,13 @@
 #define true (!false)
 /* no strcasecmp so fake it using stricmp */
 #define strcasecmp stricmp
+/* strange paths :-) */
+#define DASM_PATH_SEPARATOR '\'
 #else
 #include <stdbool.h>
 #include <strings.h>
-#endif
+#define DASM_PATH_SEPARATOR '/'
+#endif /* defined(__WINDOWS__) */
 
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
 #define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */

@@ -152,7 +152,27 @@ size_t strlcat(char *dst, const char *src, size_t siz);
 
 size_t strlcpy(char *dst, const char *src, size_t siz);
 
-const char * getprogname(void);
+/**
+ * @brief
+ *   Name of current program.
+ * @warning
+ *   If name not set, a string to that effect is returned.
+ * @note
+ *   On BSD (including OS X) this function is defined in the C library!
+ */
+
+const char *getprogname(void);
+
+/**
+ * @brief
+ *   Sets name of current program sets to last component of given path.
+ * @warning
+ *   Just pass argv[0] if you want, however the parsing is simplistic so
+ *   you should be careful if your environment is the least bit exotic.
+ * @note
+ *   On BSD (including OS X) this function is defined in the C library!
+ */
+
 void setprogname(const char *name);
 
 #endif /* !defined(__APPLE__) && !defined(__BSD__) */
