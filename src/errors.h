@@ -232,14 +232,44 @@ void error_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void fatal_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
-#define MESSAGE_NOTHING "Nothing to tell you, which is a bug you should report!"
-#define MESSAGE_GENERIC "%s (generic)."
-#define MESSAGE_RANGE "The %s value in '%s' must be between %d and %d!"
+/**
+    @brief Standard messages DASM spits out under certain conditions.
 
-#define PANIC_MEMORY "Failed to allocate %zu bytes of memory in %s!"
+    Note that there's nothing special about these, you can add
+    messages here or write your own literal messages. However,
+    it is highly recommended that you use standard messages if
+    at all possible.
 
+    The messages are named according to the severity they are
+    most often associated with, however there's nothing wrong
+    with passing PANIC_MEMORY to warning_fmt() when you want
+    to make the user aware of the condition but have a backup
+    plan of how to handle it. (The symbol table sorting done
+    in main.c provides an example of this.)
+
+    @todo As of right now, the above is not entirely true. It
+    will be when I am done integrating the new log system with
+    the rest of DASM. :-) [phf]
+*/
+
+/* unclassified messages (so far) */
+#define LOG_NOTHING "Nothing to tell you, which is a bug you should report!"
+#define LOG_GENERIC "%s (generic)."
+
+/* messages that support debugging, *very* low-level stuff. */
 #define DEBUG_ENTER "<<< Entered function %s."
 #define DEBUG_LEAVE ">>> Left function %s."
+#define DEBUG_HASH_COLLISIONS "%d mnemonic collisions, %d symbol collisions."
+
+/* warnings related to assembly source code */ 
+#define WARNING_RANGE "The %s value in '%s' should be between %d and %d!"
+
+/* errors related to assembly source code */
+#define ERROR_SYNTAX "Syntax error in '%s'!"
+#define ERROR_RANGE "The %s value in '%s' should be between %d and %d!"
+
+/* messages that usually indicate terminal conditions :-) */
+#define PANIC_MEMORY "Failed to allocate %zu bytes of memory in %s!"
 
 #endif /* _DASM_ERRORS_H */
 
