@@ -326,7 +326,7 @@ const char *getprogname(void)
 
 void setprogname(const char *name)
 {
-    char *slash = strrchr(name, '/');
+    char *slash = strrchr(name, DASM_PATH_SEPARATOR);
     if (slash != NULL)
     {
         name = slash+1;
