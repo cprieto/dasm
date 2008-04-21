@@ -36,6 +36,13 @@
 /**
  * @file errors.h
  * @brief Error handling for DASM.
+ * @note The idea for separate error levels came from syslog(3)
+ * and vague memories of Ralf Michl's Java version of same.
+ * The idea for printf-style interfaces came from Thomas Mathys
+ * as well as from Brian W. Kernighan's and Rob Pike's great
+ * little book The Practice of Programming.
+ * @todo Throw out all the old error handling stuff, rewrite
+ * all of DASM to the new printf-style interfaces. Wow. :-/
  */
 
 /**
