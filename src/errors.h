@@ -29,6 +29,7 @@
 #include <stdbool.h>
 
 /* remove cool GNU stuff for other compilers */
+/* TODO: find more permanent place for this, more .h might need it! */
 #ifndef __GNUC__
 #define __attribute__(x)  /* GNU C __attribute__ removed */
 #endif
@@ -170,6 +171,7 @@ extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
  * @note We have to use snprintf() and a global buffer
  * because __func__ is not expanded into a string literal
  * by the preprocessor! :-/
+ * @todo the example tag above doesn't work as I thought it would...
  */
 #define SOURCE_LOCATION \
     (snprintf(source_location_buffer, SOURCE_LOCATION_LENGTH, \
@@ -230,34 +232,35 @@ void new_panic(error_t _error, const char *detail);
  */
 
 void notify_fmt(error_level_t level, const char *fmt, ...)
-  __attribute__((format(printf, 2, 3)));
+     __attribute__((format(printf, 2, 3)));
 void debug_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void info_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void notice_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void warning_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void error_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void fatal_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
+     /* TODO: __attribute__((noreturn)) leads to bus error? :-/ */;
 
 /**
-    @brief Standard messages DASM spits out under certain conditions.
-
-    Note that there's nothing special about these, you can add
-    messages here or write your own literal messages. However,
-    it is highly recommended that you use standard messages if
-    at all possible.
-
-    The messages are named according to the severity they are
-    most often associated with, however there's nothing wrong
-    with passing PANIC_MEMORY to warning_fmt() when you want
-    to make the user aware of the condition but have a backup
-    plan of how to handle it. (The symbol table sorting done
-    in main.c provides an example of this.)
-
-    @todo As of right now, the above is not entirely true. It
-    will be when I am done integrating the new log system with
-    the rest of DASM. :-) [phf]
-*/
+ * @brief Standard messages DASM spits out under certain conditions.
+ *
+ * Note that there's nothing special about these, you can add
+ * messages here or write your own literal messages. However,
+ * it is highly recommended that you use standard messages if
+ * at all possible.
+ *
+ * The messages are named according to the severity they are
+ * most often associated with, however there's nothing wrong
+ * with passing PANIC_MEMORY to warning_fmt() when you want
+ * to make the user aware of the condition but have a backup
+ * plan of how to handle it. (The symbol table sorting done
+ * in main.c provides an example of this.)
+ *
+ * @todo As of right now, the above is not entirely true. It
+ * will be when I am done integrating the new log system with
+ * the rest of DASM. :-) [phf]
+ */
 
 /* unclassified messages (so far) */
 #define LOG_NOTHING "Nothing to tell you, which is a bug you should report!"

@@ -38,8 +38,9 @@ FILE *FI_listfile = NULL;
 char *F_listfile = NULL;
 INCFILE *pIncfile = NULL;
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    setprogname(argv[0]);
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;
