@@ -81,6 +81,17 @@ static const char *levels[] =
     [ERRORLEVEL_PANIC] = "***panic***",
 };
 
+/* Super low-level panic for disasters *inside* the errors module! */
+static void internal_panic(const char *message)
+{
+  fputs("\n", stderr);
+  fputs(getprogname(), stderr);
+  fputs(": FATAL INTERNAL PANIC (errors.c): ", stderr);
+  fputs(message, stderr);
+  fputs("\n", stderr);
+  exit(EXIT_FAILURE);
+}
+
 void panic(const char *s)
 {
   new_panic(ERROR_GENERIC_PANIC, s);
@@ -159,8 +170,7 @@ static error_t dasmerr(error_t err, bool bAbort, const char *sText)
                         pincfile->name, pincfile->lineno);
                 break;
             default:
-                /* TODO: really panic here? [phf] */
-                panic("Invalid error format, internal error!");
+                internal_panic("Invalid error format in dasmerr()!");
                 break;
         }
 
@@ -253,8 +263,7 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
             break;
 
         default:
-            /* TODO: good idea? [phf] */
-            assert(false);
+            internal_panic("Invalid error format in print_part_one()!");
             break;
     }
 }
@@ -365,25 +374,79 @@ void new_panic(error_t _error, const char *detail)
 /****** NEW SHIT *******/
 
 #define NOTIFY_BUFFER_SIZE 1024
-static char notify_buffer[NOTIFY_BUFFER_SIZE];
+static char notify_buffer[NOTIFY_BUFFER_SIZE]; /* TODO: why global? */
 
 static void vnotify(error_level_t level, const char *fmt, va_list ap)
 {
+    /* file pointer we write the message to */
+    FILE *out = (F_listfile != NULL) ? FI_listfile : stderr;
+    /* include file we're in right now (if any) */
+    INCFILE *file = pIncfile;
+    /* level of severity description, grab from "levels" table later */
+    const char *lev = NULL;
+
+    /* TODO: fixed range checking for -Wextra below, but what if
+       enum is *not* unsigned in other compilers? hmmm... [phf] */
+    assert(/*ERRORLEVEL_DEBUG <= level &&*/ level < ERRORLEVEL_MAX);
+
+    if (level < F_error_level)
+    {
+        /* condition not severe enough */
+        return;
+    }
+
+    lev = levels[level];
+
+    /* find the file we're in */
+    /* TODO: how does this work? why no NULL ptr check in original? */
+    /* TODO: theory: find first non-macro, one is guaranteed to exist? */
+    while (file != NULL && (file->flags & INF_MACRO))
+    {
+        file = file->next;
+    }
+    /*
+        took this out to accomodate the fact that there might not be
+        a file yet... [phf]
+    */
+    /*assert(file != NULL);*/
+
+    /* print first part of message, different formats offered */
+    print_part_one(out, file, lev);
+
+    /* print second part of message, always the same for now */
     /*
         used to call vasprintf()/free() but we switched to a
         global buffer with less overhead for this frequently
         called function [phf]
     */
-    const int max = NOTIFY_BUFFER_SIZE;
-
-    if (level < F_error_level) { return; }
-
-    if (vsnprintf(notify_buffer, max, fmt, ap) >= max)
+    if (vsnprintf(notify_buffer, NOTIFY_BUFFER_SIZE, fmt, ap) >=
+        NOTIFY_BUFFER_SIZE)
     {
-        panic("Buffer overflow in vnotify()!");
+        internal_panic("Buffer overflow in vnotify()!");
+    }
+    fputs(notify_buffer, out);
+    fputs("\n", out);
+
+    /* maintain statistics about warnings and errors */
+    /* TODO: count everything < PANIC? */
+    if (level == ERRORLEVEL_WARNING)
+    {
+         nof_warnings += 1;
+    }
+    if (level == ERRORLEVEL_ERROR)
+    {
+         nof_errors +=1;
     }
 
-    notify(ERROR_GENERIC_DEBUG, level, notify_buffer);
+    /* fatal and higher errors lead to (eventual) termination */
+    if (level >= ERRORLEVEL_FATAL)
+    {
+        bStopAtEnd = true; /* stop after current pass */
+    }
+    if (level == ERRORLEVEL_PANIC)
+    {
+        exit(EXIT_FAILURE); /* stop right now! */
+    }
 }
 
 /* avoid code replication through macros, sweet [phf] */

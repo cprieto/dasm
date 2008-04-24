@@ -57,6 +57,7 @@ INCFILE *pIncfile = NULL;
 
 int main(int argc, char *argv[])
 {
+    setprogname(argv[0]);
     char *one;
     char *two;
     union align { long l; void *p; void (*fp)(void); };
