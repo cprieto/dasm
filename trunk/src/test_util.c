@@ -57,10 +57,10 @@ INCFILE *pIncfile = NULL;
 
 int main(int argc, char *argv[])
 {
-    setprogname(argv[0]);
     char *one;
     char *two;
     union align { long l; void *p; void (*fp)(void); };
+    setprogname(argv[0]);
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;
