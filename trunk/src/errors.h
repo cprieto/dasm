@@ -275,11 +275,16 @@ void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
 #define WARNING_RANGE "The %s value in '%s' should be between %d and %d!"
 
 /* errors related to assembly source code */
-#define ERROR_SYNTAX "Syntax error in '%s'!"
-#define ERROR_RANGE "The %s value in '%s' should be between %d and %d!"
+#define ERROR_SYNTAX_NONE "Syntax error!"
+#define ERROR_SYNTAX_ONE "Syntax error in '%s'!"
+#define ERROR_SYNTAX_TWO "Syntax error in '%s %s'!"
+#define ERROR_VALUE_RANGE "The %s value in '%s' should be between %d and %d!"
+#define ERROR_VALUE_ONEOF "The %s value in '%s' should one of %s!"
+#define ERROR_BRANCH_RANGE "Branch out of range (%d bytes)!"
 
 /* messages that usually indicate terminal conditions :-) */
 #define PANIC_MEMORY "Failed to allocate %zu bytes of memory in %s!"
+#define PANIC_SMALL_MEMORY "Failed to allocate %zu bytes of small memory in %s!"
 
 #endif /* _DASM_ERRORS_H */
 

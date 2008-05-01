@@ -105,6 +105,7 @@ struct new_perm_block
 
 static struct new_perm_block *new_permalloc_stack = NULL;
 
+#define ALLOCSIZE 16384
 #define ROUNDUP(x) ((x + alignment-1) & ~(alignment-1))
 
 void *small_alloc(size_t bytes)
@@ -141,8 +142,7 @@ void *small_alloc(size_t bytes)
         /* check again if we have enough space */
         if (bytes > left)
         {
-            /* TODO: custom message since too large only for small_alloc? */
-            panic_fmt(PANIC_MEMORY, bytes, SOURCE_LOCATION);
+            panic_fmt(PANIC_SMALL_MEMORY, bytes, SOURCE_LOCATION);
         }
 
         /* insert at top of stack */
