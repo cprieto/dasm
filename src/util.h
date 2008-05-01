@@ -88,8 +88,9 @@ void *small_alloc(size_t bytes);
  *   Free *all* memory allocated by small_alloc() so far.
  *
  * @warning
- *   This function should only be called when your process is
- *   about to exit(3) or if you *really* know what you're doing.
+ *   This function should only be called if your process is
+ *   about to exit(3) or if you *really* know what you're doing;
+ *   otherwise you'll end up with lots of dangling pointers.
  */
 
 void small_free_all(void);
