@@ -66,6 +66,7 @@ gamemode:	equ	$2a01
 palvideomode:	equ	$2a02
 ;shownextfigure: equ	$2a03
 
+header:
 		db	$55	; cartridge id
 		db	$2b	; unknown
 entry:
@@ -2125,3 +2126,4 @@ copyright:
 		db	$20,$54,$52,$41,$55,$4e,$45,$52
 		db	0
 
+	align	4096-header
