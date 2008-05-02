@@ -72,7 +72,7 @@ ftobin: ftobin.o
 # produce executables for simple unit tests of certain
 # modules
 test_util: test_util.c util.o errors.o
-test_errors: test_errors.c errors.o
+test_errors: test_errors.c errors.o util.o
 
 obj: $(OBJS)
 
