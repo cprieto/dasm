@@ -197,19 +197,28 @@ void programlabel(void)
         {
             if (pc != sym->value)
             {
-
-            /*
-            * If we had an unevaluated IF expression in the
-            * previous pass, don't complain about phase errors
-            * too loudly.
+                /*
+                    If we had an unevaluated IF expression in the
+                    previous pass, don't complain about phase errors
+                    too loudly.
                 */
                 if (F_verbose >= 1 || !(Redo_if & (REASON_OBSCURE)))
                 {
+                    /* [phf] removed
                     char sBuffer[ MAX_SYM_LEN * 2 ];
                     sprintf( sBuffer, "%s %s", sym->name, sftos( sym->value, 0 ) );
+                    */
+                    /* TODO: the following was already removed before [phf]
+                       started hacking, it looks like the way Andrew
+                       put the error message together, some information
+                       might be missing? need to check with Matt's DASM */
                     /*, sftos(sym->value,
                     sym->flags) ); , sftos(pc, cflags & 7));*/
+                    /* [phf] removed:
                     asmerr( ERROR_LABEL_MISMATCH, false, sBuffer );
+                    */
+                    error_fmt("Label mismatch...\n --> %s %s",
+                              sym->name, sftos(sym->value, 0));
                 }
                 ++Redo;
                 Redo_why |= REASON_PHASE_ERROR;

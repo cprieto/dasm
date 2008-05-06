@@ -172,7 +172,12 @@ SYMBOL *eval(const char *str, int wantmode)
             if (Lastwasop)
                 doop((opfunc_t)op_invert, 128);
             else
+            {
+                /* [phf] removed
                 asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+                */
+                error_fmt(ERROR_SYNTAX_ONE, pLine);
+            }
             ++str;
             break;
 
@@ -427,9 +432,19 @@ SYMBOL *eval(const char *str, int wantmode)
                 cur->next = pNewSymbol;
                 --Argi;
                 if (Argi < Argibase)
+                {
+                    /* [phf] removed
                     asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+                    */
+                    error_fmt(ERROR_SYNTAX_ONE, pLine);
+                }
                 if (Argi > Argibase)
+                {
+                    /* [phf] removed
                     asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+                    */
+                    error_fmt(ERROR_SYNTAX_ONE, pLine);
+                }
                 cur->value = Argstack[Argi];
                 cur->flags = Argflags[Argi];
                 
@@ -500,7 +515,12 @@ SYMBOL *eval(const char *str, int wantmode)
     }
 
     if (Argi != Argibase || Opi != Opibase)
+    {
+        /* [phf] removed
         asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+        */
+        error_fmt(ERROR_SYNTAX_ONE, pLine);
+    }
 
 
     Argi = Argibase;
@@ -523,15 +543,23 @@ void evaltop(void)
     if (Xdebug)
         printf("evaltop @(A,O) %d %d\n", Argi, Opi);
     
-    if (Opi <= Opibase) {
+    if (Opi <= Opibase)
+    {
+        /* [phf] removed
         asmerr( ERROR_SYNTAX_ERROR, false, NULL );
+        */
+        error_fmt(ERROR_SYNTAX_NONE);
         Opi = Opibase;
         return;
     }
     --Opi;
     if (Oppri[Opi] == 128) {
-        if (Argi < Argibase + 1) {
+        if (Argi < Argibase + 1)
+        {
+            /* [phf] removed
             asmerr( ERROR_SYNTAX_ERROR, false, NULL );
+            */
+            error_fmt(ERROR_SYNTAX_NONE);
             Argi = Argibase;
             return;
         }
@@ -542,7 +570,10 @@ void evaltop(void)
     {
         if (Argi < Argibase + 2)
         {
+            /* [phf] removed
             asmerr( ERROR_SYNTAX_ERROR, false, NULL );
+            */
+            error_fmt(ERROR_SYNTAX_NONE);
             Argi = Argibase;
             return;
         }
@@ -667,7 +698,11 @@ void op_div(long v1, long v2, int f1, int f2)
     }
     if (v2 == 0)
     {
+        /* [phf] removed
         asmerr( ERROR_DIVISION_BY_0, true, NULL );
+        */
+        fatal_fmt("Division by zero!");
+        /* TODO: not fatal in Matt's DASM, Andrew made it fatal in 2.20.04 [phf] */
         stackarg(0L, 0, NULL);
     }
     else
@@ -871,8 +906,13 @@ const char *pushsymbol(const char *str)
         (*ptr >= '0' && *ptr <= '9');
     ++ptr
         );
-    if (ptr == str) {
+    if (ptr == str)
+    {
+        /* [phf] removed
         asmerr( ERROR_ILLEGAL_CHARACTER, false, str );
+        */
+        error_fmt("Invalid character '%s'!", str); /* TODO: (*str) instead? */
+        /* TODO: should go in error handling code, not here! [phf] */
         printf("char = '%c' %d (-1: %d)\n", *str, *str, *(str-1));
         if (F_listfile)
             fprintf(FI_listfile, "char = '%c' code %d\n", *str, *str);
