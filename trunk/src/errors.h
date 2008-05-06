@@ -281,6 +281,8 @@ void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
 #define ERROR_VALUE_RANGE "The %s value in '%s' should be between %d and %d!"
 #define ERROR_VALUE_ONEOF "The %s value in '%s' should one of %s!"
 #define ERROR_BRANCH_RANGE "Branch out of range (%d bytes)!"
+#define ERROR_INVALID_BIT "Invalid bit specification in '%s' must be <8!"
+#define ERROR_INVALID_ARGS "Not enough arguments!"
 
 /* messages that usually indicate terminal conditions :-) */
 #define PANIC_MEMORY "Failed to allocate %zu bytes of memory in %s!"

@@ -612,7 +612,12 @@ nextpass:
                 else
                 {
                     if (Ifstack->xtrue && Ifstack->acctrue)
+                    {
+                        /* [phf] removed
                         asmerr( ERROR_UNKNOWN_MNEMONIC, false, Av[1] );
+                        */
+                        error_fmt("Unknown mnemonic '%s'!", Av[1]);
+                    }
                 }
                 
             }
@@ -691,10 +696,13 @@ nextpass:
             }
             else if ( pass > nMaxPasses )
             {
+                /* [phf] removed
                 char sBuffer[64];
                 sprintf( sBuffer, "%d", pass );
                 return asmerr( ERROR_TOO_MANY_PASSES, false, sBuffer );
-                
+                */
+                fatal_fmt("Too many passes (%d)!", pass);
+                return EXIT_FAILURE; /* TODO: refactor somehow? */
             }
             else
             {
@@ -910,7 +918,10 @@ static const char *cleanup(char *buf, bool bDisable)
             }
             if (*str != '\"')
             {
+                /* [phf] removed
                 asmerr( ERROR_SYNTAX_ERROR, false, buf );
+                */
+                error_fmt(ERROR_SYNTAX_ONE, buf);
                 --str;
             }
             break;
@@ -970,7 +981,10 @@ static const char *cleanup(char *buf, bool bDisable)
             }
             else
             {
+                /* [phf] removed
                 asmerr( ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO, false, NULL );
+                */
+                error_fmt("Not enough arguments passed to macro!");
                 goto br2;
             }
             break;
@@ -1279,7 +1293,10 @@ void v_macro(char *str, MNEMONIC *dummy)
             slp = &sl->next;
         }
     }
+    /* [phf] removed
     asmerr( ERROR_PREMATURE_EOF, true, NULL );
+    */
+    fatal_fmt("Premature end of file!");
 }
 
 
