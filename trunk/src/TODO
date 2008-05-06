@@ -11,6 +11,11 @@ are hiding the file all the way down here for a reason...
 - for some reason DASM doesn't exit with proper code
   - echo $? after an error still says 0, not useful...
 
+- find all external accesses to F_listfile to really centralize
+  error handling in errors module!
+  - be careful though, there *is* a purpose for a listing file
+    after all, unrelated to error messages!
+
 - negative.asm test case still not quite right
   - need to make range checking for literals fool proof
   - this is painful for lots of reasons
@@ -112,3 +117,4 @@ are hiding the file all the way down here for a reason...
     - however it wants autotools for almost everything
   - at least add coverage analysis darn it
     - gcov is not hard to add to current scripts
+
