@@ -103,6 +103,7 @@ error_t asmerr(error_t err, bool bAbort, const char *sText)
     return EXIT_FAILURE;
 }
 
+#if 0
 /* TODO: original asmerr() just here for reference for now */
 static error_t dasmerr(error_t err, bool bAbort, const char *sText);
 static error_t dasmerr(error_t err, bool bAbort, const char *sText)
@@ -187,6 +188,7 @@ static error_t dasmerr(error_t err, bool bAbort, const char *sText)
     
     return err;
 }
+#endif
 
 /* helper to print the first part of an error message */
 static void print_part_one(FILE *out, const INCFILE *file, const char *level)
