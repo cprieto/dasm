@@ -107,6 +107,7 @@ SYMBOL *CreateSymbol( const char *str, int len )
     SYMBOL *sym;
     unsigned int h1;
     char buf[ MAX_SYM_LEN + 14 ];           /* historical */
+    char *name;
     
     if (len > MAX_SYM_LEN )
         len = MAX_SYM_LEN;
@@ -127,8 +128,9 @@ SYMBOL *CreateSymbol( const char *str, int len )
     }
     
     sym = allocsymbol();
-    sym->name = small_alloc(len+1);
-    memcpy(sym->name, str, len); /* small_alloc zeros the array for us */
+    name = small_alloc(len + 1);
+    memcpy(name, str, len); /* small_alloc zeros the array for us */
+    sym->name = name;
     sym->namelen = len;
     h1 = hash_symbol(str, len);
     sym->next = SHash[h1];
@@ -272,7 +274,9 @@ void FreeSymbolList(SYMBOL *sym)
         next = sym->next;
         sym->next = SymAlloc;
         if (sym->flags & SYM_STRING)
-            free(sym->string);
+        {
+            free(sym->string); /* warning presumably okay? [phf] */
+        }
         SymAlloc = sym;
         sym = next;
     }
