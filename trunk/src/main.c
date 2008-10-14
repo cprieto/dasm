@@ -271,24 +271,21 @@ static void ShowSymbols( FILE *file, bool bTableSort )
         
 }
 
-
+#define SHOW_SEGMENTS_FORMAT "%-24s %-3s %-8s %-8s %-8s %-8s\n"
 
 static void ShowSegments(void)
 {
     SEGMENT *seg;
     const char *bss;
-    const char *sFormat = "%-24s %-3s %-8s %-8s %-8s %-8s\n\0";
-    
-    
-    
+
     printf("\n----------------------------------------------------------------------\n");
-    printf( sFormat, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC" );
+    printf( SHOW_SEGMENTS_FORMAT, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC" );
     
     for (seg = Seglist; seg; seg = seg->next)
     {
         bss = (seg->flags & SF_BSS) ? "[u]" : "   ";
         
-        printf( sFormat, seg->name, bss,
+        printf( SHOW_SEGMENTS_FORMAT, seg->name, bss,
             sftos(seg->initorg, seg->initflags), sftos(seg->initrorg, seg->initrflags),
             sftos(seg->org, seg->flags), sftos(seg->rorg, seg->rflags) );
     }
@@ -1239,8 +1236,8 @@ void v_macro(char *str, MNEMONIC *dummy)
 {
     STRLIST *base;
     int defined = 0;
-    STRLIST **slp, *sl;
-    MACRO *mac;    /* slp, mac: might be used uninitialised */
+    STRLIST **slp = NULL, *sl;
+    MACRO *mac = NULL;    /* slp, mac: might be used uninitialised */
     MNEMONIC   *mne;
     unsigned int i;
     char buf[MAXLINE];
