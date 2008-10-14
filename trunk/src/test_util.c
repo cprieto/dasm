@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;
-    pIncfile->name = "someFileName";
+    pIncfile->name = strdup("someFileName");
     pIncfile->lineno = 47;
     /* enable all messages */
     F_error_level = ERRORLEVEL_DEBUG;
