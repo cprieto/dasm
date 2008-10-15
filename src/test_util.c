@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     char *one;
     char *two;
     union align { long l; void *p; void (*fp)(void); };
-    const unsigned int BIG = ((unsigned) 1) << 31;
+    const size_t BIG = ((size_t) 1) << 31;
     setprogname(argv[0]);
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
