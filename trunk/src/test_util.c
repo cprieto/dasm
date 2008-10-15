@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
     char *one;
     char *two;
     union align { long l; void *p; void (*fp)(void); };
+    const unsigned int BIG = ((unsigned) 1) << 31;
     setprogname(argv[0]);
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
@@ -73,9 +74,9 @@ int main(int argc, char *argv[])
     setprogname(argv[0]);
     puts(getprogname());
     printf("sizeof(align)==%zu\n", sizeof(union align));
-    one = checked_malloc(1<<31);
+    one = checked_malloc(BIG);
     puts("First malloc()ed!");
-    two = checked_malloc(1<<31);
+    two = checked_malloc(BIG);
     puts("Second malloc()ed! Should have caused a panic?");
     if (two) free(two);
     puts("Second free()d!");
