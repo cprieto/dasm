@@ -235,7 +235,7 @@ static void ShowSymbols( FILE *file, bool bTableSort )
         {
             /* Copy the element pointers into the symbol array */
             
-            int nPtr = 0;
+            size_t nPtr = 0;
             
             for (i = 0; i < SHASHSIZE; ++i)
                 for (sym = SHash[i]; sym; sym = sym->next)
