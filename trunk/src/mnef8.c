@@ -63,7 +63,7 @@ enum REGISTERS {
     REG_NONE,
 };
 
-
+#if 0
 /*
  * used to print error messages.
  * mnename and opstring are copied into a single error message,
@@ -86,7 +86,7 @@ static void f8err(error_t err, const char *mnename, const char *opstring, bool b
     asmerr(err, bAbort, buf);
     free(buf);
 }
-
+#endif
 
 /*
  * emits a one byte opcode.
@@ -168,7 +168,10 @@ static int parse_value(char *str, unsigned long *value) {
     sym = eval(str, 0);
 
     if (NULL != sym->next || AM_BYTEADR != sym->addrmode) {
+        /* [phf] removed
         asmerr(ERROR_SYNTAX_ERROR, true, str);
+        */
+        error_fmt(ERROR_SYNTAX_ONE, str); /* TODO: fatal? since true passed? */
     }
     else if (sym->flags & SYM_UNKNOWN) {
         ++Redo;
@@ -245,7 +248,11 @@ static int parse_scratchpad_register(char *str, unsigned char *reg) {
         return 1;       /* unresolved expr */
     } else {
         if (regnum > 14) {
+            /* [phf] removed
             asmerr(ERROR_VALUE_MUST_BE_LT_F, true, str);
+            */
+            error_fmt("Value in '%s' must be <$f!", str);
+            /* TODO: fatal? since true passed? refactor to general message? */
         }
         *reg = regnum;
         return 0;
@@ -312,7 +319,10 @@ static void v_ins_outs(char *str, MNEMONIC *mne) {
     programlabel();
     parse_value(str, &operand);
     if (operand > 15) {
+        /* [phf] removed
         f8err(ERROR_VALUE_MUST_BE_LT_10, mne->name, str, false);
+        */
+        error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 15);
     }
     emit_opcode1(mne->opcode[0] | (operand & 15));
 }
@@ -336,7 +346,10 @@ static void v_sl_sr(char *str, MNEMONIC *mne) {
                 emit_opcode1(mne->opcode[0] + 2);
                 break;
             default:
+                /* [phf] removed
                 f8err(ERROR_VALUE_MUST_BE_1_OR_4, mne->name, str, false);
+                */
+                error_fmt(ERROR_VALUE_ONEOF, mne->name, str, "1 or 4");
                 emit_opcode1(0);
                 break;
         }
@@ -351,7 +364,10 @@ static void v_lis(char *str, MNEMONIC *mne) {
     programlabel();
     parse_value(str, &operand);
     if (operand > 15) {
+        /* [phf] removed
         f8err(ERROR_VALUE_MUST_BE_LT_10, mne->name, str, false);
+        */
+        error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 15);
     }
     emit_opcode1(0x70 | (operand & 15));
 }
@@ -364,7 +380,10 @@ static void v_lisu_lisl(char *str, MNEMONIC *mne) {
     programlabel();
     parse_value(str, &operand);
     if (operand > 7) {
+        /* [phf] removed
         f8err(ERROR_VALUE_MUST_BE_LT_8, mne->name, str, false);
+        */
+        error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 7);
     }
     emit_opcode1(mne->opcode[0] | (operand & 7));
 }
@@ -407,7 +426,10 @@ static void v_lr(char *str, MNEMONIC *mne) {
         }
     }
     if (1 != ncommas) {
-	f8err(ERROR_SYNTAX_ERROR, mne->name, str, false);
+    	/* [phf] removed
+        f8err(ERROR_SYNTAX_ERROR, mne->name, str, false);
+        */
+        error_fmt(ERROR_SYNTAX_TWO, mne->name, str);
         return;
     }
 
@@ -514,7 +536,11 @@ static void v_lr(char *str, MNEMONIC *mne) {
             break;
     }
     if (opcode < 0) {
+        /* [phf] removed
         f8err(ERROR_ILLEGAL_OPERAND_COMBINATION, mne->name, str, true);
+        */
+        error_fmt("Invalid combination of operands '%s %s'!",
+                  mne->name, str); /* TODO: fatal? since true passed? */
     } else {
         emit_opcode1(opcode);
     }
@@ -544,10 +570,15 @@ static void generate_branch(unsigned char opcode, char *str) {
     /* calculate displacement */
     if (isPCKnown()) {
         disp = target_adr - getPC() - 1;
+        /* [phf] ops.c v_mnemonic() checks different range! */
         if (disp > 127 || disp < -128) {
+            /* [phf] removed
             char buf[64];
             sprintf(buf, "%d", (int)disp);
             asmerr(ERROR_BRANCH_OUT_OF_RANGE, false, buf);
+            */
+            error_fmt(ERROR_BRANCH_RANGE, disp);
+            /* TODO: this doesn't say by how much it's out of range! */
         }
     } else {
         /* unknown pc, will be (hopefully) resolved in future passes */
@@ -586,7 +617,10 @@ static void v_bf_bt(char *str, MNEMONIC *mne) {
         }
     }
     if (1 != ncommas) {
+        /* [phf] removed
         f8err(ERROR_SYNTAX_ERROR, mne->name, str, false);
+        */
+        error_fmt(ERROR_SYNTAX_TWO, mne->name, str);
         return;
     }
 
@@ -607,13 +641,19 @@ static void v_bf_bt(char *str, MNEMONIC *mne) {
     if ('f' == mne->name[1]) {
         /* bf */
         if (value > 15) {
+            /* [phf] removed
             f8err(ERROR_VALUE_MUST_BE_LT_10, mne->name, str, false);
+            */
+            error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 15);
             value &= 15;
         }
     } else {
         /* bt */
         if (value > 7) {
+            /* [phf] removed
             f8err(ERROR_VALUE_MUST_BE_LT_8, mne->name, str, false);
+            */
+            error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 7);
             value &= 7;
         }
     }
@@ -633,7 +673,10 @@ static void v_wordop(char *str, MNEMONIC *mne) {
     programlabel();
     parse_value(str, &value);
     if (value > 0xffff) {
+        /* [phf] removed
         f8err(ERROR_VALUE_MUST_BE_LT_10000, mne->name, str, false);
+        */
+        error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 65535);
     }
     emit_opcode3(mne->opcode[0], (value >> 8) & 0xff, value & 0xff);
 }
@@ -650,7 +693,10 @@ static void v_byteop(char *str, MNEMONIC *mne) {
     programlabel();
     parse_value(str, &value);
     if (value > 0xff) {
+        /* [phf] removed
         f8err(ERROR_ADDRESS_MUST_BE_LT_100, mne->name, str, false);
+        */
+        error_fmt(ERROR_VALUE_RANGE, mne->name, str, 0, 255);
     }
     emit_opcode2(mne->opcode[0], value & 0xff);
 }
