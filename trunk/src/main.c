@@ -372,7 +372,7 @@ static int MainShadow(int ac, char **av, bool *pbTableSort )
     
     
     
-    int nError = ERROR_NONE;
+//    int nError = ERROR_NONE;
     bool bDoAllPasses = false;
     int nMaxPasses = 10;
     
@@ -414,7 +414,8 @@ fail:
     puts("");
     DASM_PRINT_BUGS
 
-    return ERROR_COMMAND_LINE;
+    fatal_fmt("Check command-line format.");
+//    return ERROR_COMMAND_LINE;
     }
     
     for (i = 2; i < ac; ++i)
@@ -559,7 +560,8 @@ nextpass:
     CheckSum = 0;
     if (FI_temp == NULL) {
         printf("Warning: Unable to [re]open '%s'\n", F_outfile);
-        return ERROR_FILE_ERROR;
+        fatal_fmt("Unable to open file.");
+//        return ERROR_FILE_ERROR;
     }
     if (F_listfile) {
 
@@ -568,7 +570,8 @@ nextpass:
 
         if (FI_listfile == NULL) {
             printf("Warning: Unable to [re]open '%s'\n", F_listfile);
-            return ERROR_FILE_ERROR;
+            fatal_fmt("Unable to open file.");
+//            return ERROR_FILE_ERROR;
         }
     }
     pushinclude(av[1]);
@@ -674,7 +677,8 @@ nextpass:
             if (Redo == oldredo && Redo_why == oldwhy && Redo_eval == oldeval)
             {
                 ShowUnresolvedSymbols();
-                return ERROR_NOT_RESOLVABLE;
+                fatal_fmt("Source is not resolvable.");
+//                return ERROR_NOT_RESOLVABLE;
             }
             
             oldredo = Redo;
@@ -712,7 +716,8 @@ nextpass:
     if (Xdebug)
         debug_hash_collisions();
 
-    return nError;
+//    return nError;
+    return EXIT_SUCCESS;
 }
 
 
@@ -1363,7 +1368,7 @@ static void exit_handler(void)
 int main(int argc, char **argv)
 {
     bool bTableSort = false;
-    int nError;
+//    int nError;
 
     setprogname(argv[0]);
 
@@ -1372,17 +1377,27 @@ int main(int argc, char **argv)
         panic_fmt("Could not install exit handler!");
     }
 
-    nError = MainShadow(argc, argv, &bTableSort);
+//    nError =
+    MainShadow(argc, argv, &bTableSort);
 
+#if 0
     /* TODO: avoid accessing error table here! */
     if (nError)
     {
         printf("Fatal assembly error: %s\n", sErrorDef[nError].sDescription);
     }
+#endif
     
     DumpSymbolTable(bTableSort);
+
+    if (nof_errors > 0) {
+      return EXIT_FAILURE;
+    }
+    else {
+      return EXIT_SUCCESS;
+    }
     
-    return nError;
+//    return nError;
 }
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
