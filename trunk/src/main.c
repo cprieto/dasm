@@ -432,7 +432,7 @@ fail:
                 if (/*F_error_format < ERRORFORMAT_DEFAULT
                    ||*/ F_error_format >= ERRORFORMAT_MAX )
                 {
-                    panic("Invalid error format for -E, must be 0, 1, 2");
+                    panic_fmt("Invalid error format for -E, must be 0, 1, 2");
                 }
                 break;
 
@@ -441,7 +441,7 @@ fail:
                 if (/*F_sortmode < SORTMODE_DEFAULT
                    ||*/ F_sortmode >= SORTMODE_MAX )
                 {
-                    panic("Invalid sorting mode for -T option, must be 0 or 1");
+                    panic_fmt("Invalid sorting mode for -T option, must be 0 or 1");
                 }
                 /* TODO: refactor into regular configuration [phf] */
                 *pbTableSort = (F_sortmode != SORTMODE_DEFAULT);
@@ -477,14 +477,14 @@ fail:
             case 'f':   /*  F_format    */
                 F_format = atoi(str);
                 if (F_format < FORMAT_DEFAULT || F_format >= FORMAT_MAX )
-                    panic("Illegal format specification");
+                    panic_fmt("Illegal format specification");
                 break;
                 
             case 'o':   /*  F_outfile   */
                 F_outfile = str;
 nofile:
                 if (*str == 0)
-                    panic("-o Switch requires file name.");
+                    panic_fmt("-o Switch requires file name.");
                 break;
 
             case 'L':
@@ -963,17 +963,17 @@ static const char *cleanup(char *buf, bool bDisable)
                     if (Xdebug)
                         printf("str %8ld buf %8ld (add/strlen(str)): %d %ld\n",
                         (unsigned long)str, (unsigned long)buf, add, (long)strlen(str));
-                    panic("failure1");
+                    panic_fmt("failure1");
                 }
                 
                 memmove(str + add, str, strlen(str)+1);
                 str += add;
                 if (str - strlen(strlist->buf) < buf)
-                    panic("failure2");
+                    panic_fmt("failure2");
                 memmove(str - strlen(strlist->buf), strlist->buf, strlen(strlist->buf));
                 str -= strlen(strlist->buf);
                 if (str < buf || str >= buf + MAXLINE)
-                    panic("failure 3");
+                    panic_fmt("failure 3");
                 --str;      /*  for loop increments string    */
             }
             else
@@ -1369,7 +1369,7 @@ int main(int argc, char **argv)
 
     if (atexit(exit_handler) != 0)
     {
-        panic("Could not install exit handler!");
+        panic_fmt("Could not install exit handler!");
     }
 
     nError = MainShadow(argc, argv, &bTableSort);
