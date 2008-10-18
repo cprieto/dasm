@@ -35,6 +35,12 @@
     *another* to deal with ASSEMBLY erros... DASM errors don't need
     (for the most part) codes either, they can just take printf()
     form (e.g. eprintf/dprintf/iprintf whatnot in TPOP sense).
+
+    TODO: Instead of using stderr here and stdout there and then the
+    FILE* for the list file somewhere else, we should have *one* way
+    of tracking all the FILE* we write error messages to. Maybe it's
+    enough to have a short array of them, configurable on demand? We
+    could then just loop through them and write the message repeatedly.
 */
 
 #include "errors.h"
@@ -48,18 +54,6 @@ SVNTAG("$Id$");
 #include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
-
-/* define the error table for asmerr() from errors.x */
-#if defined(X)
-#error infamous X macro already defined; aborting
-#else
-#define X(a,b,c) [a] = {a, b, c},
-#endif
-error_info_t sErrorDef[] =
-{
-#include "errors.x"
-};
-#undef X
 
 /* TODO: globals that ended up here, need to be refactored eventually */
 bool bStopAtEnd = false;
@@ -91,104 +85,6 @@ static void internal_panic(const char *message)
   fputs("\n", stderr);
   exit(EXIT_FAILURE);
 }
-
-void panic(const char *s)
-{
-  new_panic(ERROR_GENERIC_PANIC, s);
-}
-
-error_t asmerr(error_t err, bool bAbort, const char *sText)
-{
-    notify(err, bAbort ? ERRORLEVEL_FATAL : ERRORLEVEL_ERROR, sText);
-    return EXIT_FAILURE;
-}
-
-#if 0
-/* TODO: original asmerr() just here for reference for now */
-static error_t dasmerr(error_t err, bool bAbort, const char *sText);
-static error_t dasmerr(error_t err, bool bAbort, const char *sText)
-{
-    const char *str;
-    INCFILE *pincfile;
-    /* file pointer we print error messages to */
-    FILE *error_file = NULL;
-
-    /* TODO: fixed range checking for -Wextra below, but what if
-       enum is *not* unsigned in other compilers? hmmm... [phf] */
-    if ( err >= ERROR_MAX /*|| err < 0*/ )
-    {
-        return asmerr( ERROR_BADERROR, true, "Bad error ERROR!" );
-    }
-    else
-    {
-        if (sErrorDef[err].bFatal)
-            bStopAtEnd = true;
-
-        for ( pincfile = pIncfile; pincfile->flags & INF_MACRO; pincfile=pincfile->next);
-        str = sErrorDef[err].sDescription;
-
-        /*
-            New error format selection for 2.20.11 since some
-            people *don't* use MS products. For historical
-            reasons we currently send errors to stdout when
-            they should really go to stderr, but we'll switch
-            eventually I hope... [phf]
-        */
-
-        /* determine the file pointer to use */
-        error_file = (F_listfile != NULL) ? FI_listfile : stdout;
-
-        /* print first part of message, different formats offered */
-        switch (F_error_format)
-        {
-            case ERRORFORMAT_WOE:
-                /*
-                    Error format for MS VisualStudio and relatives:
-                    "file (line): error: string"
-                */
-                fprintf(error_file, "%s (%lu): error: ",
-                        pincfile->name, pincfile->lineno);
-                break;
-            case ERRORFORMAT_DILLON:
-                /*
-                    Matthew Dillon's original format, except that
-                    we don't distinguish writing to the terminal
-                    from writing to the list file for now. Matt's
-                    2.16 uses these:
-
-                      "*line %4ld %-10s %s\n" (list file)
-                      "line %4ld %-10s %s\n" (terminal)
-                */
-                fprintf(error_file, "line %7ld %-10s ",
-                        pincfile->lineno, pincfile->name);
-                break;
-            case ERRORFORMAT_GNU:
-                /*
-                    GNU format error messages, from their coding
-                    standards.
-                */
-                fprintf(error_file, "%s:%lu: error: ",
-                        pincfile->name, pincfile->lineno);
-                break;
-            default:
-                internal_panic("Invalid error format in dasmerr()!");
-                break;
-        }
-
-        /* print second part of message, always the same for now */
-        fprintf(error_file, str, sText ? sText : "");
-        fprintf(error_file, "\n");
-        
-        if ( bAbort )
-        {
-            fprintf(error_file, "Aborting assembly\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    
-    return err;
-}
-#endif
 
 /* helper to print the first part of an error message */
 static void print_part_one(FILE *out, const INCFILE *file, const char *level)
@@ -270,115 +166,10 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
     }
 }
 
-void notify(error_t _error, error_level_t level, const char *detail)
-{
-    /* normalized detail message */
-    const char *msg = (detail != NULL) ? detail : "(no details)";
-    /* file pointer we write the message to */
-    FILE *out = (F_listfile != NULL) ? FI_listfile : stderr;
-    /* include file we're in right now */
-    INCFILE *file = pIncfile;
-    /* level of severity description, grab from "levels" table later */
-    const char *lev = NULL;
-
-    /* TODO: fixed range checking for -Wextra below, but what if
-       enum is *not* unsigned in other compilers? hmmm... [phf] */
-    assert(/*ERROR_NONE <= _error &&*/ _error < ERROR_MAX);
-    assert(/*ERRORLEVEL_DEBUG <= level &&*/ level < ERRORLEVEL_MAX);
-
-    if (level < F_error_level)
-    {
-        /* condition not severe enough */
-        return;
-    }
-
-    lev = levels[level];
-
-    /* find the file we're in */
-    /* TODO: how does this work? why no NULL ptr check in original? */
-    /* TODO: theory: find first non-macro, one is guaranteed to exist? */
-    while (file != NULL && (file->flags & INF_MACRO))
-    {
-        file = file->next;
-    }
-    /*
-        took this out to accomodate the fact that there might not be
-        a file yet... [phf]
-    */
-    /*assert(file != NULL);*/
-
-    /* print first part of message, different formats offered */
-    print_part_one(out, file, lev);
-
-    /* print second part of message, always the same for now */
-    fprintf(out, sErrorDef[_error].sDescription, msg);
-    fprintf(out, "\n");
-
-    /* maintain statistics about warnings and errors */
-    /* TODO: count everything < PANIC? */
-    if (level == ERRORLEVEL_WARNING)
-    {
-         nof_warnings += 1;
-    }
-    if (level == ERRORLEVEL_ERROR)
-    {
-         nof_errors +=1;
-    }
-
-    /* fatal and higher errors lead to (eventual) termination */
-    if (level >= ERRORLEVEL_FATAL)
-    {
-        bStopAtEnd = true; /* stop after current pass */
-    }
-    if (level == ERRORLEVEL_PANIC)
-    {
-        exit(EXIT_FAILURE); /* stop right now! */
-    }
-}
-
-/* helpers, could be inlined or macros or whatnot... */
-
-void debug(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_DEBUG, detail);
-}
-
-void info(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_INFO, detail);
-}
-
-void notice(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_NOTICE, detail);
-}
-
-void warning(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_WARNING, detail);
-}
-
-void error(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_ERROR, detail);
-}
-
-void fatal(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_FATAL, detail);
-}
-
-void new_panic(error_t _error, const char *detail)
-{
-    notify(_error, ERRORLEVEL_PANIC, detail);
-}
-
-/****** NEW SHIT *******/
-
 #define NOTIFY_BUFFER_SIZE 1024
 static char notify_buffer[NOTIFY_BUFFER_SIZE]; /* TODO: why global? */
 
-static void vnotify(error_level_t level, const char *fmt, va_list ap)
+static void vanotify(error_level_t level, const char *fmt, va_list ap)
 {
     /* file pointer we write the message to */
     FILE *out = (F_listfile != NULL) ? FI_listfile : stderr;
@@ -455,12 +246,12 @@ static void vnotify(error_level_t level, const char *fmt, va_list ap)
 #define IMPLEMENT_FMT(level) \
     va_list ap; \
     va_start(ap, fmt); \
-    vnotify(level, fmt, ap); \
+    vanotify(level, fmt, ap); \
     va_end(ap)
 #define DEFINE_FMT(name, level) \
 void name(const char *fmt, ...) \
 { \
-    IMPLEMENT_FMT(ERRORLEVEL_DEBUG); \
+    IMPLEMENT_FMT(level); \
 }
 
 void notify_fmt(error_level_t level, const char *fmt, ...)
