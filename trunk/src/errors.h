@@ -42,8 +42,6 @@
  * The idea for printf-style interfaces came from Thomas Mathys
  * as well as from Brian W. Kernighan's and Rob Pike's great
  * little book The Practice of Programming.
- * @todo Throw out all the old error handling stuff, rewrite
- * all of DASM to the new printf-style interfaces. Wow. :-/
  */
 
 /**
@@ -111,44 +109,6 @@ error_level_t;
  */
 extern error_level_t F_error_level;
 
-/* define the error codes for asmerr() from errors.x */
-#if defined(X)
-#error infamous X macro already defined; aborting
-#else
-#define X(a,b,c) a,
-#endif
-/**
- * @brief Error codes for DASM.
- */
-typedef enum
-{
-#include "errors.x"
-}
-error_t;
-#undef X
-
-/**
- * @brief Severity and message for each error code.
- * @todo refactor! don't need error code again, severity is passed
- * and not stored, all that really remains is the string; unless
- * we want to double-check that we have the proper number of things
- * to fill in, in which case we should add a number that tells us
- * how many substitutions we make; right now that would always be
- * 0 or 1, but Thomas Mathys wanted to go for multiple substitutions
- * eventually (nicer error messages) so that would go in the right
- * direction I guess? [phf]
- */
-typedef struct
-{
-    /* ASM_ERROR_EQUATES value */
-    error_t nErrorType;
-    /* 0 = OK, non-zero = cannot continue compilation */
-    bool bFatal;
-    /* Error message */
-    const char *sDescription;
-}
-error_info_t;
-
 /**
  * @brief Length of buffer for source locations.
  */
@@ -179,10 +139,24 @@ extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
               source_location_buffer)
 
 /**
- * @todo temporarily exported to get main.c to compile, main.c
- * should not access this at all... :-/
+ * @brief Generic interface for printf(3)-style error handling
+ * framework.
+ * @see http://ocliteracy.com/techtips/gnu-c-attributes.html
  */
-extern error_info_t sErrorDef[];
+
+void notify_fmt(error_level_t level, const char *fmt, ...)
+     __attribute__((format(printf, 2, 3)));
+
+/**
+ * @brief Helpers to make common levels easier to read.
+ */
+
+void debug_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void info_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void notice_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void warning_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void error_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void fatal_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /**
  * @brief An insane problem occurred, print message and terminate
@@ -195,50 +169,6 @@ extern error_info_t sErrorDef[];
  * have REAL error handling instead.
  */
 
-void panic(const char *str);
-
-/**
- * @brief Backwards compatible wrapper around new error handling
- * framework.
- *
- * @todo phase out...
- */
-
-error_t asmerr(error_t err, bool bAbort, const char *sText);
-
-/**
- * @brief Generic interface for error handling framework.
- */
-
-void notify(error_t error, error_level_t level, const char *detail);
-
-/**
- * @brief Helpers to make common levels easier to read.
- */
-
-void debug(error_t _error, const char *detail);
-void info(error_t _error, const char *detail);
-void notice(error_t _error, const char *detail);
-void warning(error_t _error, const char *detail);
-void error(error_t _error, const char *detail);
-void fatal(error_t _error, const char *detail);
-void new_panic(error_t _error, const char *detail);
-
-/**
- * @brief New error handling in printf(3) style.
- * @note turned down dprintf, iprintf, wprintf convention
- * as well as debugf, infof, warningf convention
- * @see http://ocliteracy.com/techtips/gnu-c-attributes.html
- */
-
-void notify_fmt(error_level_t level, const char *fmt, ...)
-     __attribute__((format(printf, 2, 3)));
-void debug_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void info_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void notice_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void warning_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void error_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-void fatal_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
      /* TODO: __attribute__((noreturn)) leads to bus error? :-/ */;
 
@@ -281,6 +211,8 @@ void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
 #define ERROR_VALUE_RANGE "The %s value in '%s' should be between %d and %d!"
 #define ERROR_VALUE_ONEOF "The %s value in '%s' should one of %s!"
 #define ERROR_BRANCH_RANGE "Branch out of range (%ld bytes)!"
+#define ERROR_ADDRESS_RANGE_DETAIL "The %s address in '%s' should be between %d and %d!"
+#define ERROR_ADDRESS_RANGE "Address should be between %d and %d!"
 #define ERROR_INVALID_BIT "Invalid bit specification in '%s' must be <8!"
 #define ERROR_INVALID_ARGS "Not enough arguments!"
 
