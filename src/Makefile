@@ -45,7 +45,7 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
 
 GDEBG= # -g # -fprofile-arcs -ftest-coverage -pg # -D_FORTIFY_SOURCE=2
 
-CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) -D_XOPEN_SOURCE=500
+CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
 CC= gcc
 
 OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
