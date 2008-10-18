@@ -118,3 +118,5 @@ are hiding the file all the way down here for a reason...
   - at least add coverage analysis darn it
     - gcov is not hard to add to current scripts
 
+- remember that NULL in printf() segfaults on Solaris, seems that
+  only the Apple version has the nice "(null)" feature... :-/
