@@ -29,6 +29,7 @@
  *  Handle mnemonics and pseudo ops
  */
 
+#include <ctype.h>
 #include "asm.h"
 #include "errors.h"
 #include "util.h"
@@ -125,12 +126,18 @@ void v_processor(char *str, MNEMONIC *dummy)
 
     if ( !Processor )
     {
+        /* [phf] removed
         asmerr( ERROR_PROCESSOR_NOT_SUPPORTED, true, str );
+        */
+        fatal_fmt("Processor '%s' not supported!", str);
     }
 
     if ( PreviousProcessor && Processor != PreviousProcessor )
     {
+        /* [phf] removed
         asmerr( ERROR_ONLY_ONE_PROCESSOR_SUPPORTED, true, str );
+        */
+        fatal_fmt("Only one processor type may be selected!");
     }
 
 }
@@ -186,9 +193,12 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     
     if (badcode(mne,addrmode))
     {
+        /* [phf] removed
         char sBuffer[128];
         sprintf( sBuffer, "%s %s", mne->name, str );
         asmerr( ERROR_ILLEGAL_ADDRESSING_MODE, false, sBuffer );
+        */
+        error_fmt("Invalid addressing mode '%s %s'.", mne->name, str);
         FreeSymbolList(symbase);
         return;
     }
@@ -199,7 +209,10 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         
         if (badcode(mne,addrmode))
         {
+            /* [phf] removed
             asmerr( ERROR_ILLEGAL_FORCED_ADDRESSING_MODE, false, mne->name );
+            */
+            error_fmt("Invalid forced addressing mode on '%s'.", mne->name);
             FreeSymbolList(symbase);
             return;
         }
@@ -212,13 +225,18 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     {
         if (Cvt[addrmode] == 0 || badcode(mne,Cvt[addrmode]))
         {
+            /* [phf] removed
             char sBuffer[128];
+            */
             
             if (sym->flags & SYM_UNKNOWN)
                 break;
             
+            /* [phf] removed
             sprintf( sBuffer, "%s %s", mne->name, str );
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, sBuffer );
+            */
+            error_fmt(ERROR_ADDRESS_RANGE_DETAIL, str, mne->name, 0, 255);
             break;
         }
         addrmode = Cvt[addrmode];
@@ -240,15 +258,28 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     case AM_BITMOD:
         sym = symbase->next;
         if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
+        {
+            /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
+            */
+            error_fmt(ERROR_ADDRESS_RANGE, 0, 255);
+            /* TODO: why no detail in original? */
+        }
         Gen[opidx++] = sym->value;
         
         if (!(symbase->flags & SYM_UNKNOWN))
         {
             if (symbase->value > 7)
+            {
+                /* [phf] removed
                 asmerr( ERROR_ILLEGAL_BIT_SPECIFICATION, false, str );
+                */
+                error_fmt(ERROR_INVALID_BIT, str);
+            }
             else
+            {
                 Gen[0] += symbase->value << 1;
+            }
         }
         break;
         
@@ -257,15 +288,28 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         if (!(symbase->flags & SYM_UNKNOWN))
         {
             if (symbase->value > 7)
+            {
+                /* [phf] removed
                 asmerr( ERROR_ILLEGAL_BIT_SPECIFICATION, false, str );
+                */
+                error_fmt(ERROR_INVALID_BIT, str);
+            }
             else
+            {
                 Gen[0] += symbase->value << 1;
+            }
         }
         
         sym = symbase->next;
         
         if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
+        {
+            /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
+            */
+            error_fmt(ERROR_ADDRESS_RANGE, 0, 255);
+            /* TODO: why no detail in original? */
+        }
         
         Gen[opidx++] = sym->value;
         sym = sym->next;
@@ -298,14 +342,24 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         if (sym)
         {
             if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
+            {
+                /* [phf] removed
                 asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
+                */
+                error_fmt(ERROR_ADDRESS_RANGE, 0, 255);
+                /* TODO: why no detail in original? */
+            }
             
             Gen[opidx] = sym->value;
             sym = sym->next;
         }
         else
         {
+            /* [phf] removed
             asmerr( ERROR_NOT_ENOUGH_ARGS, true, NULL );
+            */
+            fatal_fmt(ERROR_INVALID_ARGS);
+            /* TODO: fatal? really? how about str for details? */
         }
         
         ++opidx;
@@ -316,7 +370,13 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         ++opidx;		/*  to end of instruction   */
         
         if (!sym)
+        {
+            /* [phf] removed
             asmerr( ERROR_NOT_ENOUGH_ARGS, true, NULL );
+            */
+            fatal_fmt(ERROR_INVALID_ARGS);
+            /* TODO: fatal? really? how about str for details? */
+        }
         else if (!(sym->flags & SYM_UNKNOWN))
         {
             long    pc;
@@ -329,12 +389,16 @@ void v_mnemonic(char *str, MNEMONIC *mne)
             if ((pcf & (SF_UNKNOWN|2)) == 0)
             {
                 dest = sym->value - pc - opidx;
+                /* [phf] mnef8.c generate_branch() checks different range! */
                 if (dest >= 128 || dest < -128)
                 {
+                    /* [phf] removed
                     char sBuffer[64];
                     sprintf( sBuffer, "%ld", dest );
                     asmerr( ERROR_BRANCH_OUT_OF_RANGE, false, sBuffer );
-                    
+                    */
+                    error_fmt(ERROR_BRANCH_RANGE, dest);
+                    /* TODO: this doesn't say by how much it's out of range! */
                 }
             }
             else
@@ -488,23 +552,35 @@ v_hex(char *str, MNEMONIC *dummy)
 int
 gethexdig(int c)
 {
+    /* [phf] removed
     char sBuffer[64];
+    */
+    c = toupper(c);
     
-    if (c >= '0' && c <= '9')
+    if ('0' <= c && c <= '9') {
         return c - '0';
-    
-    if (c >= 'a' && c <= 'f')
+    }
+
+    /* [phf] removed
+    if ('a' <= c && c <= 'f')
         return c - 'a' + 10;
+    */
     
-    if (c >= 'A' && c <= 'F')
+    if ('A' <= c && c <= 'F') {
         return c - 'A' + 10;
+    }
     
+    /* [phf] removed
     sprintf( sBuffer, "Bad Hex Digit %c", c );
     asmerr( ERROR_SYNTAX_ERROR, false, sBuffer );
+    */
+    error_fmt("Bad hex digit '%c'!", c);
     
+    /* TODO: refactor into error handling code */
     puts("(Must be a valid hex digit)");
-    if (F_listfile)
+    if (F_listfile) {
         fputs("(Must be a valid hex digit)\n", FI_listfile);
+    }
     
     return 0;
 }
@@ -513,7 +589,11 @@ void
 v_err(char *str, MNEMONIC *dummy)
 {
     programlabel();
+    /* [phf] removed
     asmerr( ERROR_ERR_PSEUDO_OP_ENCOUNTERED, true, NULL );
+    */
+    fatal_fmt("ERR pseudo-op encountered, aborting assembly!");
+    /* TODO: really exit() here? that's almost like panic? */
     exit(1);
 }
 
@@ -523,7 +603,7 @@ v_dc(char *str, MNEMONIC *mne)
     SYMBOL *sym;
     SYMBOL *tmp;
     unsigned long  value;
-    char *macstr = 0;		/* "might be used uninitialised" */
+    const char *macstr = NULL; /* "might be used uninitialised" */
     char vmode = 0;
     
     Glen = 0;
@@ -567,7 +647,8 @@ v_dc(char *str, MNEMONIC *mne)
             return;
         }
         if (tmp->flags & SYM_MACRO) {
-            macstr = (void *)tmp->string;
+//            macstr = (void *)tmp->string;
+            macstr = tmp->string;
         }
         else
         {
@@ -583,7 +664,7 @@ v_dc(char *str, MNEMONIC *mne)
             Redo_why |= REASON_DC_NOT_RESOVED;
         }
         if (sym->flags & SYM_STRING) {
-            unsigned char *ptr = (void *)sym->string;
+            const char *ptr = sym->string;
             while ((value = *ptr) != 0) {
                 if (vmode) {
                     setspecial(value, 0);
@@ -596,7 +677,7 @@ v_dc(char *str, MNEMONIC *mne)
                     FreeSymbolList(tmp);
                 }
                 switch(Mnext) {
-                default: /* TODO: defense? [phf] */
+                default: /* TODO: defense? or AM_BYTE really default? [phf] */
                 case AM_BYTE:
                     Gen[Glen++] = value & 0xFF;
                     break;
@@ -736,7 +817,13 @@ v_org(char *str, MNEMONIC *dummy)
     {
         OrgFill = sym->next->value;
         if (sym->next->flags & SYM_UNKNOWN)
+        {
+            /* [phf] removed
             asmerr( ERROR_VALUE_UNDEFINED, true, NULL );
+            */
+            fatal_fmt("Value undefined!");
+            /* TODO: fatal? what about more passes? what about details? */
+        }
     }
     
     programlabel();
@@ -835,7 +922,6 @@ v_equ(char *str, MNEMONIC *dummy)
     SYMBOL *sym = eval(str, 0);
     SYMBOL *lab;
     
-    
     /*
     * If we encounter a line of the form
     *   . = expr	; or . EQU expr
@@ -874,7 +960,10 @@ v_equ(char *str, MNEMONIC *dummy)
         {
             if (lab->value != sym->value)
             {
+                /* [phf] removed
                 asmerr( ERROR_EQU_VALUE_MISMATCH, false, NULL );
+                */
+                error_fmt("EQU: Value mismatch.");
                 printf("old value: $%04lx  new value: $%04lx\n",
                     lab->value, sym->value);
                 ++Redo;
@@ -913,8 +1002,9 @@ v_eqm(char *str, MNEMONIC *dummy)
     int len = strlen(Av[0]);
     
     if ((lab = findsymbol(Av[0], len)) != NULL) {
-        if (lab->flags & SYM_STRING)
+        if (lab->flags & SYM_STRING) {
             free(lab->string);
+        }
     }
     else
     {
@@ -1154,13 +1244,17 @@ void v_repeat(char *str, MNEMONIC *dummy)
     }
     
     /* Don't allow negative values for REPEAT loops [AD] */
+    /* TODO: refactor with == 0 case above? [phf] */
     
     if ( sym->value < 0 )
     {
         pushif( 0 );
         FreeSymbolList( sym );
-        
+
+        /* [phf] removed
         asmerr( ERROR_REPEAT_NEGATIVE, false, NULL );
+        */
+        error_fmt("REPEAT parameter < 0 (ignored).");
         return;
     }
     
@@ -1336,8 +1430,12 @@ generate(void)
             switch(F_format)
             {
             default:
+                /* [phf] removed
                 asmerr(ERROR_BAD_FORMAT, true,
                        "Unhandled internal format specifier!");
+                */
+                fatal_fmt("Bad output format specified."
+                  "Unhandled internal format specifier!");
                 break;
 
             case FORMAT_RAW:
@@ -1347,8 +1445,11 @@ generate(void)
                 {
                     printf("segment: %s %s  vs current org: %04lx\n",
                         Csegment->name, sftos(Csegment->org, Csegment->flags), org);
+                    /* [phf] removed
                     asmerr( ERROR_ORIGIN_REVERSE_INDEXED, true, NULL );
-                    exit(1);
+                    */
+                    fatal_fmt("Origin Reverse-indexed.");
+                    exit(1); /* TODO: necessary? why in the first place? */
                 }
                 
                 while (Csegment->org != org)
@@ -1424,7 +1525,11 @@ genfill(long fill, long entries, int size)
     switch(size)
     {
     default: /* defensive programming! [phf] */
+        /* [phf] removed
         asmerr(ERROR_BAD_FORMAT, true, "Unhandled internal size specifier!");
+        */
+        panic_fmt("Unhandled internal size specifier in %s!", SOURCE_LOCATION);
+        /* TODO: really panic? */
         break;
 
     case 1:
