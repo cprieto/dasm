@@ -27,6 +27,8 @@
 #include "util.h"
 #include "asm.h"
 
+#include <string.h>
+
 /**
  * @file test_errors.c
  * @brief Unit tests for errors module.
