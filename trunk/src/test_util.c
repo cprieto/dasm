@@ -29,6 +29,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 /**
  * @file test_errors.c
