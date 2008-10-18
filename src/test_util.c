@@ -28,6 +28,7 @@
 #include "asm.h"
 
 #include <assert.h>
+#include <string.h>
 
 /**
  * @file test_errors.c
