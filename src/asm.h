@@ -47,7 +47,7 @@
 /* no strcasecmp so fake it using stricmp */
 #define strcasecmp stricmp
 /* strange paths :-) */
-#define DASM_PATH_SEPARATOR '\'
+#define DASM_PATH_SEPARATOR '\\'
 #else
 #include <stdbool.h>
 #include <strings.h>
