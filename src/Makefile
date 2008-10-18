@@ -62,7 +62,7 @@ all: $(ALL)
 dasm: $(OBJS)
 	$(CC) $(OBJS) -o dasm
 
-errors.o: errors.c errors.h errors.x
+errors.o: errors.c errors.h
 util.o: util.c util.h errors.h
 
 # TODO: are these two lines really needed? GNU make
@@ -85,7 +85,7 @@ clean:
 	*.gcda *.gcno *.gcov gmon.out
 
 cscope:
-	ls *.h *.c *.x >cscope.files
+	ls *.h *.c >cscope.files
 
 # target to test compiles when neither __BSD__ nor __APPLE__ are
 # defined
