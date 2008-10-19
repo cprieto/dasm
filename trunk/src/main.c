@@ -200,75 +200,77 @@ static int CompareAddress( const void *arg1, const void *arg2 )
     return sym1->value - sym2->value;
 }
 
-/* bTableSort true -> by address, false -> by name [phf] */
-static void ShowSymbols( FILE *file, bool bTableSort )
+/*
+  Display symbol table. Sorted if enough memory, unsorted otherwise.
+  bTableSort true -> by address, false -> by name [phf]
+*/
+static void ShowSymbols(FILE *file, bool bTableSort)
 {
-    /* Display sorted (!) symbol table - if it runs out of memory, table will be displayed unsorted */
-    
     SYMBOL **symArray;
     SYMBOL *sym;
-    int i;
-    int nSymbols = 0;
-    
-    fprintf( file, "--- Symbol List");
-    
-    /* Sort the symbol list either via name, or by value */
-    
+    size_t i;
+    size_t nSymbols = 0;
+
+    fprintf(file, "--- Symbol List");
+
     /* First count the number of symbols */
-    for (i = 0; i < SHASHSIZE; ++i)
-        for (sym = SHash[i]; sym; sym = sym->next)
+    for (i = 0; i < SHASHSIZE; i++) {
+        for (sym = SHash[i]; sym != NULL; sym = sym->next) {
             nSymbols++;
-        
-        /* Malloc an array of pointers to data */
-        
-        symArray = (SYMBOL **)checked_malloc( sizeof( SYMBOL * ) * nSymbols );
-        if ( !symArray )
-        {
-            fprintf( file, " (unsorted - not enough memory to sort!)\n" );
-            
-            /* Display complete symbol table */
-            for (i = 0; i < SHASHSIZE; ++i)
-                for (sym = SHash[i]; sym; sym = sym->next)
-                    fprintf( file, "%-24s %s\n", sym->name, sftos( sym->value, sym->flags ) );
         }
-        else
-        {
-            /* Copy the element pointers into the symbol array */
+    }
+        
+    /* Malloc an array of pointers to data */
+    symArray = (SYMBOL**) malloc(nSymbols * sizeof(SYMBOL*));
+    if (symArray == NULL) {
+        fprintf(file, " (unsorted - not enough memory to sort!)\n");
             
-            size_t nPtr = 0;
-            
-            for (i = 0; i < SHASHSIZE; ++i)
-                for (sym = SHash[i]; sym; sym = sym->next)
-                    symArray[ nPtr++ ] = sym;
-                
-                if ( bTableSort )
-                {
-                    fprintf( file, " (sorted by address)\n" );
-                    qsort( symArray, nPtr, sizeof( SYMBOL * ), CompareAddress );           /* Sort via address */
-                }
-                else
-                {
-                    fprintf( file, " (sorted by symbol)\n" );
-                    qsort( symArray, nPtr, sizeof( SYMBOL * ), CompareAlpha );              /* Sort via name */
-                }
-                
-                
-                /* now display sorted list */
-                
-                for ( i = 0; i < nPtr; i++ )
-                {
-                    fprintf( file, "%-24s %-12s", symArray[ i ]->name,
-                        sftos( symArray[ i ]->value, symArray[ i ]->flags ) );
-                    if ( symArray[ i ]->flags & SYM_STRING )
-                        fprintf( file, " \"%s\"", symArray[ i ]->string );                  /* If a string, display actual string */
-                    fprintf( file, "\n" );
-                }
-                
-                free( symArray );
+        /* Display complete symbol table */
+        for (i = 0; i < SHASHSIZE; i++) {
+            for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+                fprintf(file, "%-24s %s\n", sym->name, sftos(sym->value, sym->flags));
+            }
         }
+    }
+    else {
+        size_t nPtr = 0;
+         
+        /* Copy the element pointers into the symbol array */
+        for (i = 0; i < SHASHSIZE; i++) {
+            for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+                symArray[nPtr++] = sym;
+            }
+        }
+                
+        if ( bTableSort ) {
+            /* Sort via address */
+            fprintf(file, " (sorted by address)\n");
+            qsort(symArray, nPtr, sizeof(SYMBOL*), CompareAddress);
+        }
+        else {
+            /* Sort via name */
+            fprintf(file, " (sorted by symbol)\n");
+            qsort(symArray, nPtr, sizeof(SYMBOL*), CompareAlpha);
+        }
+                
+        /* Now display sorted list */
+                
+        for (i = 0; i < nPtr; i++) {
+            /* TODO: format is different here that above [phf] */
+            fprintf(file, "%-24s %-12s", symArray[i]->name, sftos(symArray[i]->value, symArray[i]->flags));
+
+            if (symArray[i]->flags & SYM_STRING) {
+                /* If a string, display actual string */
+                /* TODO: we don't do this above? [phf] */
+                fprintf(file, " \"%s\"", symArray[i]->string);
+            }
+            fprintf(file, "\n");
+        }
+                
+        free(symArray);
+    }
         
-        fputs( "--- End of Symbol List.\n", file );
-        
+    fputs("--- End of Symbol List.\n", file);
 }
 
 #define SHOW_SEGMENTS_FORMAT "%-24s %-3s %-8s %-8s %-8s %-8s\n"
