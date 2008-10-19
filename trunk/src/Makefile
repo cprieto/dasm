@@ -45,7 +45,7 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
        # -Wfour-char-constants # Apple OS X only option, not needed anyway?
        # -Wtraditional # we want to be C99 darn it, so we don't care
 
-GDEBG= # -g # -fprofile-arcs -ftest-coverage -pg # -D_FORTIFY_SOURCE=2
+GDEBG= -g # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
 
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
 CC= gcc
@@ -62,15 +62,15 @@ ALL= dasm ftohex ftobin $(TEST)
 all: $(ALL)
 
 dasm: $(OBJS)
-	$(CC) $(OBJS) -o dasm
+	$(CC) $(CFLAGS) $(OBJS) -o dasm
 
 errors.o: errors.c errors.h
 util.o: util.c util.h errors.h
 
 # TODO: are these two lines really needed? GNU make
 # seems to build ftohex/ftobin fine without them...
-ftohex: ftohex.o
-ftobin: ftobin.o
+ftohex: ftohex.c
+ftobin: ftobin.c
 
 # produce executables for simple unit tests of certain
 # modules
