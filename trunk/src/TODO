@@ -120,3 +120,6 @@ are hiding the file all the way down here for a reason...
 
 - remember that NULL in printf() segfaults on Solaris, seems that
   only the Apple version has the nice "(null)" feature... :-/
+
+- fseeko/ftello instead of fseek/ftell could be useful to some
+  extent

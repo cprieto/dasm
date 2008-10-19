@@ -131,7 +131,7 @@ convert(short format, FILE *in, FILE *out)
     }
     for (;;) {
 	if (len > 0) {
-	    while (len >= sizeof(buf)) {
+	    while (len >= ((long) sizeof(buf))) {
 		fread(buf, sizeof(buf), 1, in);
 		fwrite(buf, sizeof(buf), 1, out);
 		len -= sizeof(buf);
@@ -159,7 +159,7 @@ convert(short format, FILE *in, FILE *out)
 	    if (len > 0)
 		memset(buf, 255, sizeof(buf));
 	    while (len > 0) {
-		if (len >= sizeof(buf)) {
+		if (len >= ((long) sizeof(buf))) {
 		    fwrite(buf, sizeof(buf), 1, out);
 		    maxseek += sizeof(buf);
 		    len -= sizeof(buf);
