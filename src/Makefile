@@ -35,13 +35,15 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
        -Wcast-align -Wpointer-arith -Wbad-function-cast \
        -Wformat-y2k -Wformat-nonliteral -Wformat-security \
        -Wfloat-equal -Wundef -Winline \
+       -Wextra -Wno-unused-parameter # no-unused tames extra a little
        # -Wunused # definition is weird in man gcc, effect is weird too
-       # -Wextra -Wno-unused-parameter # no-unused tames extra a little
-       # -Wconversion # too many right now
-       # -Wtraditional # too many, not sure if it's worth it anyway
+       # Warnings that only make sense for me once OS X has better gcc
+       # -Wtraditional-conversion # prototype conversions gcc 4.3+
+       # -Wconversion # sign conversions gcc 4.3+
        # Warnings we turned down after some consideration:
        # -Wunreachable-code # seems to create too many spurious warnings
        # -Wfour-char-constants # Apple OS X only option, not needed anyway?
+       # -Wtraditional # we want to be C99 darn it, so we don't care
 
 GDEBG= # -g # -fprofile-arcs -ftest-coverage -pg # -D_FORTIFY_SOURCE=2
 
