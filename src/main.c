@@ -418,6 +418,7 @@ fail:
 
     fatal_fmt("Check command-line format.");
 //    return ERROR_COMMAND_LINE;
+    return EXIT_FAILURE; // needed for rest of code to work? [phf]
     }
     
     for (i = 2; i < ac; ++i)
@@ -564,6 +565,7 @@ nextpass:
         printf("Warning: Unable to [re]open '%s'\n", F_outfile);
         fatal_fmt("Unable to open file.");
 //        return ERROR_FILE_ERROR;
+        return EXIT_FAILURE; // needed for rest of code to work? [phf]
     }
     if (F_listfile) {
 
@@ -574,6 +576,7 @@ nextpass:
             printf("Warning: Unable to [re]open '%s'\n", F_listfile);
             fatal_fmt("Unable to open file.");
 //            return ERROR_FILE_ERROR;
+            return EXIT_FAILURE; // needed for rest of code to work? [phf]
         }
     }
     pushinclude(av[1]);
@@ -681,6 +684,7 @@ nextpass:
                 ShowUnresolvedSymbols();
                 fatal_fmt("Source is not resolvable.");
 //                return ERROR_NOT_RESOLVABLE;
+                return EXIT_FAILURE; // needed for rest of code to work? [phf]
             }
             
             oldredo = Redo;
