@@ -30,6 +30,8 @@
  */
 
 #include <ctype.h>
+#include <assert.h>
+
 #include "asm.h"
 #include "errors.h"
 #include "util.h"
@@ -1359,14 +1361,22 @@ pfopen(const char *name, const char *mode)
     FILE *f;
     STRLIST *incdir;
     char *buf;
-    
+
+    assert(name != NULL);
+    assert(mode != NULL);
+
     f = fopen(name, mode);
-    if (f)
+    if (f != NULL) {
         return f;
+    }
     
     /* Don't use the incdirlist for absolute pathnames */
-    if (strchr(name, ':'))
+    if (strchr(name, ':')) {
         return NULL;
+    }
+
+    /* TODO: the above looks like an Amiga leftover? the 512 below
+       is fishy as well, wow... [phf] */
     
     buf = zero_malloc(512);
     
@@ -1374,8 +1384,9 @@ pfopen(const char *name, const char *mode)
         addpart(buf, incdir->buf, name);
         
         f = fopen(buf, mode);
-        if (f)
+        if (f != NULL) {
             break;
+        }
     }
     
     free(buf);
