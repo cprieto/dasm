@@ -71,7 +71,7 @@ SVNTAG("$Id$");
 void *checked_malloc(size_t bytes)
 {
     void *p = NULL;
-    assert(bytes > 0); /* size_t unsigned, but rule out 0! */
+    assert(bytes > 0); /* rule out 0! */
 
     p = malloc(bytes);
     if (p == NULL)
@@ -86,7 +86,7 @@ void *checked_malloc(size_t bytes)
 void *zero_malloc(size_t bytes)
 {
     void *p = NULL;
-    assert(bytes > 0); /* size_t unsigned, but rule out 0! */
+    assert(bytes > 0); /* rule out 0! */
 
     p = checked_malloc(bytes);
     if (p != NULL)
@@ -119,7 +119,7 @@ void *small_alloc(size_t bytes)
     struct new_perm_block *block;
     size_t alignment = sizeof(union align);
 
-    assert(bytes > 0); /* size_t unsigned, but rule out 0! */
+    assert(bytes > 0); /* rule out 0! */
     /* could sanity check upper bound here, but we're doing it below anyway */
 
     debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
@@ -187,23 +187,17 @@ void small_free_all(void)
 
 unsigned int hash_string(const char *string, size_t length)
 {
+    /*
+        Why is this a better hash function than Matt's original?
+        For MNEMONICs we go from 14 to 5 collisons, woohoo. :-)
+        For SYMBOLs we go from 29 to 11 collisons, woohoo. :-)
+    */
+
     unsigned int hash = 5381;
 
-    /*printf("string=='%s', length==%zu\n", string, length);*/
-
-    assert(string != NULL && length <= strlen(string));
-
-/*
-    assert(string != NULL && length > 0 && length <= strlen(string));
-
-    Crazy! findmne (and maybe others) call the hash function with
-    empty strings quite a few time, I consider that a bug but I
-    can't focus on it until I have the hash functions refactored
-    to use this code. :-/ [phf]
-
-    For MNEMONICs we go from 14 to 5 collisons, woohoo. :-)
-    For SYMBOLs we go from 29 to 11 collisons, woohoo. :-)
-*/
+    assert(string != NULL);
+    assert(length > 0);
+    assert(length <= strlen(string));
 
     while (length-- != 0)
     {
@@ -216,6 +210,7 @@ unsigned int hash_string(const char *string, size_t length)
 char *strlower(char *str)
 {
     char *ptr = str;
+    assert(str != NULL);
 
     for ( ; *ptr != '\0'; ptr++)
     {
@@ -251,7 +246,10 @@ strlcat(char *dst, const char *src, size_t siz)
 	size_t n = siz;
 	size_t dlen;
 
-	assert(dst != NULL && src != NULL && siz > 0); /* added [phf] */
+	/* added [phf] */
+	assert(dst != NULL);
+	assert(src != NULL);
+	assert(siz > 0);
 
 	/* Find the end of dst and adjust bytes left but don't go past end */
 	while (n-- != 0 && *d != '\0')
@@ -296,7 +294,10 @@ strlcpy(char *dst, const char *src, size_t siz)
 	const char *s = src;
 	size_t n = siz;
 
-	assert(dst != NULL && src != NULL && siz > 0); /* added [phf] */
+	/* added [phf] */
+	assert(dst != NULL);
+	assert(src != NULL);
+	assert(siz > 0);
 
 	/* Copy as many bytes as will fit */
 	if (n != 0) {
@@ -326,7 +327,10 @@ const char *getprogname(void)
 
 void setprogname(const char *name)
 {
-    char *slash = strrchr(name, DASM_PATH_SEPARATOR);
+    char *slash = NULL;
+    assert(name != NULL);
+
+    slash = strrchr(name, DASM_PATH_SEPARATOR);
     if (slash != NULL)
     {
         name = slash+1;
