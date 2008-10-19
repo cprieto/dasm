@@ -34,6 +34,8 @@
 #include "util.h"
 #include "version.h"
 
+#include <assert.h>
+
 /*@unused@*/
 SVNTAG("$Id$");
 
@@ -1223,8 +1225,12 @@ MNEMONIC *findmne(char *str)
     int i;
     char c;
     MNEMONIC *mne;
-    char buf[64];
+    char buf[64]; /* TODO: fixed size? argh! [phf] */
     
+    assert(str != NULL);
+    if (strlen(str) == 0) {
+        return NULL; /* avoid doing the rest for an empty string */
+    }
 
     if (str[0] == '.') {    /* Allow .OP for OP */
         str++;
