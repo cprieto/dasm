@@ -32,6 +32,8 @@
 #include "util.h"
 #include "version.h"
 
+#include <assert.h>
+
 /*@unused@*/
 SVNTAG("$Id$");
 
@@ -53,6 +55,9 @@ SYMBOL *findsymbol(const char *str, int len)
     unsigned int h1;
     SYMBOL *sym;
     char buf[MAX_SYM_LEN + 14];     /* historical */
+
+    assert(str != NULL);
+    assert(len > 0);
     
     if ( len > MAX_SYM_LEN )
         len = MAX_SYM_LEN;
@@ -102,13 +107,16 @@ SYMBOL *findsymbol(const char *str, int len)
     return sym;
 }
 
-SYMBOL *CreateSymbol( const char *str, int len )
+SYMBOL *CreateSymbol(const char *str, int len)
 {
     SYMBOL *sym;
     unsigned int h1;
     char buf[ MAX_SYM_LEN + 14 ];           /* historical */
     char *name;
-    
+
+    assert(str != NULL);
+    assert(len > 0);
+
     if (len > MAX_SYM_LEN )
         len = MAX_SYM_LEN;
     
@@ -241,7 +249,7 @@ SYMBOL *allocsymbol(void)
 {
     SYMBOL *sym;
     
-    if (SymAlloc)
+    if (SymAlloc != NULL)
     {
         sym = SymAlloc;
         SymAlloc = SymAlloc->next;
@@ -263,13 +271,11 @@ static void freesymbol(SYMBOL *sym)
 }
 */
 
-
-
 void FreeSymbolList(SYMBOL *sym)
 {
     SYMBOL *next;
     
-    while (sym)
+    while (sym != NULL)
     {
         next = sym->next;
         sym->next = SymAlloc;
