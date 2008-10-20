@@ -48,4 +48,19 @@ sizeof(long long) == 8
 sizeof(int64_t) == 8
 sizeof(float) == 4
 sizeof(double) == 8
+
+Linux ugradx.cs.jhu.edu 2.6.26.5-45.fc9.i686 #1 SMP Sat Sep 20 03:45:00 EDT 2008 i686 i686 i386 GNU/Linux
+
+sizeof(char) == 1
+sizeof(int8_t) == 1
+sizeof(short) == 2
+sizeof(int16_t) == 2
+sizeof(int) == 4
+sizeof(bool) == 1
+sizeof(long) == 4
+sizeof(int32_t) == 4
+sizeof(long long) == 8
+sizeof(int64_t) == 8
+sizeof(float) == 4
+sizeof(double) == 8
 */
