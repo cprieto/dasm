@@ -35,8 +35,10 @@
 
 #include "asm.h"
 #include "errors.h"
+#include "symbols.h"
 #include "util.h"
 #include "version.h"
+
 #include <assert.h>
 
 /*@unused@*/

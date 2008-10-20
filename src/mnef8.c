@@ -30,12 +30,13 @@
  *  Copyright (c) 2004 by Thomas Mathys.
  */
 
-#include <ctype.h> /* for isspace() */
-
 #include "asm.h"
 #include "errors.h"
+#include "symbols.h"
 #include "util.h"
 #include "version.h"
+
+#include <ctype.h> /* for isspace() */
 
 /*@unused@*/
 SVNTAG("$Id$");

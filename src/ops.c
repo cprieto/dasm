@@ -29,13 +29,14 @@
  *  Handle mnemonics and pseudo ops
  */
 
-#include <ctype.h>
-#include <assert.h>
-
 #include "asm.h"
 #include "errors.h"
+#include "symbols.h"
 #include "util.h"
 #include "version.h"
+
+#include <assert.h>
+#include <ctype.h>
 
 /*@unused@*/
 SVNTAG("$Id$");

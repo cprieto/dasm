@@ -46,11 +46,12 @@
         didn't mess with ">>" at all.)
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
 #include "version.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 /*@unused@*/
 SVNTAG("$Id$");

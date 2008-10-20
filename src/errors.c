@@ -46,15 +46,15 @@
 #include "errors.h"
 
 #include "asm.h"
-#include "version.h"
 #include "util.h"
+#include "version.h"
+
+#include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 /*@unused@*/
 SVNTAG("$Id$");
-
-#include <assert.h>
-#include <stdio.h>
-#include <stdarg.h>
 
 /* TODO: globals that ended up here, need to be refactored eventually */
 bool bStopAtEnd = false;

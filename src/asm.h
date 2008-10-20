@@ -387,18 +387,6 @@ void    rmnode(void **base, int bytes);
 void    addhashtable(MNEMONIC *mne);
 void    pushinclude(char *str);
 
-/* symbols.c */
-void    setspecial(int value, int flags);
-SYMBOL *allocsymbol(void);
-SYMBOL *findsymbol(const char *str, int len);
-SYMBOL *CreateSymbol( const char *str, int len );
-void    FreeSymbolList(SYMBOL *sym);
-void    programlabel(void);
-void debug_symbol_hash_collisions(void);
-void clearrefs(void);
-void ShowSymbols(FILE *file, bool bTableSort);
-size_t ShowUnresolvedSymbols(void);
-
 /* ops.c */
 extern    unsigned char Gen[];
 extern    int Glen;
