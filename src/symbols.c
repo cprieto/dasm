@@ -243,47 +243,47 @@ void programlabel(void)
     sym->flags = (sym->flags & ~SYM_UNKNOWN) | (cflags & SYM_UNKNOWN);
 }
 
-SYMBOL *SymAlloc;
+/*
+  Custom memory management for SYMBOLs.
+*/
+
+static SYMBOL *symbol_free_list = NULL;
 
 SYMBOL *allocsymbol(void)
 {
     SYMBOL *sym;
-    
-    if (SymAlloc != NULL)
-    {
-        sym = SymAlloc;
-        SymAlloc = SymAlloc->next;
+
+    if (symbol_free_list != NULL) {
+        sym = symbol_free_list;
+        symbol_free_list = symbol_free_list->next;
         memset(sym, 0, sizeof(SYMBOL));
     }
-    else
-    {
+    else {
         sym = small_alloc(sizeof(SYMBOL));
     }
+
     return sym;
 }
 
-/* defined but not used [phf] */
-/*
 static void freesymbol(SYMBOL *sym)
 {
-    sym->next = SymAlloc;
-    SymAlloc = sym;
-}
-*/
+    assert(sym != NULL);
 
+    if ((sym->flags & SYM_STRING) != 0) {
+        free(sym->string); /* TODO: really how we allocate those? [phf] */
+    }
+    sym->next = symbol_free_list;
+    symbol_free_list = sym;
+}
+
+/* empty list okay to free */
 void FreeSymbolList(SYMBOL *sym)
 {
     SYMBOL *next;
-    
-    while (sym != NULL)
-    {
+
+    while (sym != NULL) {
         next = sym->next;
-        sym->next = SymAlloc;
-        if (sym->flags & SYM_STRING)
-        {
-            free(sym->string); /* warning presumably okay? [phf] */
-        }
-        SymAlloc = sym;
+        freesymbol(sym);
         sym = next;
     }
 }
