@@ -53,18 +53,18 @@ SVNTAG("$Id$");
 
 static const char *cleanup(char *buf, bool bDisable);
 
-MNEMONIC *parse(char *buf);
-MNEMONIC *findmne(char *str);
-void clearsegs(void);
+static MNEMONIC *parse(char *buf);
+static MNEMONIC *findmne(char *str);
+static void clearsegs(void);
 
 static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
 
-char     *Extstr;
+static char     *Extstr;
 /*unsigned char     Listing = 1;*/
-int     pass;
+static int     pass;
 
-unsigned char     F_ListAllPasses = 0;
+static unsigned char     F_ListAllPasses = 0;
 
 
 
@@ -126,93 +126,91 @@ static void ShowSegments(void)
     const char *bss;
 
     printf("\n----------------------------------------------------------------------\n");
-    printf( SHOW_SEGMENTS_FORMAT, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC" );
+    printf(SHOW_SEGMENTS_FORMAT, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC");
     
-    for (seg = Seglist; seg; seg = seg->next)
-    {
+    for (seg = Seglist; seg != NULL; seg = seg->next) {
         bss = (seg->flags & SF_BSS) ? "[u]" : "   ";
-        
-        printf( SHOW_SEGMENTS_FORMAT, seg->name, bss,
-            sftos(seg->initorg, seg->initflags), sftos(seg->initrorg, seg->initrflags),
-            sftos(seg->org, seg->flags), sftos(seg->rorg, seg->rflags) );
+
+        printf(
+            SHOW_SEGMENTS_FORMAT,
+            seg->name,
+            bss,
+            sftos(seg->initorg, seg->initflags),
+            sftos(seg->initrorg, seg->initrflags),
+            sftos(seg->org, seg->flags),
+            sftos(seg->rorg, seg->rflags)
+        );
     }
     puts("----------------------------------------------------------------------");
     
-    printf( "%d references to unknown symbols.\n", Redo_eval );
-    printf( "%d events requiring another assembler pass.\n", Redo );
+    printf("%d references to unknown symbols.\n", Redo_eval);
+    printf("%d events requiring another assembler pass.\n", Redo);
     
-    if ( Redo_why )
+    if (Redo_why != 0)
     {
-        if ( Redo_why & REASON_MNEMONIC_NOT_RESOLVED )
-            printf( " - Expression in mnemonic not resolved.\n" );
+        if ((Redo_why & REASON_MNEMONIC_NOT_RESOLVED) != 0)
+            printf(" - Expression in mnemonic not resolved.\n");
         
-        if ( Redo_why & REASON_OBSCURE )
-            printf( " - Obscure reason - to be documented :)\n" );
+        if ((Redo_why & REASON_OBSCURE) != 0)
+            printf(" - Obscure reason - to be documented :)\n");
         
-        if ( Redo_why & REASON_DC_NOT_RESOVED )
-            printf( " - Expression in a DC not resolved.\n" );
+        if ((Redo_why & REASON_DC_NOT_RESOVED) != 0)
+            printf(" - Expression in a DC not resolved.\n");
         
-        if ( Redo_why & REASON_DV_NOT_RESOLVED_PROBABLY )
-            printf( " - Expression in a DV not resolved (probably in DV's EQM symbol).\n" );
+        if ((Redo_why & REASON_DV_NOT_RESOLVED_PROBABLY) != 0)
+            printf(" - Expression in a DV not resolved (probably in DV's EQM symbol).\n");
         
-        if ( Redo_why & REASON_DV_NOT_RESOLVED_COULD )
-            printf( " - Expression in a DV not resolved (could be in DV's EQM symbol).\n" );
+        if ((Redo_why & REASON_DV_NOT_RESOLVED_COULD) != 0)
+            printf(" - Expression in a DV not resolved (could be in DV's EQM symbol).\n");
         
-        if ( Redo_why & REASON_DS_NOT_RESOLVED )
-            printf( " - Expression in a DS not resolved.\n" );
+        if ((Redo_why & REASON_DS_NOT_RESOLVED) != 0)
+            printf(" - Expression in a DS not resolved.\n");
         
-        if ( Redo_why & REASON_ALIGN_NOT_RESOLVED )
-            printf( " - Expression in an ALIGN not resolved.\n" );
+        if ((Redo_why & REASON_ALIGN_NOT_RESOLVED) != 0)
+            printf(" - Expression in an ALIGN not resolved.\n");
         
-        if ( Redo_why & REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN )
-            printf( " - ALIGN: Relocatable origin not known (if in RORG at the time).\n" );
+        if ((Redo_why & REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN) != 0)
+            printf(" - ALIGN: Relocatable origin not known (if in RORG at the time).\n");
         
-        if ( Redo_why & REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN )
-            printf( " - ALIGN: Normal origin not known	(if in ORG at the time).\n" );
+        if ((Redo_why & REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN) != 0)
+            printf(" - ALIGN: Normal origin not known	(if in ORG at the time).\n");
         
-        if ( Redo_why & REASON_EQU_NOT_RESOLVED )
-            printf( " - EQU: Expression not resolved.\n" );
+        if ((Redo_why & REASON_EQU_NOT_RESOLVED) != 0)
+            printf(" - EQU: Expression not resolved.\n");
         
-        if ( Redo_why & REASON_EQU_VALUE_MISMATCH )
-            printf( " - EQU: Value mismatch from previous pass (phase error).\n" );
+        if ((Redo_why & REASON_EQU_VALUE_MISMATCH) != 0)
+            printf(" - EQU: Value mismatch from previous pass (phase error).\n");
         
-        if ( Redo_why & REASON_IF_NOT_RESOLVED )
-            printf( " - IF: Expression not resolved.\n" );
+        if ((Redo_why & REASON_IF_NOT_RESOLVED) != 0)
+            printf(" - IF: Expression not resolved.\n");
         
-        if ( Redo_why & REASON_REPEAT_NOT_RESOLVED )
-            printf( " - REPEAT: Expression not resolved.\n" );
+        if ((Redo_why & REASON_REPEAT_NOT_RESOLVED) != 0)
+            printf(" - REPEAT: Expression not resolved.\n");
         
-        if ( Redo_why & REASON_FORWARD_REFERENCE )
-            printf( " - Label defined after it has been referenced (forward reference).\n" );
+        if ((Redo_why & REASON_FORWARD_REFERENCE) != 0)
+            printf(" - Label defined after it has been referenced (forward reference).\n");
         
-        if ( Redo_why & REASON_PHASE_ERROR )
-            printf( " - Label value is different from that of the previous pass (phase error).\n" );
+        if ((Redo_why & REASON_PHASE_ERROR) != 0)
+            printf(" - Label value is different from that of the previous pass (phase error).\n");
     }
-    
+
     printf( "\n" );
-    
 }
 
-
-
-static void DumpSymbolTable( bool bTableSort )
+static void DumpSymbolTable(bool bTableSort)
 {
-    if (F_symfile)
+    if (F_symfile != NULL)
     {
         FILE *fi = fopen(F_symfile, "w");
-        if (fi)
-        {
-            ShowSymbols( fi, bTableSort );
+        if (fi != NULL) {
+            ShowSymbols(fi, bTableSort);
             fclose(fi);
         }
-        else
-        {
-            printf("Warning: Unable to open Symbol Dump file '%s'\n", F_symfile);
+        else {
+            warning_fmt("Unable to open symbol dump file '%s'.\n", F_symfile);
         }
     }
-    
 }
-
 
 static int MainShadow(int ac, char **av, bool *pbTableSort )
 {
@@ -304,11 +302,11 @@ fail:
                 
             case 'M':
             case 'D':
-                while (*str && *str != '=')
+                while (*str != '\0' && *str != '=')
                     ++str;
                 if (*str == '=')
                 {
-                    *str = 0;
+                    *str = '\0';
                     ++str;
                 }
                 else
@@ -332,7 +330,7 @@ fail:
             case 'o':   /*  F_outfile   */
                 F_outfile = str;
 nofile:
-                if (*str == 0)
+                if (*str == '\0')
                     panic_fmt("-o Switch requires file name.");
                 break;
 
@@ -521,7 +519,7 @@ nextpass:
     if (FI_listfile)
         fclose(FI_listfile);
     
-    if (Redo)
+    if (Redo != 0)
     {
         if ( !bDoAllPasses )
             if (Redo == oldredo && Redo_why == oldwhy && Redo_eval == oldeval)
@@ -639,7 +637,7 @@ static void outlistfile(const char *comment)
     }
     sprintf(buf1+j-1, "%c%-10s %s%s%s\t%s\n",
         xtrue, Av[0], Av[1], dot, ptr, Av[2]);
-    if (comment[0]) { /*  tab and comment */
+    if (comment[0] != '\0') { /*  tab and comment */
         j = strlen(buf1) - 1;
         sprintf(buf1+j, "\t;%s", comment);
     }
@@ -705,7 +703,7 @@ char *sftos(long val, int flags)
     return ptr;
 }
 
-void clearsegs(void)
+static void clearsegs(void)
 {
     SEGMENT *seg;
     
@@ -722,7 +720,7 @@ static const char *cleanup(char *buf, bool bDisable)
     int arg, add;
     const char *comment = "";
     
-    for (str = buf; *str; ++str)
+    for (str = buf; *str != '\0'; ++str)
     {
         switch(*str)
         {
@@ -739,17 +737,17 @@ static const char *cleanup(char *buf, bool bDisable)
             ++str;
             if (*str == TAB)
                 *str = ' ';
-            if (*str == '\n' || *str == 0)
+            if (*str == '\n' || *str == '\0')
             {
                 str[0] = ' ';
-                str[1] = 0;
+                str[1] = '\0';
             }
             if (str[0] == ' ')
                 str[0] = '\x80';
             break;
         case '\"':
             ++str;
-            while (*str && *str != '\"')
+            while (*str != '\0' && *str != '\"')
             {
                 if (*str == ' ')
                     *str = '\x80';
@@ -772,7 +770,7 @@ static const char *cleanup(char *buf, bool bDisable)
                 printf("macro tail: '%s'\n", str);
             
             arg = atoi(str+1);
-            for (add = 0; *str && *str != '}'; ++str)
+            for (add = 0; *str != '\0' && *str != '}'; ++str)
                 --add;
             if (*str != '}')
             {
@@ -942,7 +940,7 @@ void findext(char *str)
 *  member.
 */
 
-void rmnode(void **base, int bytes)
+void rmnode(void **base,  /*@unused@*/ size_t bytes)
 {
     void *node;
     
@@ -955,7 +953,7 @@ void rmnode(void **base, int bytes)
 /*
 *  Parse into three arguments: Av[0], Av[1], Av[2]
 */
-MNEMONIC *parse(char *buf)
+static MNEMONIC *parse(char *buf)
 {
     int i, j;
     MNEMONIC *mne = NULL;
@@ -988,7 +986,7 @@ MNEMONIC *parse(char *buf)
 #endif
 
     Av[0] = Avbuf + j;
-    while (buf[i] && buf[i] != ' ') {
+    while (buf[i] != '\0' && buf[i] != ' ') {
 
         if (buf[i] == ':') {
             i++;
@@ -1033,7 +1031,7 @@ MNEMONIC *parse(char *buf)
     while (buf[i] == ' ')
         ++i;
     Av[2] = Avbuf + j;
-    while (buf[i]) {
+    while (buf[i] != '\0') {
         if (buf[i] == ' ') {
             while(buf[i+1] == ' ')
                 ++i;
@@ -1049,7 +1047,7 @@ MNEMONIC *parse(char *buf)
 
 
 
-MNEMONIC *findmne(char *str)
+static MNEMONIC *findmne(char *str)
 {
     int i;
     char c;
@@ -1065,12 +1063,12 @@ MNEMONIC *findmne(char *str)
         str++;
     }
 
-    for (i = 0; (c = str[i]); ++i) {
+    for (i = 0; (c = str[i]) != '\0'; ++i) {
         if (c >= 'A' && c <= 'Z')
             c += 'a' - 'A';
         buf[i] = c;
     }
-    buf[i] = 0;
+    buf[i] = '\0';
     for (mne = MHash[hash_mnemonic(buf)]; mne; mne = mne->next) {
         if (strcmp(buf, mne->name) == 0)
             break;
