@@ -157,7 +157,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     
     Csegment->flags |= SF_REF;
     programlabel();
-    symbase = eval(str, 1);
+    symbase = eval(str, true);
     
     if ( bTrace )
         printf("PC: %04lx  MNEMONIC: %s  addrmode: %d  ", Csegment->org, mne->name, symbase->addrmode);
@@ -657,7 +657,7 @@ v_dc(char *str, MNEMONIC *mne)
             return;
         }
     }
-    sym = eval(str, 0);
+    sym = eval(str, false);
     for (; sym; sym = sym->next) {
         value = sym->value;
         if (sym->flags & SYM_UNKNOWN) {
@@ -669,7 +669,7 @@ v_dc(char *str, MNEMONIC *mne)
             while ((value = *ptr) != 0) {
                 if (vmode) {
                     setspecial(value, 0);
-                    tmp = eval(macstr, 0);
+                    tmp = eval(macstr, false);
                     value = tmp->value;
                     if (tmp->flags & SYM_UNKNOWN) {
                         ++Redo;
@@ -716,7 +716,7 @@ v_dc(char *str, MNEMONIC *mne)
         {
             if (vmode) {
                 setspecial(value, sym->flags);
-                tmp = eval(macstr, 0);
+                tmp = eval(macstr, false);
                 value = tmp->value;
                 if (tmp->flags & SYM_UNKNOWN) {
                     ++Redo;
@@ -776,7 +776,7 @@ v_ds(char *str, MNEMONIC *dummy)
     if (Mnext == AM_LONG)
         mult = 4;
     programlabel();
-    if ((sym = eval(str, 0)) != NULL) {
+    if ((sym = eval(str, false)) != NULL) {
         if (sym->next)
             filler = sym->next->value;
         if (sym->flags & SYM_UNKNOWN) {
@@ -800,7 +800,7 @@ v_org(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     
-    sym = eval(str, 0);
+    sym = eval(str, false);
     Csegment->org = sym->value;
     
     if (sym->flags & SYM_UNKNOWN)
@@ -834,7 +834,7 @@ v_org(char *str, MNEMONIC *dummy)
 void
 v_rorg(char *str, MNEMONIC *dummy)
 {
-    SYMBOL *sym = eval(str, 0);
+    SYMBOL *sym = eval(str, false);
     
     Csegment->flags |= SF_RORG;
     if (sym->addrmode != AM_IMP) {
@@ -862,7 +862,7 @@ v_rend(char *str, MNEMONIC *dummy)
 void
 v_align(char *str, MNEMONIC *dummy)
 {
-    SYMBOL *sym = eval(str, 0);
+    SYMBOL *sym = eval(str, false);
     unsigned char fill = 0;
     unsigned char rorg = Csegment->flags & SF_RORG;
     
@@ -920,7 +920,7 @@ v_subroutine(char *str, MNEMONIC *dummy)
 void
 v_equ(char *str, MNEMONIC *dummy)
 {
-    SYMBOL *sym = eval(str, 0);
+    SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
     
     /*
@@ -1019,7 +1019,7 @@ v_eqm(char *str, MNEMONIC *dummy)
 void
 v_echo(char *str, MNEMONIC *dummy)
 {
-    SYMBOL *sym = eval(str, 0);
+    SYMBOL *sym = eval(str, false);
     SYMBOL *s;
     char buf[256];
     
@@ -1041,7 +1041,7 @@ v_echo(char *str, MNEMONIC *dummy)
 
 void v_set(char *str, MNEMONIC *dummy)
 {
-    SYMBOL *sym = eval(str, 0);
+    SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
     
     lab = findsymbol(Av[0], strlen(Av[0]));
@@ -1157,7 +1157,7 @@ v_ifconst(char *str, MNEMONIC *dummy)
     SYMBOL *sym;
     
     programlabel();
-    sym = eval(str, 0);
+    sym = eval(str, false);
     pushif(sym->flags == 0);
     FreeSymbolList(sym);
 }
@@ -1168,7 +1168,7 @@ v_ifnconst(char *str, MNEMONIC *dummy)
     SYMBOL *sym;
     
     programlabel();
-    sym = eval(str, 0);
+    sym = eval(str, false);
     pushif(sym->flags != 0);
     FreeSymbolList(sym);
 }
@@ -1183,7 +1183,7 @@ v_if(char *str, MNEMONIC *dummy)
         return;
     }
     programlabel();
-    sym = eval(str, 0);
+    sym = eval(str, false);
     if (sym->flags) {
         ++Redo;
         Redo_why |= REASON_IF_NOT_RESOLVED;
@@ -1237,7 +1237,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
         return;
     }
     programlabel();
-    sym = eval(str, 0);
+    sym = eval(str, false);
     if (sym->value == 0) {
         pushif(0);
         FreeSymbolList(sym);

@@ -436,7 +436,7 @@ FILE *pfopen(const char *, const char *);
 
 
 /* exp.c */
-SYMBOL *eval(const char *str, int wantmode);
+SYMBOL *eval(const char *str, bool wantmode);
 
 #endif /* _DASM_ASM_H */
 
