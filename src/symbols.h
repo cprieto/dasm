@@ -26,6 +26,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include "asm.h"
+
 #include <stdbool.h>
 
 void  setspecial(int value, int flags);
