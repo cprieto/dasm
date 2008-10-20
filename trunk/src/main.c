@@ -611,6 +611,7 @@ static void outlistfile(const char *comment)
     const char *ptr;
     const char *dot;
     int i, j;
+    int len;
     
 
     if ( pIncfile->flags & INF_NOLIST )
@@ -625,7 +626,8 @@ static void outlistfile(const char *comment)
     else
         ptr = "";
     
-    sprintf(buf1, "%7ld %c%s", pIncfile->lineno, c, sftos(Plab, Pflags & 7));
+    len = snprintf(buf1, sizeof(buf1), "%7ld %c%s", pIncfile->lineno, c, sftos(Plab, Pflags & 7));
+    assert(len < (int)sizeof(buf1));
     j = strlen(buf1);
     for (i = 0; i < Glen && i < 4; ++i, j += 3)
         sprintf(buf1+j, "%02x ", Gen[i]);
