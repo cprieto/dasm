@@ -65,7 +65,7 @@ main(int ac, char **av)
 	puts("FTOBIN format infile [outfile]");
 	puts("format 1,2, or 3.  3=raw");
 	puts("(C)Copyright 1988 by Matthew Dillon, All Rights Reserved");
-	exit(1);
+	exit(EXIT_FAILURE);
     }
     format = strtol(av[1], NULL, 0);
     if (format < 1 || format > 3)
@@ -92,7 +92,7 @@ exiterr(const char *str)
 {
     fputs(str, stderr);
     fputs("\n", stderr);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 /*
