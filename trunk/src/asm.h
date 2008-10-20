@@ -112,7 +112,7 @@ enum FORMAT
 #define SHASHAND    (SHASHSIZE-1) /*0x03FF*/
 #define MHASHAND    (MHASHSIZE-1) /*0x03FF*/
 #define MAXMACLEVEL 32
-#define TAB        9
+#define TAB        '\t'
 
 
 	enum ADDRESS_MODES {
@@ -386,7 +386,7 @@ extern unsigned long  CheckSum;
 /*extern unsigned char Listing;*/
 void    findext(char *str);
 char   *sftos(long val, int flags);
-void    rmnode(void **base, int bytes);
+void    rmnode(void **base, size_t bytes);
 void    addhashtable(MNEMONIC *mne);
 void    pushinclude(char *str);
 
