@@ -1022,13 +1022,18 @@ v_echo(char *str, MNEMONIC *dummy)
     SYMBOL *sym = eval(str, false);
     SYMBOL *s;
     char buf[256];
+    int len;
     
     for (s = sym; s; s = s->next) {
         if (!(s->flags & SYM_UNKNOWN)) {
-            if (s->flags & (SYM_MACRO|SYM_STRING))
-                sprintf(buf,"%s", s->string);
-            else
-                sprintf(buf,"$%lx", s->value);
+            if (s->flags & (SYM_MACRO|SYM_STRING)) {
+                len = snprintf(buf, sizeof(buf), "%s", s->string);
+                assert(len < (int)sizeof(buf));
+            }
+            else {
+                len = snprintf(buf, sizeof(buf), "$%lx", s->value);
+                assert(len < (int)sizeof(buf));
+            }
             if (FI_listfile)
                 fprintf(FI_listfile, " %s", buf);
             printf(" %s", buf);
