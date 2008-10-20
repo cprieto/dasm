@@ -1,3 +1,6 @@
+#ifndef _DASM_ASM_H
+#define _DASM_ASM_H
+
 /*
     $Id$
 
@@ -435,6 +438,6 @@ FILE *pfopen(const char *, const char *);
 /* exp.c */
 SYMBOL *eval(const char *str, int wantmode);
 
-/* end of asm.h */
+#endif /* _DASM_ASM_H */
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
