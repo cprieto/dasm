@@ -167,6 +167,8 @@ const char *getprogname(void);
 /**
  * @brief
  *   Sets name of current program sets to last component of given path.
+ * @pre
+ *   name != NULL
  * @warning
  *   Just pass argv[0] if you want, however the parsing is simplistic so
  *   you should be careful if your environment is the least bit exotic.
