@@ -595,7 +595,7 @@ v_err(char *str, MNEMONIC *dummy)
     */
     fatal_fmt("ERR pseudo-op encountered, aborting assembly!");
     /* TODO: really exit() here? that's almost like panic? */
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 void
@@ -1464,7 +1464,7 @@ generate(void)
                     asmerr( ERROR_ORIGIN_REVERSE_INDEXED, true, NULL );
                     */
                     fatal_fmt("Origin Reverse-indexed.");
-                    exit(1); /* TODO: necessary? why in the first place? */
+                    exit(EXIT_FAILURE); /* TODO: necessary? why in the first place? */
                 }
                 
                 while (Csegment->org != org)
