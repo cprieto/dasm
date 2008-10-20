@@ -34,7 +34,7 @@ int main(void)
 }
 
 /*
-G4 PowerBook:
+Darwin Agnes.local 8.11.0 Darwin Kernel Version 8.11.0: Wed Oct 10 18:26:00 PDT 2007; root:xnu-792.24.17~1/RELEASE_PPC Power Macintosh powerpc PowerBook6,8 Darwin
 
 sizeof(char) == 1
 sizeof(int8_t) == 1
