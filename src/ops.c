@@ -52,10 +52,9 @@ extern MNEMONIC    Mne68705[];
 extern MNEMONIC    Mne68HC11[];
 extern MNEMONIC    MneF8[];
 
-void generate(void);
-void genfill(long fill, long bytes, int size);
-void pushif(bool xbool);
-int gethexdig(int c);
+static void genfill(int32_t fill, long bytes, int size);
+static void pushif(bool xbool);
+static int gethexdig(int c);
 
 /*
 *  An opcode modifies the SEGMENT flags in the following ways:
@@ -552,8 +551,7 @@ v_hex(char *str, MNEMONIC *dummy)
     generate();
 }
 
-int
-gethexdig(int c)
+static int gethexdig(int c)
 {
     /* [phf] removed
     char sBuffer[64];
@@ -1520,81 +1518,76 @@ void closegenerate(void)
     }
 }
 
-void
-genfill(long fill, long entries, int size)
+static void genfill(int32_t fill, long entries, int size)
 {
-    long bytes = entries;  /*	multiplied later    */
+    long bytes;
     int i;
     unsigned char c3,c2,c1,c0;
-    
-    if (!bytes)
-        return;
-    
-    c3 = fill >> 24;
-    c2 = fill >> 16;
-    c1 = fill >> 8;
-    c0 = fill;
-    switch(size)
-    {
-    default: /* defensive programming! [phf] */
-        /* [phf] removed
-        asmerr(ERROR_BAD_FORMAT, true, "Unhandled internal size specifier!");
-        */
-        panic_fmt("Unhandled internal size specifier in %s!", SOURCE_LOCATION);
-        /* TODO: really panic? */
-        break;
+    const int size_of_gen = sizeof(Gen);
 
-    case 1:
-        memset(Gen, c0, sizeof(Gen));
-        break;
-        
-    case 2:
-        bytes <<= 1;
-        for (i = 0; i < sizeof(Gen); i += 2)
-        {
-            if (MsbOrder)
-            {
-                Gen[i+0] = c1;
-                Gen[i+1] = c0;
-            }
-            else
-            {
-                Gen[i+0] = c0;
-                Gen[i+1] = c1;
-            }
-        }
-        break;
-        
-    case 4:
-        bytes <<= 2;
-        for (i = 0; i < sizeof(Gen); i += 4)
-        {
-            if (MsbOrder)
-            {
-                Gen[i+0] = c3;
-                Gen[i+1] = c2;
-                Gen[i+2] = c1;
-                Gen[i+3] = c0;
-            }
-            else
-            {
-                Gen[i+0] = c0;
-                Gen[i+1] = c1;
-                Gen[i+2] = c2;
-                Gen[i+3] = c3;
-            }
-        }
-        break;
+    assert(entries >= 0);
+    assert(size == 1 || size == 2 || size == 4);
+    assert(size_of_gen > 0);
+
+    if (entries == 0) {
+        return;
     }
-    
-    for (Glen = sizeof(Gen); bytes > sizeof(Gen); bytes -= sizeof(Gen))
+
+    bytes = entries * size;
+
+    c3 = (fill >> 24) & 0xff;
+    c2 = (fill >> 16) & 0xff;
+    c1 = (fill >> 8) & 0xff;
+    c0 = fill & 0xff;
+
+    switch (size) {
+        default:
+            assert(false); /* defensive programming! [phf] */
+            break;
+
+        case 1:
+            memset(Gen, c0, size_of_gen);
+            break;
+
+        case 2:
+            for (i = 0; i < size_of_gen; i += 2) {
+                if (MsbOrder) {
+                    Gen[i+0] = c1;
+                    Gen[i+1] = c0;
+                }
+                else {
+                    Gen[i+0] = c0;
+                    Gen[i+1] = c1;
+                }
+            }
+            break;
+
+        case 4:
+            for (i = 0; i < size_of_gen; i += 4) {
+                if (MsbOrder) {
+                    Gen[i+0] = c3;
+                    Gen[i+1] = c2;
+                    Gen[i+2] = c1;
+                    Gen[i+3] = c0;
+                }
+                else {
+                    Gen[i+0] = c0;
+                    Gen[i+1] = c1;
+                    Gen[i+2] = c2;
+                    Gen[i+3] = c3;
+                }
+            }
+            break;
+    }
+
+    for (Glen = size_of_gen; bytes > size_of_gen; bytes -= size_of_gen) {
         generate();
+    }
     Glen = bytes;
     generate();
 }
 
-void
-pushif(bool xbool)
+static void pushif(bool xbool)
 {
     IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
     ifs->next = Ifstack;
