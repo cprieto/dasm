@@ -24,11 +24,12 @@
 */
 
 #include "errors.h"
-#include "util.h"
-#include "asm.h"
 
-#include <string.h>
+#include "asm.h"
+#include "util.h"
+
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * @file test_errors.c

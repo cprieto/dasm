@@ -64,6 +64,7 @@ all: $(ALL)
 dasm: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o dasm
 
+symbols.o: symbols.c symbols.h
 errors.o: errors.c errors.h
 util.o: util.c util.h errors.h
 

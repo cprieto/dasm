@@ -57,15 +57,15 @@
 #include "errors.h"
 #include "version.h"
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 #include <assert.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <sys/types.h>
+
+/*@unused@*/
+SVNTAG("$Id$");
 
 /*@null@*/
 void *checked_malloc(size_t bytes)

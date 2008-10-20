@@ -27,6 +27,8 @@
  *  SYMBOLS.C
  */
 
+#include "symbols.h"
+
 #include "asm.h"
 #include "errors.h"
 #include "util.h"
@@ -41,7 +43,6 @@ SVNTAG("$Id$");
 static SYMBOL *SHash[SHASHSIZE];
 
 static unsigned int hash_symbol(const char *str, int len);
-SYMBOL *allocsymbol(void);
 
 static SYMBOL org;
 static SYMBOL special;
