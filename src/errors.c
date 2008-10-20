@@ -79,11 +79,11 @@ static const char *levels[] =
 /* Super low-level panic for disasters *inside* the errors module! */
 static void internal_panic(const char *message)
 {
-  fputs("\n", stderr);
-  fputs(getprogname(), stderr);
-  fputs(": FATAL INTERNAL PANIC (errors.c): ", stderr);
-  fputs(message, stderr);
-  fputs("\n", stderr);
+  (void) fputs("\n", stderr);
+  (void) fputs(getprogname(), stderr);
+  (void) fputs(": FATAL INTERNAL PANIC (errors.c): ", stderr);
+  (void) fputs(message, stderr);
+  (void) fputs("\n", stderr);
   exit(EXIT_FAILURE);
 }
 
@@ -138,7 +138,7 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
             */
             if (file != NULL)
             {
-                fprintf(out, "line %7ld %-10s ", file->lineno, file->name);
+                fprintf(out, "line %7lu %-10s ", file->lineno, file->name);
             }
             else
             {
@@ -218,8 +218,8 @@ static void vanotify(error_level_t level, const char *fmt, va_list ap)
     {
         internal_panic("Buffer overflow in vnotify()!");
     }
-    fputs(notify_buffer, out);
-    fputs("\n", out);
+    (void) fputs(notify_buffer, out);
+    (void) fputs("\n", out);
 
     /* maintain statistics about warnings and errors */
     /* TODO: count everything < PANIC? */
