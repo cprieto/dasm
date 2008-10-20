@@ -67,7 +67,7 @@
 /*@unused@*/
 SVNTAG("$Id$");
 
-/*@null@*/
+/*@out@*/
 void *checked_malloc(size_t bytes)
 {
     void *p = NULL;
@@ -77,32 +77,30 @@ void *checked_malloc(size_t bytes)
     if (p == NULL)
     {
         panic_fmt(PANIC_MEMORY, bytes, SOURCE_LOCATION);
+        exit(EXIT_FAILURE); /* makes splint happier */
     }
 
     return p;
 }
 
-/*@null@*/
 void *zero_malloc(size_t bytes)
 {
     void *p = NULL;
     assert(bytes > 0); /* rule out 0! */
 
     p = checked_malloc(bytes);
-    if (p != NULL)
-    {
-        (void) memset(p, 0, bytes);
-    }
+    p = memset(p, 0, bytes);
 
     return p;
 }
 
 struct new_perm_block
 {
-  struct new_perm_block *next;
+  /*@temp@*/ struct new_perm_block *next;
   char data[];
 };
 
+/*@null@*/ /*@temp@*/
 static struct new_perm_block *new_permalloc_stack = NULL;
 
 #define ALLOCSIZE 16384
@@ -113,7 +111,7 @@ void *small_alloc(size_t bytes)
     /* Assume sizeof(union align) is a power of 2 */
     union align { long l; void *p; void (*fp)(void); };
 
-    static void *buf = NULL;
+    static void *buf;
     static size_t left = 0;
     void *ptr;
     struct new_perm_block *block;
@@ -143,6 +141,7 @@ void *small_alloc(size_t bytes)
         if (bytes > left)
         {
             panic_fmt(PANIC_SMALL_MEMORY, bytes, SOURCE_LOCATION);
+            exit(EXIT_FAILURE); /* makes splint happier */
         }
 
         /* insert at top of stack */
@@ -178,8 +177,8 @@ void small_free_all(void)
         /* pop the top block, stack possibly empty after this */
         new_permalloc_stack = current->next;
         /* free() the block we popped */
-        free(current);
         debug_fmt("%s: freed block @ %p", SOURCE_LOCATION, (void*) current);
+        free(current);
     }
 
     debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
@@ -201,20 +200,21 @@ unsigned int hash_string(const char *string, size_t length)
 
     while (length-- != 0)
     {
-        hash = ((hash << 5) + hash) + *string++;
+        hash = ((hash << 5) + hash) + (unsigned int) *string++;
     }
 
     return hash;
 }
 
+/*@temp@*/
 char *strlower(char *str)
 {
-    char *ptr = str;
+    char *ptr;
     assert(str != NULL);
 
-    for ( ; *ptr != '\0'; ptr++)
+    for (ptr = str; *ptr != '\0'; ptr++)
     {
-        *ptr = tolower(*ptr);
+        *ptr = (char) tolower((int)*ptr);
     }
 
     return str;
@@ -318,8 +318,10 @@ strlcpy(char *dst, const char *src, size_t siz)
 	return(s - src - 1);	/* count does not include NUL */
 }
 
+/*@null@*/
 static const char *__dasm_progname = NULL;
 
+/*@temp@*/
 const char *getprogname(void)
 {
     return (__dasm_progname != NULL) ? __dasm_progname : "(unknown progname)";

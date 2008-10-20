@@ -45,7 +45,7 @@
  *   bytes > 0
  */
 
-/*@null@*/
+/*@out@*/
 void *checked_malloc(size_t bytes);
 
 /**
@@ -61,7 +61,6 @@ void *checked_malloc(size_t bytes);
  *   correctly to NULL or 0.0 on some (very strange) machines.
  */
 
-/*@null@*/
 void *zero_malloc(size_t bytes);
 
 /**
@@ -113,6 +112,7 @@ unsigned int hash_string(const char *string, size_t length);
  *   string != NULL
  */
 
+/*@temp@*/
 char *strlower(char *string);
 
 #if !defined(__APPLE__) && !defined(__BSD__)
@@ -162,6 +162,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
  *   On BSD (including OS X) this function is defined in the C library!
  */
 
+/*@temp@*/
 const char *getprogname(void);
 
 /**
