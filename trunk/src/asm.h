@@ -335,7 +335,6 @@ struct _SYMBOL
     unsigned int namelen;
 };
 
-extern SYMBOL    *SHash[];
 extern MNEMONIC    *MHash[];
 extern INCFILE    *pIncfile;
 extern REPLOOP    *Reploop;
@@ -395,6 +394,10 @@ SYMBOL *findsymbol(const char *str, int len);
 SYMBOL *CreateSymbol( const char *str, int len );
 void    FreeSymbolList(SYMBOL *sym);
 void    programlabel(void);
+void debug_symbol_hash_collisions(void);
+void clearrefs(void);
+void ShowSymbols(FILE *file, bool bTableSort);
+size_t ShowUnresolvedSymbols(void);
 
 /* ops.c */
 extern    unsigned char Gen[];
