@@ -166,7 +166,7 @@ static int parse_value(char *str, unsigned long *value) {
     int result = 0;
 
     *value = 0;
-    sym = eval(str, 0);
+    sym = eval(str, false);
 
     if (NULL != sym->next || AM_BYTEADR != sym->addrmode) {
         /* [phf] removed
