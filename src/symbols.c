@@ -37,6 +37,9 @@
 /*@unused@*/
 SVNTAG("$Id$");
 
+/*symbol hash table */
+static SYMBOL *SHash[SHASHSIZE];
+
 static unsigned int hash_symbol(const char *str, int len);
 SYMBOL *allocsymbol(void);
 
@@ -286,6 +289,194 @@ void FreeSymbolList(SYMBOL *sym)
         freesymbol(sym);
         sym = next;
     }
+}
+
+void debug_symbol_hash_collisions(void)
+{
+    SYMBOL *sym;
+    int sym_collisions = 0;
+    int i;
+    bool first;
+
+    for (i = 0; i < SHASHSIZE; i++)
+    {
+      first = true;
+      for (sym = SHash[i]; sym != NULL; sym = sym->next)
+      {
+        if (!first) {
+          sym_collisions += 1;
+        }
+        first = false;
+      }
+    }
+
+    printf("Collisions for SYMBOLS: %d\n", sym_collisions);
+}
+
+void clearrefs(void)
+{
+    SYMBOL *sym;
+    size_t i;
+
+    for (i = 0; i < SHASHSIZE; i++) {
+        for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+            sym->flags &= ~SYM_REF;
+        }
+    }
+}
+
+static size_t CountUnresolvedSymbols(void)
+{
+    SYMBOL *sym;
+    size_t nUnresolved = 0;
+    size_t i;
+    
+    /* Pre-count unresolved symbols */
+    for (i = 0; i < SHASHSIZE; i++) {
+        for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+            if ((sym->flags & SYM_UNKNOWN) != 0) {
+                nUnresolved++;
+            }
+        }
+    }
+            
+	return nUnresolved;
+}
+
+size_t ShowUnresolvedSymbols(void)
+{
+    SYMBOL *sym;
+    size_t i;
+    
+    size_t nUnresolved = CountUnresolvedSymbols();
+    if (nUnresolved > 0)
+    {
+        printf("--- Unresolved Symbol List\n");
+        
+        for (i = 0; i < SHASHSIZE; i++) {
+            for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+                if ((sym->flags & SYM_UNKNOWN) != 0) {
+                    printf(
+                        "%-24s %s\n",
+                        sym->name,
+                        sftos(sym->value, sym->flags)
+                    );
+                }
+            }
+        }
+                
+        printf(
+            "--- %zu Unresolved Symbol%c\n\n",
+            nUnresolved,
+            (nUnresolved == 1) ? ' ' : 's'
+        );
+    }
+    
+    return nUnresolved;
+}
+
+static int CompareAlpha( const void *arg1, const void *arg2 )
+{
+    /* Simple alphabetic ordering comparison function for quicksort */
+
+    const SYMBOL *sym1 = *(SYMBOL * const *) arg1;
+    const SYMBOL *sym2 = *(SYMBOL * const *) arg2;
+    
+    /*
+       The cast above is wild, thank goodness the Linux man page
+       for qsort(3) has an example explaining it... :-) [phf]
+
+       TODO: Note that we compare labels case-insensitive here which
+       is not quite right; I believe we should be case-sensitive as
+       in other contexts where symbols (labels) are compared. But
+       the old CompareAlpha() was case-insensitive as well, so I
+       didn't want to change that right now... [phf]
+    */
+
+    return strcasecmp(sym1->name, sym2->name);
+}
+
+static int CompareAddress( const void *arg1, const void *arg2 )
+{
+    /* Simple numeric ordering comparison function for quicksort */
+    
+    const SYMBOL *sym1 = *(SYMBOL * const *) arg1;
+    const SYMBOL *sym2 = *(SYMBOL * const *) arg2;
+    
+    return sym1->value - sym2->value;
+}
+
+/*
+  Display symbol table. Sorted if enough memory, unsorted otherwise.
+  bTableSort true -> by address, false -> by name [phf]
+*/
+void ShowSymbols(FILE *file, bool bTableSort)
+{
+    SYMBOL **symArray;
+    SYMBOL *sym;
+    size_t i;
+    size_t nSymbols = 0;
+
+    fprintf(file, "--- Symbol List");
+
+    /* First count the number of symbols */
+    for (i = 0; i < SHASHSIZE; i++) {
+        for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+            nSymbols++;
+        }
+    }
+        
+    /* Malloc an array of pointers to data */
+    symArray = (SYMBOL**) malloc(nSymbols * sizeof(SYMBOL*));
+    if (symArray == NULL) {
+        fprintf(file, " (unsorted - not enough memory to sort!)\n");
+            
+        /* Display complete symbol table */
+        for (i = 0; i < SHASHSIZE; i++) {
+            for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+                fprintf(file, "%-24s %s\n", sym->name, sftos(sym->value, sym->flags));
+            }
+        }
+    }
+    else {
+        size_t nPtr = 0;
+         
+        /* Copy the element pointers into the symbol array */
+        for (i = 0; i < SHASHSIZE; i++) {
+            for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+                symArray[nPtr++] = sym;
+            }
+        }
+                
+        if ( bTableSort ) {
+            /* Sort via address */
+            fprintf(file, " (sorted by address)\n");
+            qsort(symArray, nPtr, sizeof(SYMBOL*), CompareAddress);
+        }
+        else {
+            /* Sort via name */
+            fprintf(file, " (sorted by symbol)\n");
+            qsort(symArray, nPtr, sizeof(SYMBOL*), CompareAlpha);
+        }
+                
+        /* Now display sorted list */
+                
+        for (i = 0; i < nPtr; i++) {
+            /* TODO: format is different here that above [phf] */
+            fprintf(file, "%-24s %-12s", symArray[i]->name, sftos(symArray[i]->value, symArray[i]->flags));
+
+            if (symArray[i]->flags & SYM_STRING) {
+                /* If a string, display actual string */
+                /* TODO: we don't do this above? [phf] */
+                fprintf(file, " \"%s\"", symArray[i]->string);
+            }
+            fprintf(file, "\n");
+        }
+                
+        free(symArray);
+    }
+        
+    fputs("--- End of Symbol List.\n", file);
 }
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

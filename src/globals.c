@@ -34,9 +34,6 @@
 /*@unused@*/
 SVNTAG("$Id$");
 
-SYMBOL *SHash[SHASHSIZE];   /*	symbol hash table   */
-
-
 MNEMONIC    *MHash[MHASHSIZE];   /*	mnemonic hash table */
 INCFILE *pIncfile;	    /*	include file stack  */
 REPLOOP *Reploop;	    /*	repeat loop stack   */
