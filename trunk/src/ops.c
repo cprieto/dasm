@@ -1251,7 +1251,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
     if ( sym->value < 0 )
     {
         pushif( 0 );
-        FreeSymbolList( sym );
+        FreeSymbolList(sym);
 
         /* [phf] removed
         asmerr( ERROR_REPEAT_NEGATIVE, false, NULL );
