@@ -42,7 +42,7 @@
 SVNTAG("$Id$");
 
 unsigned char Gen[256];
-unsigned char OrgFill = DEFORGFILL;
+static unsigned char OrgFill = DEFORGFILL;
 int	 Glen;
 
 extern MNEMONIC    Mne6502[];
@@ -1309,7 +1309,7 @@ v_repend(char *str, MNEMONIC *dummy)
 
 
 
-STRLIST *incdirlist;
+static STRLIST *incdirlist;
 
 void
 v_incdir(char *str, MNEMONIC *dummy)
