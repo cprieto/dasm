@@ -64,7 +64,18 @@ int main(int argc, char *argv[])
     char *two;
     union align { long l; void *p; void (*fp)(void); };
     const size_t BIG = ((size_t) 1) << 31;
+    char buffer[256];
     setprogname(argv[0]);
+    /* test some string functions */
+    strlcpy(buffer, "Hello 47!", sizeof(buffer));
+    assert(!match_either_case(buffer, "hello 47!", 9));
+    assert(strcmp(buffer, "Hello 47!") == 0);
+    strlower(buffer);
+    assert(strcmp(buffer, "hello 47!") == 0);
+    assert(match_either_case(buffer, "hello 47!", 9));
+    strupper(buffer);
+    assert(strcmp(buffer, "HELLO 47!") == 0);
+    assert(match_either_case(buffer, "hello 47!", 9));
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;

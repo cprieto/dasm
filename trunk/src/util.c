@@ -220,6 +220,45 @@ char *strlower(char *str)
     return str;
 }
 
+/*@temp@*/
+char *strupper(char *str)
+{
+    char *ptr;
+    assert(str != NULL);
+
+    for (ptr = str; *ptr != '\0'; ptr++)
+    {
+        *ptr = (char) toupper((int)*ptr);
+    }
+
+    return str;
+}
+
+bool match_either_case(const char *string, const char *either, size_t len)
+{
+    char buffer[len+1];
+    size_t res;
+
+    assert(string != NULL);
+    assert(either != NULL);
+    assert(len > 0);
+
+    res = strlcpy(buffer, either, sizeof(buffer));
+    assert(res < sizeof(buffer));
+
+    (void) strlower(buffer);
+    if (strncmp(string, buffer, len) == 0) {
+        return true;
+    }
+
+    (void) strupper(buffer);
+    if (strncmp(string, buffer, len) == 0) {
+        return true;
+    }
+
+    return false;
+}
+
 #if !defined(__APPLE__) && !defined(__BSD__)
 
 /*
@@ -239,7 +278,7 @@ char *strlower(char *str)
  */
 
 size_t
-strlcat(char *dst, const char *src, size_t siz)
+strlcat(/*@in@*/ /*@out@*/ char *dst, const char *src, size_t siz)
 {
 	char *d = dst;
 	const char *s = src;
@@ -288,7 +327,7 @@ strlcat(char *dst, const char *src, size_t siz)
  */
 
 size_t
-strlcpy(char *dst, const char *src, size_t siz)
+strlcpy(/*@out@*/ char *dst, const char *src, size_t siz)
 {
 	char *d = dst;
 	const char *s = src;

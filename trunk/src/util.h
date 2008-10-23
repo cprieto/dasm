@@ -34,6 +34,7 @@
  *   Utility functions for string manipulation and memory allocation.
  */
 
+#include <stdbool.h>
 #include <string.h>
 
 /**
@@ -115,6 +116,28 @@ unsigned int hash_string(const char *string, size_t length);
 /*@temp@*/
 char *strlower(char *string);
 
+/**
+ * @brief
+ *   Convert string to upper case, destructively.
+ *
+ * @pre
+ *   string != NULL
+ */
+
+/*@temp@*/
+char *strupper(char *string);
+
+/**
+ * @brief
+ *   True if strncmp(string, strlower(either), len) == 0 or
+ *   strncmp(string, strupper(either), len) == 0, so mixed
+ *   capitalization is not allowed.
+ *
+ * @pre
+ *   string != NULL && either != NULL && len > 0
+ */
+bool match_either_case(const char *string, const char *either, size_t len);
+
 #if !defined(__APPLE__) && !defined(__BSD__)
 
 /**
@@ -134,7 +157,7 @@ char *strlower(char *string);
  *   On BSD (including OS X) this function is defined in the C library!
  */
 
-size_t strlcat(char *dst, const char *src, size_t siz);
+size_t strlcat(/*@in@*/ /*@out@*/ char *dst, const char *src, size_t siz);
 
 /**
  * @brief
@@ -151,7 +174,7 @@ size_t strlcat(char *dst, const char *src, size_t siz);
  *   On BSD (including OS X) this function is defined in the C library!
  */
 
-size_t strlcpy(char *dst, const char *src, size_t siz);
+size_t strlcpy(/*@out@*/ char *dst, const char *src, size_t siz);
 
 /**
  * @brief
