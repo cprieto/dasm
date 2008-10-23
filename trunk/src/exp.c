@@ -917,7 +917,7 @@ static const char *pushsymbol(const char *str)
         error_fmt("Invalid character '%s'!", str); /* TODO: (*str) instead? */
         /* TODO: should go in error handling code, not here! [phf] */
         printf("char = '%c' %d (-1: %d)\n", *str, *str, *(str-1));
-        if (F_listfile)
+        if (F_listfile != NULL)
             fprintf(FI_listfile, "char = '%c' code %d\n", *str, *str);
         return str+1;
     }
