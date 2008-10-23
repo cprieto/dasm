@@ -350,7 +350,7 @@ SYMBOL *eval(const char *str, bool wantmode)
         case '[':   /*  eventually an argument      */
             
             if (Opi == MAXOPS)
-                puts("too many ops");
+                (void) puts("too many ops");
             else
                 Oppri[Opi++] = 0;
             ++str;
@@ -381,7 +381,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             ++str;
             if (Argi == Argibase)
             {
-                puts("']' error, no arg on stack");
+                (void) puts("']' error, no arg on stack");
                 break;
             }
             
@@ -621,7 +621,7 @@ static void stackarg(long val, int flags, const char *ptr1)
     Argstring[Argi] = str;
     Argflags[Argi] = flags;
     if (++Argi == MAXARGS) {
-        puts("stackarg: maxargs stacked");
+        (void) puts("stackarg: maxargs stacked");
         Argi = Argibase;
     }
     while (Opi != Opibase && Oppri[Opi-1] == 128)
@@ -631,7 +631,7 @@ static void stackarg(long val, int flags, const char *ptr1)
 static void doop(opfunc_t func, int pri)
 {
     if (Xdebug)
-        puts("doop");
+        (void) puts("doop");
     
     Lastwasop = true;
     
@@ -657,7 +657,7 @@ static void doop(opfunc_t func, int pri)
     
     if (Opi == MAXOPS)
     {
-        puts("doop: too many operators");
+        (void) puts("doop: too many operators");
         Opi = Opibase;
     }
     return;
