@@ -197,21 +197,6 @@ static void ShowSegments(void)
     printf( "\n" );
 }
 
-static void DumpSymbolTable(bool bTableSort)
-{
-    if (F_symfile != NULL)
-    {
-        FILE *fi = fopen(F_symfile, "w");
-        if (fi != NULL) {
-            ShowSymbols(fi, bTableSort);
-            fclose(fi);
-        }
-        else {
-            warning_fmt("Unable to open symbol dump file '%s'.\n", F_symfile);
-        }
-    }
-}
-
 static int MainShadow(int ac, char **av, bool *pbTableSort )
 {
     
@@ -351,7 +336,7 @@ nofile:
                 break;
                 
             case 's':   /*  F_symfile   */
-                F_symfile = str;
+                set_symbol_file_name(str);
                 goto nofile;
             case 'v':   /*  F_verbose   */
                 F_verbose = atoi(str);
@@ -402,7 +387,7 @@ nextpass:
     Localdollarindex = Lastlocaldollarindex = 0;
     
     FI_temp = fopen(F_outfile, "wb");
-    Fisclear = 1;
+    Fisclear = true;
     CheckSum = 0;
     if (FI_temp == NULL) {
         printf("Warning: Unable to [re]open '%s'\n", F_outfile);

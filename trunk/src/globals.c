@@ -77,10 +77,9 @@ error_format_t F_errorformat = ERRORFORMAT_DEFAULT;
 unsigned char	 F_verbose;
 const char	*F_outfile = "a.out";
 char	*F_listfile;
-char	*F_symfile;
 FILE	*FI_listfile;
 FILE	*FI_temp;
-unsigned char	 Fisclear;
+bool Fisclear;
 unsigned long	 Plab, Pflags;
 
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
