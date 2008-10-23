@@ -64,7 +64,7 @@ static char     *Extstr;
 /*unsigned char     Listing = 1;*/
 static int     pass;
 
-static unsigned char     F_ListAllPasses = 0;
+static bool F_ListAllPasses = false;
 
 
 
@@ -335,7 +335,7 @@ nofile:
                 break;
 
             case 'L':
-                F_ListAllPasses = 1;
+                F_ListAllPasses = true;
                 /* fall through to 'l' */
 
             case 'l':   /*  F_listfile  */
