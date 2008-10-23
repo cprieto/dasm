@@ -410,7 +410,7 @@ nextpass:
 //        return ERROR_FILE_ERROR;
         return EXIT_FAILURE; // needed for rest of code to work? [phf]
     }
-    if (F_listfile) {
+    if (F_listfile != NULL) {
 
         FI_listfile = fopen(F_listfile,
             F_ListAllPasses && (pass > 1)? "a" : "w");
@@ -475,7 +475,7 @@ nextpass:
                     programlabel();
             }
             
-            if (F_listfile && ListMode)
+            if (F_listfile != NULL && ListMode)
                 outlistfile(comment);
         }
         
@@ -496,7 +496,7 @@ nextpass:
         if (F_verbose > 1)
         printf("back to: %s\n", Incfile->name);
             */
-            if (F_listfile)
+            if (F_listfile != NULL)
                 fprintf(FI_listfile, "------- FILE %s\n", pIncfile->name);
         }
     }
@@ -1101,7 +1101,7 @@ void v_macro(char *str, MNEMONIC *dummy)
         defined = 1;
     } else {
         defined = (findmne(str) != NULL);
-        if (F_listfile && ListMode)
+        if (F_listfile != NULL && ListMode)
             outlistfile("");
     }
     if (!defined) {
@@ -1134,7 +1134,7 @@ void v_macro(char *str, MNEMONIC *dummy)
                 return;
             }
         }
-        if (!skipit && F_listfile && ListMode)
+        if (!skipit && F_listfile != NULL && ListMode)
             outlistfile(comment);
         if (!defined) {
             sl = small_alloc(STRLISTSIZE+1+strlen(buf));
@@ -1183,7 +1183,7 @@ void pushinclude(char *str)
             printf("%.*s Including file \"%s\"\n", Inclevel*4, "", str);
         ++Inclevel;
         
-        if (F_listfile)
+        if (F_listfile != NULL)
             fprintf(FI_listfile, "------- FILE %s LEVEL %d PASS %d\n", str, Inclevel, pass);
         
         inf = zero_malloc(sizeof(INCFILE));

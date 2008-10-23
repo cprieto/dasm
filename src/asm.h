@@ -377,7 +377,7 @@ extern FILE    *FI_temp;
 extern unsigned char    Fisclear;
 extern unsigned long    Plab, Pflags;
 extern char    Inclevel;
-extern char    ListMode;
+extern bool    ListMode;
 extern unsigned long    Processor;
 
 extern unsigned long  CheckSum;

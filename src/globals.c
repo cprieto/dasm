@@ -65,7 +65,7 @@ int Redo = 0;
 
 unsigned long	Redo_if = 0;
 
-char	ListMode = 1;
+bool	ListMode = true;
 unsigned long	CheckSum;	    /*	output data checksum		*/
 
 int F_format = FORMAT_DEFAULT;

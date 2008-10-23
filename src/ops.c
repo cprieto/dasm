@@ -85,7 +85,8 @@ void v_processor(char *str, MNEMONIC *dummy)
         Processor = 6803;
     }
 
-    if (strcmp(str,"HD6303") == 0 || strcmp(str, "hd6303") == 0)
+//    if (strcmp(str,"HD6303") == 0 || strcmp(str, "hd6303") == 0)
+    if (match_either_case(str, "HD6303", 6))
     {
         if ( !bCalled )
         {
@@ -106,7 +107,8 @@ void v_processor(char *str, MNEMONIC *dummy)
         Processor = 68705;
     }
 
-    if (strcmp(str,"68HC11") == 0 || strcmp(str, "68hc11") == 0)
+//    if (strcmp(str,"68HC11") == 0 || strcmp(str, "68hc11") == 0)
+    if (match_either_case(str, "68HC11", 6))
     {
         if ( !bCalled )
             addhashtable(Mne68HC11);
@@ -115,7 +117,8 @@ void v_processor(char *str, MNEMONIC *dummy)
         Processor = 6811;
     }
 
-    if (strcmp(str,"F8") == 0 || strcmp(str, "f8") == 0)
+//    if (strcmp(str,"F8") == 0 || strcmp(str, "f8") == 0)
+    if (match_either_case(str, "F8", 2))
     {
 		if ( !bCalled )
 			addhashtable(MneF8);
@@ -426,15 +429,19 @@ void v_list(char *str, MNEMONIC *dummy)
     programlabel();
     
     Glen = 0;		/*  Only so outlist() works */
-    
-    if (strncmp(str, "localoff", 7) == 0 || strncmp(str, "LOCALOFF", 7) == 0)
+
+    /* TODO: really match less than the whole string? [phf] */
+//    if (strncmp(str, "localoff", 7) == 0 || strncmp(str, "LOCALOFF", 7) == 0)
+    if (match_either_case(str, "LOCALOFF", 7))
         pIncfile->flags |=  INF_NOLIST;
-    else if (strncmp(str, "localon", 7) == 0 || strncmp(str, "LOCALON", 7) == 0)
+//    else if (strncmp(str, "localon", 7) == 0 || strncmp(str, "LOCALON", 7) == 0)
+    else if (match_either_case(str, "LOCALON", 7))
         pIncfile->flags &= ~INF_NOLIST;
-    else if (strncmp(str, "off", 2) == 0 || strncmp(str, "OFF", 2) == 0)
-        ListMode = 0;
+//    else if (strncmp(str, "off", 2) == 0 || strncmp(str, "OFF", 2) == 0)
+    else if (match_either_case(str, "OFF", 2))
+        ListMode = false;
     else
-        ListMode = 1;
+        ListMode = true;
 }
 
 static char *
@@ -578,8 +585,8 @@ static int gethexdig(int c)
     error_fmt("Bad hex digit '%c'!", c);
     
     /* TODO: refactor into error handling code */
-    puts("(Must be a valid hex digit)");
-    if (F_listfile) {
+    (void) puts("(Must be a valid hex digit)");
+    if (F_listfile != NULL) {
         fputs("(Must be a valid hex digit)\n", FI_listfile);
     }
     
@@ -644,7 +651,7 @@ v_dc(char *str, MNEMONIC *mne)
         tmp = findsymbol(str, i);
         str += i;
         if (tmp == NULL) {
-            puts("EQM label not found");
+            (void) puts("EQM label not found");
             return;
         }
         if (tmp->flags & SYM_MACRO) {
@@ -653,7 +660,7 @@ v_dc(char *str, MNEMONIC *mne)
         }
         else
         {
-            puts("must specify EQM label for DV");
+            (void) puts("must specify EQM label for DV");
             return;
         }
     }
@@ -1039,7 +1046,7 @@ v_echo(char *str, MNEMONIC *dummy)
             printf(" %s", buf);
         }
     }
-    puts("");
+    (void) puts("");
     if (FI_listfile)
         putc('\n', FI_listfile);
 }
@@ -1070,7 +1077,7 @@ v_execmac(char *str, MACRO *mac)
     programlabel();
     
     if (Mlevel == MAXMACLEVEL) {
-        puts("infinite macro recursion");
+        (void) puts("infinite macro recursion");
         return;
     }
     ++Mlevel;
@@ -1147,7 +1154,7 @@ v_endm(char *str, MNEMONIC *dummy)
         free(inc);
         return;
     }
-    puts("not within a macro");
+    (void) puts("not within a macro");
 }
 
 void
@@ -1222,7 +1229,7 @@ v_endif(char *str, MNEMONIC *dummy)
         if (ifs->acctrue)
             programlabel();
         if (ifs->file != pIncfile) {
-            puts("too many endif's");
+            (void) puts("too many endif's");
         }
         else
         {
@@ -1304,7 +1311,7 @@ v_repend(char *str, MNEMONIC *dummy)
         }
         return;
     }
-    puts("no repeat");
+    (void) puts("no repeat");
 }
 
 
