@@ -141,7 +141,7 @@ static void ShowSegments(void)
             sftos(seg->rorg, seg->rflags)
         );
     }
-    puts("----------------------------------------------------------------------");
+    (void) puts("----------------------------------------------------------------------");
     
     printf("%d references to unknown symbols.\n", Redo_eval);
     printf("%d events requiring another assembler pass.\n", Redo);
@@ -236,27 +236,27 @@ static int MainShadow(int ac, char **av, bool *pbTableSort )
     {
 
 fail:
-    puts(DASM_ID);
+    (void) puts(DASM_ID);
     DASM_PRINT_LEGAL
-    puts("");
-    puts("Usage: dasm sourcefile [options]");
-    puts("");
-    puts("-f#      output format 1-3 (default 1)");
-    puts("-oname   output file name (else a.out)");
-    puts("-lname   list file name (else none generated)");
-    puts("-Lname   list file, containing all passes");
-    puts("-sname   symbol dump file name (else none generated)");
-    puts("-v#      verboseness 0-4 (default 0)");
-    puts("-d#      debug mode (for developers)");
-    puts("-Dsymbol              define symbol, set to 0");
-    puts("-Dsymbol=expression   define symbol, set to expression");
-    puts("-Msymbol=expression   define symbol using EQM (same as -D)");
-    puts("-Idir    search directory for INCLUDE and INCBIN");
-    puts("-p#      maximum number of passes");
-    puts("-P#      maximum number of passes, with fewer checks");
-    puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
-    puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
-    puts("");
+    (void) puts("");
+    (void) puts("Usage: dasm sourcefile [options]");
+    (void) puts("");
+    (void) puts("-f#      output format 1-3 (default 1)");
+    (void) puts("-oname   output file name (else a.out)");
+    (void) puts("-lname   list file name (else none generated)");
+    (void) puts("-Lname   list file, containing all passes");
+    (void) puts("-sname   symbol dump file name (else none generated)");
+    (void) puts("-v#      verboseness 0-4 (default 0)");
+    (void) puts("-d#      debug mode (for developers)");
+    (void) puts("-Dsymbol              define symbol, set to 0");
+    (void) puts("-Dsymbol=expression   define symbol, set to expression");
+    (void) puts("-Msymbol=expression   define symbol using EQM (same as -D)");
+    (void) puts("-Idir    search directory for INCLUDE and INCBIN");
+    (void) puts("-p#      maximum number of passes");
+    (void) puts("-P#      maximum number of passes, with fewer checks");
+    (void) puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
+    (void) puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
+    (void) puts("");
     DASM_PRINT_BUGS
 
     fatal_fmt("Check command-line format.");
@@ -393,7 +393,7 @@ nextpass:
     
     if ( F_verbose )
     {
-        puts("");
+        (void) puts("");
         printf("START OF PASS: %d\n", pass);
     }
     
@@ -626,7 +626,7 @@ static void outlistfile(const char *comment)
     else
         ptr = "";
     
-    len = snprintf(buf1, sizeof(buf1), "%7ld %c%s", pIncfile->lineno, c, sftos(Plab, Pflags & 7));
+    len = snprintf(buf1, sizeof(buf1), "%7lu %c%s", pIncfile->lineno, c, sftos(Plab, Pflags & 7));
     assert(len < (int)sizeof(buf1));
     j = strlen(buf1);
     for (i = 0; i < Glen && i < 4; ++i, j += 3)
@@ -650,57 +650,64 @@ static void outlistfile(const char *comment)
 
 char *sftos(long val, int flags)
 {
-    static char buf[ MAX_SYM_LEN + 14 ];
+    static char buf[MAX_SYM_LEN + 14];
     static char c;
     char *ptr = (c) ? buf : buf + sizeof(buf) / 2;
     
-    memset( buf, 0, sizeof( buf ) );
+    memset(buf, 0, sizeof(buf));
     
     c = 1 - c;
     
     sprintf(ptr, "%04lx ", val);
     
-    if (flags & SYM_UNKNOWN)
+    if ((flags & SYM_UNKNOWN) != 0) {
         strcat( ptr, "???? ");
-    else
+    }
+    else {
         strcat( ptr, "     " );
+    }
     
-    if (flags & SYM_STRING)
+    if ((flags & SYM_STRING) != 0) {
         strcat( ptr, "str ");
-    else
+    }
+    else {
         strcat( ptr, "    " );
+    }
     
-    if (flags & SYM_MACRO)
+    if ((flags & SYM_MACRO) != 0) {
         strcat( ptr, "eqm ");
-    else
+    }
+    else {
         strcat( ptr, "    " );
+    }
     
-    
-    if (flags & (SYM_MASREF|SYM_SET))
-    {
+    if ((flags & (SYM_MASREF|SYM_SET)) != 0) {
         strcat( ptr, "(" );
     }
-    else
+    else {
         strcat( ptr, " " );
+    }
     
-    if (flags & (SYM_MASREF))
+    if ((flags & SYM_MASREF) != 0) {
         strcat( ptr, "R" );
-    else
+    }
+    else {
         strcat( ptr, " " );
+    }
     
-    
-    if (flags & (SYM_SET))
+    if ((flags & SYM_SET) != 0) {
         strcat( ptr, "S" );
-    else
+    }
+    else {
         strcat( ptr, " " );
+    }
     
-    if (flags & (SYM_MASREF|SYM_SET))
-    {
+    if (flags & (SYM_MASREF|SYM_SET)) {
         strcat( ptr, ")" );
     }
-    else
+    else {
         strcat( ptr, " " );
-    
+    }
     
     return ptr;
 }
@@ -776,7 +783,7 @@ static const char *cleanup(char *buf, bool bDisable)
                 --add;
             if (*str != '}')
             {
-                puts("end brace required");
+                (void) puts("end brace required");
                 --str;
                 break;
             }
