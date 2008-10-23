@@ -46,6 +46,10 @@ static SYMBOL org;
 static SYMBOL special;
 static SYMBOL specchk;
 
+/* Name of symbol file if we should write one. */
+/*@null@*/
+static const char *symbol_file_name = NULL;
+
 static unsigned int hash_symbol(const char *str, size_t len)
 {
     return hash_string(str, len) & SHASHAND;
@@ -108,9 +112,9 @@ SYMBOL *findsymbol(const char *str, size_t len)
     }
     
     h1 = hash_symbol(str, len);
-    for (sym = SHash[h1]; sym; sym = sym->next)
+    for (sym = SHash[h1]; sym != NULL; sym = sym->next)
     {
-        if ((sym->namelen == len) && !memcmp(sym->name, str, len))
+        if ((sym->namelen == len) && (memcmp(sym->name, str, len) == 0))
             break;
     }
     return sym;
@@ -164,7 +168,7 @@ SYMBOL *CreateSymbol(const char *str, size_t len)
 
 void programlabel(void)
 {
-    int len;
+    size_t len;
     SYMBOL *sym;
     SEGMENT *cseg = Csegment;
     char *str;
@@ -480,6 +484,34 @@ void ShowSymbols(FILE *file, bool bTableSort)
     }
         
     fputs("--- End of Symbol List.\n", file);
+}
+
+/* Functions for writing symbol files. */
+
+void set_symbol_file_name(const char *name)
+{
+    assert(symbol_file_name == NULL);
+    assert(name != NULL);
+    symbol_file_name = name;
+}
+
+void DumpSymbolTable(bool bTableSort)
+{
+    if (symbol_file_name != NULL)
+    {
+        FILE *fi = fopen(symbol_file_name, "w");
+        if (fi != NULL) {
+            ShowSymbols(fi, bTableSort);
+            if (fclose(fi) != 0) {
+                warning_fmt("Problem closing symbol file '%s'.\n",
+                            symbol_file_name);
+            }
+        }
+        else {
+            warning_fmt("Unable to open symbol dump file '%s'.\n",
+                        symbol_file_name);
+        }
+    }
 }
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

@@ -333,7 +333,7 @@ struct _SYMBOL
     /* current value, never EVER change this to unsigned! [phf] */
     long value;
     /* name length */
-    unsigned int namelen;
+    size_t namelen;
 };
 
 extern MNEMONIC    *MHash[];
@@ -369,10 +369,9 @@ extern sortmode_t F_sortmode; /* -T option [phf] */
 extern unsigned char    F_verbose;
 extern const char    *F_outfile;
 extern char    *F_listfile;
-extern char    *F_symfile;
 extern FILE    *FI_listfile;
 extern FILE    *FI_temp;
-extern unsigned char    Fisclear;
+extern bool Fisclear;
 extern unsigned long    Plab, Pflags;
 extern char    Inclevel;
 extern bool    ListMode;

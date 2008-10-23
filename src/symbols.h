@@ -40,6 +40,8 @@ void debug_symbol_hash_collisions(void);
 void clearrefs(void);
 void ShowSymbols(FILE *file, bool bTableSort);
 size_t ShowUnresolvedSymbols(void);
+void set_symbol_file_name(const char *name);
+void DumpSymbolTable(bool bTableSort);
 
 #endif /* _DASM_SYMBOLS_H */
 

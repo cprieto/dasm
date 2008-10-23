@@ -1405,7 +1405,7 @@ generate(void)
             
             if (Fisclear)
             {
-                Fisclear = 0;
+                Fisclear = false;
                 if (Csegment->flags & SF_UNKNOWN)
                 {
                     ++Redo;
