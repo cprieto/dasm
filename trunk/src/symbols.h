@@ -32,8 +32,8 @@
 
 void  setspecial(int value, int flags);
 SYMBOL *allocsymbol(void);
-SYMBOL *findsymbol(const char *str, int len);
-SYMBOL *CreateSymbol(const char *str, int len);
+SYMBOL *findsymbol(const char *str, size_t len);
+SYMBOL *CreateSymbol(const char *str, size_t len);
 void FreeSymbolList(SYMBOL *sym);
 void programlabel(void);
 void debug_symbol_hash_collisions(void);

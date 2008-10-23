@@ -23,10 +23,6 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  SYMBOLS.C
- */
-
 #include "symbols.h"
 
 #include "asm.h"
@@ -35,18 +31,25 @@
 #include "version.h"
 
 #include <assert.h>
+#include <limits.h>
 
 /*@unused@*/
 SVNTAG("$Id$");
 
+#define SHASHSIZE   1024
+#define SHASHAND    (SHASHSIZE-1) /*0x03FF*/
+
 /*symbol hash table */
 static SYMBOL *SHash[SHASHSIZE];
-
-static unsigned int hash_symbol(const char *str, int len);
 
 static SYMBOL org;
 static SYMBOL special;
 static SYMBOL specchk;
+
+static unsigned int hash_symbol(const char *str, size_t len)
+{
+    return hash_string(str, len) & SHASHAND;
+}
 
 void setspecial(int value, int flags)
 {
@@ -54,7 +57,7 @@ void setspecial(int value, int flags)
     special.flags = flags;
 }
 
-SYMBOL *findsymbol(const char *str, int len)
+SYMBOL *findsymbol(const char *str, size_t len)
 {
     unsigned int h1;
     SYMBOL *sym;
@@ -90,14 +93,16 @@ SYMBOL *findsymbol(const char *str, int len)
             specchk.value = CheckSum;
             return &specchk;
         }
-        sprintf(buf, "%ld%.*s", Localindex, len, str);
+        assert(len < INT_MAX);
+        sprintf(buf, "%ld%.*s", Localindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
     
     else if (str[len - 1] == '$')
     {
-        sprintf(buf, "%ld$%.*s", Localdollarindex, len, str);
+        assert(len < INT_MAX);
+        sprintf(buf, "%ld$%.*s", Localdollarindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
@@ -111,7 +116,7 @@ SYMBOL *findsymbol(const char *str, int len)
     return sym;
 }
 
-SYMBOL *CreateSymbol(const char *str, int len)
+SYMBOL *CreateSymbol(const char *str, size_t len)
 {
     SYMBOL *sym;
     unsigned int h1;
@@ -126,7 +131,8 @@ SYMBOL *CreateSymbol(const char *str, int len)
     
     if (str[0] == '.')
     {
-        sprintf(buf, "%ld%.*s", Localindex, len, str);
+        assert(len < INT_MAX);
+        sprintf(buf, "%ld%.*s", Localindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
@@ -134,7 +140,8 @@ SYMBOL *CreateSymbol(const char *str, int len)
     
     else if (str[len - 1] == '$')
     {
-        sprintf(buf, "%ld$%.*s", Localdollarindex, len, str);
+        assert(len < INT_MAX);
+        sprintf(buf, "%ld$%.*s", Localdollarindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
@@ -149,11 +156,6 @@ SYMBOL *CreateSymbol(const char *str, int len)
     sym->flags= SYM_UNKNOWN;
     SHash[h1] = sym;
     return sym;
-}
-
-static unsigned int hash_symbol(const char *str, int len)
-{
-    return hash_string(str, len) & SHASHAND;
 }
 
 /*
