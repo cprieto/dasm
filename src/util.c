@@ -293,6 +293,7 @@ strlcat(/*@in@*/ /*@out@*/ char *dst, const char *src, size_t siz)
 	/* Find the end of dst and adjust bytes left but don't go past end */
 	while (n-- != 0 && *d != '\0')
 		d++;
+    assert(d - dst >= 0); /* added [phf] */
 	dlen = d - dst;
 	n = siz - dlen;
 
@@ -354,6 +355,7 @@ strlcpy(/*@out@*/ char *dst, const char *src, size_t siz)
 			;
 	}
 
+    assert(s - src - 1 >= 0); /* added [phf] */
 	return(s - src - 1);	/* count does not include NUL */
 }
 
