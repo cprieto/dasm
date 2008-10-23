@@ -42,7 +42,7 @@ SEGMENT *Csegment;	    /*	current segment     */
 IFSTACK *Ifstack;	    /*	IF/ELSE/ENDIF stack */
 char	*Av[256];	    /*	up to 256 arguments */
 char	Avbuf[512];
-unsigned char	MsbOrder = 1;
+bool MsbOrder = true;
 int	Mnext;
 char	Inclevel;
 unsigned int	Mlevel;
@@ -52,7 +52,6 @@ unsigned long	Lastlocalindex;
 unsigned long	Localdollarindex;
 unsigned long	Lastlocaldollarindex;
 
-unsigned long Processor = 0;
 bool bTrace = false;
 bool Xdebug;
 

@@ -63,88 +63,69 @@ static int gethexdig(int c);
 void v_processor(char *str, MNEMONIC *dummy)
 {
     static bool bCalled = false;
+    static unsigned long Processor = 0;
     unsigned long PreviousProcessor = Processor;
 
     Processor = 0;
 
-    if (strcmp(str,"6502") == 0)
-    {
-        if ( !bCalled )
+    if (strcmp(str,"6502") == 0) {
+        if (!bCalled) {
             addhashtable(Mne6502);
-
-        MsbOrder = 0;	    /*	lsb,msb */
+        }
+        MsbOrder = false;	    /*	lsb,msb */
         Processor = 6502;
     }
 
-    if (strcmp(str,"6803") == 0)
-    {
-        if ( !bCalled )
+    if (strcmp(str,"6803") == 0) {
+        if (!bCalled) {
             addhashtable(Mne6803);
-        
-        MsbOrder = 1;	    /*	msb,lsb */
+        }
+        MsbOrder = true;	    /*	msb,lsb */
         Processor = 6803;
     }
 
-//    if (strcmp(str,"HD6303") == 0 || strcmp(str, "hd6303") == 0)
-    if (match_either_case(str, "HD6303", 6))
-    {
-        if ( !bCalled )
-        {
+    if (match_either_case(str, "HD6303", 6)) {
+        if (!bCalled) {
             addhashtable(Mne6803);
             addhashtable(MneHD6303);
         }
-
-        MsbOrder = 1;	    /*	msb,lsb */
+        MsbOrder = true;	    /*	msb,lsb */
         Processor = 6303;
     }
 
-    if (strcmp(str,"68705") == 0)
-    {
-        if ( !bCalled )
+    if (strcmp(str,"68705") == 0) {
+        if (!bCalled) {
             addhashtable(Mne68705);
-        
-        MsbOrder = 1;	    /*	msb,lsb */
+        }
+        MsbOrder = true;	    /*	msb,lsb */
         Processor = 68705;
     }
 
-//    if (strcmp(str,"68HC11") == 0 || strcmp(str, "68hc11") == 0)
-    if (match_either_case(str, "68HC11", 6))
-    {
-        if ( !bCalled )
+    if (match_either_case(str, "68HC11", 6)) {
+        if (!bCalled) {
             addhashtable(Mne68HC11);
-        
-        MsbOrder = 1;	    /*	msb,lsb */
+        }
+        MsbOrder = true;	    /*	msb,lsb */
         Processor = 6811;
     }
 
-//    if (strcmp(str,"F8") == 0 || strcmp(str, "f8") == 0)
-    if (match_either_case(str, "F8", 2))
-    {
-		if ( !bCalled )
+    if (match_either_case(str, "F8", 2)) {
+		if (!bCalled) {
 			addhashtable(MneF8);
-
-		MsbOrder = 1;
+        }
+		MsbOrder = true;
         Processor = 0xf8;
     }
 
     bCalled = true;
 
-    if ( !Processor )
-    {
-        /* [phf] removed
-        asmerr( ERROR_PROCESSOR_NOT_SUPPORTED, true, str );
-        */
+    if (Processor == 0) {
         fatal_fmt("Processor '%s' not supported!", str);
     }
 
-    if ( PreviousProcessor && Processor != PreviousProcessor )
-    {
-        /* [phf] removed
-        asmerr( ERROR_ONLY_ONE_PROCESSOR_SUPPORTED, true, str );
-        */
+    if (PreviousProcessor != 0 && Processor != PreviousProcessor) {
         fatal_fmt("Only one processor type may be selected!");
     }
-
 }
 
 #define badcode(mne,adrmode)  (!(mne->okmask & (1L << adrmode)))
