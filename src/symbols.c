@@ -63,59 +63,60 @@ void setspecial(int value, int flags)
 
 SYMBOL *findsymbol(const char *str, size_t len)
 {
-    unsigned int h1;
+    unsigned int hash;
     SYMBOL *sym;
     char buf[MAX_SYM_LEN + 14];     /* historical */
 
     assert(str != NULL);
     assert(len > 0);
     
-    if ( len > MAX_SYM_LEN )
+    if (len > MAX_SYM_LEN) {
         len = MAX_SYM_LEN;
-    
-    if (str[0] == '.')
-    {
-        if (len == 1)
-        {
-            if (Csegment->flags & SF_RORG)
-            {
+        /* TODO: should we truncate? ever? [phf] */
+    }
+
+    if (str[0] == '.') {
+        /* TODO: shouldn't this be a big else-if cascade instead? [phf] */
+        if (len == 1) {
+            if ((Csegment->flags & SF_RORG) != 0) {
                 org.flags = Csegment->rflags & SYM_UNKNOWN;
                 org.value = Csegment->rorg;
             }
-            else
-            {
+            else {
                 org.flags = Csegment->flags & SYM_UNKNOWN;
                 org.value = Csegment->org;
             }
             return &org;
         }
-        if (len == 2 && str[1] == '.')
+        if (len == 2 && str[1] == '.') {
             return &special;
-        if (len == 3 && str[1] == '.' && str[2] == '.')
-        {
+        }
+        if (len == 3 && str[1] == '.' && str[2] == '.') {
             specchk.flags = 0;
             specchk.value = CheckSum;
             return &specchk;
         }
         assert(len < INT_MAX);
-        sprintf(buf, "%ld%.*s", Localindex, (int) len, str);
+        sprintf(buf, "%lu%.*s", Localindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
-    
-    else if (str[len - 1] == '$')
-    {
+    else if (str[len-1] == '$') {
         assert(len < INT_MAX);
-        sprintf(buf, "%ld$%.*s", Localdollarindex, (int) len, str);
+        sprintf(buf, "%lu$%.*s", Localdollarindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
+    else {
+        /* not a special identifier? i think that's what this case is,
+           there was no "else" at all originally [phf] */
+    }
     
-    h1 = hash_symbol(str, len);
-    for (sym = SHash[h1]; sym != NULL; sym = sym->next)
-    {
-        if ((sym->namelen == len) && (memcmp(sym->name, str, len) == 0))
+    hash = hash_symbol(str, len);
+    for (sym = SHash[hash]; sym != NULL; sym = sym->next) {
+        if ((sym->namelen == len) && (memcmp(sym->name, str, len) == 0)) {
             break;
+        }
     }
     return sym;
 }
@@ -136,7 +137,7 @@ SYMBOL *CreateSymbol(const char *str, size_t len)
     if (str[0] == '.')
     {
         assert(len < INT_MAX);
-        sprintf(buf, "%ld%.*s", Localindex, (int) len, str);
+        sprintf(buf, "%lu%.*s", Localindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
@@ -145,7 +146,7 @@ SYMBOL *CreateSymbol(const char *str, size_t len)
     else if (str[len - 1] == '$')
     {
         assert(len < INT_MAX);
-        sprintf(buf, "%ld$%.*s", Localdollarindex, (int) len, str);
+        sprintf(buf, "%lu$%.*s", Localdollarindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
@@ -257,6 +258,7 @@ void programlabel(void)
   Custom memory management for SYMBOLs.
 */
 
+/*@null@*/
 static SYMBOL *symbol_free_list = NULL;
 
 SYMBOL *allocsymbol(void)
