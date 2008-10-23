@@ -355,8 +355,8 @@ extern int    Mnext;          /*    mnemonic extension    */
 extern unsigned int    Mlevel;
 
 extern bool bTrace;
-extern bool     Xdebug;
-extern unsigned char    MsbOrder;
+extern bool Xdebug;
+extern bool MsbOrder;
 extern unsigned char    Outputformat;
 extern unsigned long    Redo_why;
 
@@ -378,7 +378,6 @@ extern unsigned char    Fisclear;
 extern unsigned long    Plab, Pflags;
 extern char    Inclevel;
 extern bool    ListMode;
-extern unsigned long    Processor;
 
 extern unsigned long  CheckSum;
 
