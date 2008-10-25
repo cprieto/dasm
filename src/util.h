@@ -129,14 +129,14 @@ char *strupper(char *string);
 
 /**
  * @brief
- *   True if strncmp(string, strlower(either), len) == 0 or
- *   strncmp(string, strupper(either), len) == 0, so mixed
+ *   True if strcmp(string, strlower(either)) == 0 or
+ *   strcmp(string, strupper(either)) == 0, so mixed
  *   capitalization is not allowed.
  *
  * @pre
- *   string != NULL && either != NULL && len > 0
+ *   string != NULL && either != NULL
  */
-bool match_either_case(const char *string, const char *either, size_t len);
+bool match_either_case(const char *string, const char *either);
 
 #if !defined(__APPLE__) && !defined(__BSD__)
 

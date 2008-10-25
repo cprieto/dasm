@@ -84,7 +84,7 @@ void v_processor(char *str, MNEMONIC *dummy)
         Processor = 6803;
     }
 
-    if (match_either_case(str, "HD6303", 6)) {
+    if (match_either_case(str, "HD6303")) {
         if (!bCalled) {
             addhashtable(Mne6803);
             addhashtable(MneHD6303);
@@ -101,7 +101,7 @@ void v_processor(char *str, MNEMONIC *dummy)
         Processor = 68705;
     }
 
-    if (match_either_case(str, "68HC11", 6)) {
+    if (match_either_case(str, "68HC11")) {
         if (!bCalled) {
             addhashtable(Mne68HC11);
         }
@@ -109,7 +109,7 @@ void v_processor(char *str, MNEMONIC *dummy)
         Processor = 6811;
     }
 
-    if (match_either_case(str, "F8", 2)) {
+    if (match_either_case(str, "F8")) {
 		if (!bCalled) {
 			addhashtable(MneF8);
         }
@@ -411,18 +411,28 @@ void v_list(char *str, MNEMONIC *dummy)
     
     Glen = 0;		/*  Only so outlist() works */
 
-    /* TODO: really match less than the whole string? [phf] */
+    /*
+      TODO: match less than the whole string? I fixed match_either_case
+      to match the whole string now, we'll see if anyone ever complains
+      about it... [phf]
+    */
+
 //    if (strncmp(str, "localoff", 7) == 0 || strncmp(str, "LOCALOFF", 7) == 0)
-    if (match_either_case(str, "LOCALOFF", 7))
-        pIncfile->flags |=  INF_NOLIST;
 //    else if (strncmp(str, "localon", 7) == 0 || strncmp(str, "LOCALON", 7) == 0)
-    else if (match_either_case(str, "LOCALON", 7))
-        pIncfile->flags &= ~INF_NOLIST;
 //    else if (strncmp(str, "off", 2) == 0 || strncmp(str, "OFF", 2) == 0)
-    else if (match_either_case(str, "OFF", 2))
+
+    if (match_either_case(str, "LOCALOFF")) {
+        pIncfile->flags |=  INF_NOLIST;
+    }
+    else if (match_either_case(str, "LOCALON")) {
+        pIncfile->flags &= ~INF_NOLIST;
+    }
+    else if (match_either_case(str, "OFF")) {
         ListMode = false;
-    else
+    }
+    else {
         ListMode = true;
+    }
 }
 
 static char *
