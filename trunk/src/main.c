@@ -489,14 +489,14 @@ nextpass:
     
     
     
-    if ( F_verbose >= 1 )
+    if (F_verbose >= 1) {
         ShowSegments();
+    }
     
-    if ( F_verbose >= 3 )
-    {
-        if ( !Redo || ( F_verbose == 4 ) )
+    if (F_verbose >= 3) {
+        if (Redo == 0 || F_verbose == 4) {
             ShowSymbols( stdout, *pbTableSort );
-        
+        }
         ShowUnresolvedSymbols();
     }
     
@@ -569,7 +569,7 @@ static int tabit(char *buf1, char *buf2)
     
     bp = buf2;
     ptr= buf1;
-    for (j = 0; *ptr && *ptr != '\n'; ++ptr, ++bp, j = (j+1)&7) {
+    for (j = 0; *ptr != '\0' && *ptr != '\n'; ++ptr, ++bp, j = (j+1)&7) {
         *bp = *ptr;
         if (*ptr == '\t') {
             /* optimize out spaces before the tab */
@@ -591,6 +591,7 @@ static int tabit(char *buf1, char *buf2)
         --bp;
     *bp++ = '\n';
     *bp = '\0';
+    assert(((int)(bp - buf2)) >= 0); /* passed to a size_t in places [phf] */
     return (int)(bp - buf2);
 }
 
@@ -731,12 +732,12 @@ static const char *cleanup(char *buf, bool bDisable)
         case '\r':
         case '\n':
             goto br2;
-        case TAB:
+        case '\t':
             *str = ' ';
             break;
         case '\'':
             ++str;
-            if (*str == TAB)
+            if (*str == '\t')
                 *str = ' ';
             if (*str == '\n' || *str == '\0')
             {
@@ -786,7 +787,7 @@ static const char *cleanup(char *buf, bool bDisable)
             if (Xdebug)
                 printf("add/str: %d '%s'\n", add, str);
             
-            for (strlist = pIncfile->args; arg && strlist;)
+            for (strlist = pIncfile->args; arg != 0 && strlist != NULL;)
             {
                 --arg;
                 strlist = strlist->next;
@@ -1077,7 +1078,7 @@ static MNEMONIC *findmne(const char *str)
 void v_macro(char *str, MNEMONIC *dummy)
 {
     STRLIST *base;
-    int defined = 0;
+    bool defined = false;
     STRLIST **slp = NULL, *sl;
     MACRO *mac = NULL;    /* slp, mac: might be used uninitialised */
     MNEMONIC   *mne;
@@ -1087,7 +1088,7 @@ void v_macro(char *str, MNEMONIC *dummy)
     
     strlower(str);
     if (skipit) {
-        defined = 1;
+        defined = true;
     } else {
         defined = (findmne(str) != NULL);
         if (F_listfile != NULL && ListMode)

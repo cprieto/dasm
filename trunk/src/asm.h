@@ -110,7 +110,6 @@ enum FORMAT
 #define MHASHSIZE   1024
 #define MHASHAND    (MHASHSIZE-1) /*0x03FF*/
 #define MAXMACLEVEL 32
-#define TAB        '\t'
 
 
 	enum ADDRESS_MODES {
