@@ -171,11 +171,13 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     else
         opsize = (sym->value) ? 1 : 0;
     
-    while (badcode(mne,addrmode) && Cvt[addrmode])
-        addrmode = Cvt[addrmode];
+    while (badcode(mne,addrmode) && convert_address_mode(addrmode) != 0) {
+        addrmode = convert_address_mode(addrmode);
+    }
     
-    if ( bTrace )
-        printf("mnemask: %08lx adrmode: %d  Cvt[am]: %d\n", mne->okmask, addrmode, Cvt[addrmode]);
+    if ( bTrace ) {
+        printf("mnemask: %08lx adrmode: %d  Cvt[am]: %d\n", mne->okmask, addrmode, convert_address_mode(addrmode));
+    }
     
     if (badcode(mne,addrmode))
     {
@@ -207,9 +209,9 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     if ( bTrace )
         printf("final addrmode = %d\n", addrmode);
     
-    while (opsize > Opsize[addrmode])
+    while (opsize > operand_size(addrmode))
     {
-        if (Cvt[addrmode] == 0 || badcode(mne,Cvt[addrmode]))
+        if (convert_address_mode(addrmode) == 0 || badcode(mne,convert_address_mode(addrmode)))
         {
             /* [phf] removed
             char sBuffer[128];
@@ -225,7 +227,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
             error_fmt(ERROR_ADDRESS_RANGE_DETAIL, str, mne->name, 0, 255);
             break;
         }
-        addrmode = Cvt[addrmode];
+        addrmode = convert_address_mode(addrmode);
     }
     opcode = mne->opcode[addrmode];
     opidx = 1 + (opcode > 0xFF);
@@ -305,9 +307,9 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         break;
         
     default:
-        if (Opsize[addrmode] > 0)
+        if (operand_size(addrmode) > 0)
             Gen[opidx++] = sym->value;
-        if (Opsize[addrmode] == 2)
+        if (operand_size(addrmode) == 2)
         {
             if (MsbOrder)
             {
