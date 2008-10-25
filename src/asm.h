@@ -278,9 +278,9 @@ struct _IFSTACK
     /* TODO: ??? [phf] */
     unsigned char flags;
     /* 1 if true, 0 if false */
-    unsigned char xtrue;
+    bool xtrue;
     /* accumulatively true (not incl this one) */
-    unsigned char acctrue;
+    bool acctrue;
 };
 
 #define SF_UNKNOWN  0x01    /* ORG unknown */

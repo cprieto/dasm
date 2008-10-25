@@ -1191,7 +1191,7 @@ v_if(char *str, MNEMONIC *dummy)
         ++Redo;
         Redo_why |= REASON_IF_NOT_RESOLVED;
         pushif(0);
-        Ifstack->acctrue = 0;
+        Ifstack->acctrue = false;
         
         Redo_if |= 1;
         

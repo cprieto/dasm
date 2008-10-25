@@ -367,8 +367,8 @@ nofile:
         IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
         ifs->file = NULL;
         ifs->flags = IFF_BASE;
-        ifs->acctrue = 1;
-        ifs->xtrue  = 1;
+        ifs->acctrue = true;
+        ifs->xtrue  = true;
         Ifstack = ifs;
     }
     
