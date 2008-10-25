@@ -469,19 +469,21 @@ nextpass:
         while (Ifstack->file == pIncfile)
             rmnode((void **)&Ifstack, sizeof(IFSTACK));
         
-        fclose( pIncfile->fi );
-        free( pIncfile->name );
+        if (fclose(pIncfile->fi) != 0) {
+            warning_fmt("Problem closing include file '%s'.\n", pIncfile->name);
+        }
+        free(pIncfile->name);
         --Inclevel;
         rmnode((void **)&pIncfile, sizeof(INCFILE));
         
-        if ( pIncfile )
-        {
+        if (pIncfile != NULL) {
         /*
         if (F_verbose > 1)
         printf("back to: %s\n", Incfile->name);
             */
-            if (F_listfile != NULL)
+            if (F_listfile != NULL) {
                 fprintf(FI_listfile, "------- FILE %s\n", pIncfile->name);
+            }
         }
     }
     
@@ -499,9 +501,15 @@ nextpass:
     }
     
     closegenerate();
-    fclose(FI_temp);
-    if (FI_listfile)
-        fclose(FI_listfile);
+    assert(FI_temp != NULL); /* fclose() undefined for NULL [phf] */
+    if (fclose(FI_temp) != 0) {
+        warning_fmt("Problem closing temporary file '%s'.\n", F_outfile);
+    }
+    if (FI_listfile != NULL) {
+        if (fclose(FI_listfile) != 0) {
+            warning_fmt("Problem closing list file '%s'.\n", F_listfile);
+        }
+    }
     
     if (Redo != 0)
     {
