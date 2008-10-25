@@ -234,25 +234,24 @@ char *strupper(char *str)
     return str;
 }
 
-bool match_either_case(const char *string, const char *either, size_t len)
+bool match_either_case(const char *string, const char *either)
 {
-    char buffer[len+1];
+    char buffer[MAX_SYM_LEN];
     size_t res;
 
     assert(string != NULL);
     assert(either != NULL);
-    assert(len > 0);
 
     res = strlcpy(buffer, either, sizeof(buffer));
     assert(res < sizeof(buffer));
 
     (void) strlower(buffer);
-    if (strncmp(string, buffer, len) == 0) {
+    if (strcmp(string, buffer) == 0) {
         return true;
     }
 
     (void) strupper(buffer);
-    if (strncmp(string, buffer, len) == 0) {
+    if (strcmp(string, buffer) == 0) {
         return true;
     }
 

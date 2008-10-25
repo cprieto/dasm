@@ -54,7 +54,7 @@ SVNTAG("$Id$");
 static const char *cleanup(char *buf, bool bDisable);
 
 static MNEMONIC *parse(char *buf);
-static MNEMONIC *findmne(char *str);
+static MNEMONIC *findmne(const char *str);
 static void clearsegs(void);
 
 static unsigned int hash_mnemonic(const char *str);
@@ -463,7 +463,7 @@ nextpass:
                 outlistfile(comment);
         }
         
-        while (Reploop && Reploop->file == pIncfile)
+        while (Reploop != NULL && Reploop->file == pIncfile)
             rmnode((void **)&Reploop, sizeof(REPLOOP));
         
         while (Ifstack->file == pIncfile)
@@ -1038,16 +1038,14 @@ static MNEMONIC *parse(char *buf)
     return mne;
 }
 
-
-
-static MNEMONIC *findmne(char *str)
+static MNEMONIC *findmne(const char *str)
 {
-    int i;
-    char c;
     MNEMONIC *mne;
-    char buf[64]; /* TODO: fixed size? argh! [phf] */
+    char buf[MAX_SYM_LEN]; /* TODO: fixed size? was 64 before! argh! [phf] */
+    size_t res;
     
     assert(str != NULL);
+
     if (strlen(str) == 0) {
         return NULL; /* avoid doing the rest for an empty string */
     }
@@ -1056,15 +1054,14 @@ static MNEMONIC *findmne(char *str)
         str++;
     }
 
-    for (i = 0; (c = str[i]) != '\0'; ++i) {
-        if (c >= 'A' && c <= 'Z')
-            c += 'a' - 'A';
-        buf[i] = c;
-    }
-    buf[i] = '\0';
-    for (mne = MHash[hash_mnemonic(buf)]; mne; mne = mne->next) {
-        if (strcmp(buf, mne->name) == 0)
+    res = strlcpy(buf, str, sizeof(buf));
+    assert(res < sizeof(buf));
+    strlower(buf);
+
+    for (mne = MHash[hash_mnemonic(buf)]; mne != NULL; mne = mne->next) {
+        if (strcmp(buf, mne->name) == 0) {
             break;
+        }
     }
     return mne;
 }

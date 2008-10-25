@@ -68,14 +68,14 @@ int main(int argc, char *argv[])
     setprogname(argv[0]);
     /* test some string functions */
     strlcpy(buffer, "Hello 47!", sizeof(buffer));
-    assert(!match_either_case(buffer, "hello 47!", 9));
+    assert(!match_either_case(buffer, "hello 47!"));
     assert(strcmp(buffer, "Hello 47!") == 0);
     strlower(buffer);
     assert(strcmp(buffer, "hello 47!") == 0);
-    assert(match_either_case(buffer, "hello 47!", 9));
+    assert(match_either_case(buffer, "hello 47!"));
     strupper(buffer);
     assert(strcmp(buffer, "HELLO 47!") == 0);
-    assert(match_either_case(buffer, "hello 47!", 9));
+    assert(match_either_case(buffer, "hello 47!"));
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;
