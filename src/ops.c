@@ -158,10 +158,10 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     
     if (mne->flags & MF_IMOD)
     {
-        if (sym->next)
+        if (sym->next != NULL)
         {
             sym->addrmode = AM_BITMOD;
-            if ((mne->flags & MF_REL) && sym->next)
+            if ((mne->flags & MF_REL) && sym->next != NULL)
                 sym->addrmode = AM_BITBRAMOD;
         }
     }
@@ -924,6 +924,8 @@ v_equ(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
+
+    assert (sym != NULL);
     
     /*
     * If we encounter a line of the form
@@ -937,12 +939,10 @@ v_equ(char *str, MNEMONIC *dummy)
         || (Av[0][0] == '*' && (Av[0][0] = '.') && 1)           /*AD: huh?*/
         )) {
         /* Av[0][0] = '\0'; */
-        if (Csegment->flags & SF_RORG)
-        {
+        if ((Csegment->flags & SF_RORG) != 0) {
             v_rorg(str, dummy);
         }
-        else
-        {
+        else {
             v_org(str, dummy);
         }
         return;
@@ -950,11 +950,12 @@ v_equ(char *str, MNEMONIC *dummy)
     
     
     lab = findsymbol(Av[0], strlen(Av[0]));
-    if (!lab)
-        lab = CreateSymbol( Av[0], strlen(Av[0]) );
-    if (!(lab->flags & SYM_UNKNOWN))
+    if (lab == NULL) {
+        lab = CreateSymbol(Av[0], strlen(Av[0]));
+    }
+    if ((lab->flags & SYM_UNKNOWN) == 0)
     {
-        if (sym->flags & SYM_UNKNOWN)
+        if ((sym->flags & SYM_UNKNOWN) != 0)
         {
             ++Redo;
             Redo_why |= REASON_EQU_NOT_RESOLVED;

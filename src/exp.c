@@ -825,7 +825,7 @@ static void op_or(long v1, long v2, int f1, int f2)
 
 static const char *pushchar(const char *str)
 {
-    if (*str) {
+    if (*str != '\0') {
         stackarg((long)*str, 0, NULL);
         ++str;
     } else {
@@ -899,7 +899,7 @@ static const char *pushsymbol(const char *str)
 {
     SYMBOL *sym;
     const char *ptr;
-    unsigned char macro = 0;
+    bool macro = false;
     
     for (ptr = str;
     *ptr == '_' ||
@@ -933,30 +933,33 @@ static const char *pushsymbol(const char *str)
 
     if ((sym = findsymbol(str, ptr - str)) != NULL)
     {
-        if (sym->flags & SYM_UNKNOWN)
+        if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo_eval;
-        
-        if (sym->flags & SYM_MACRO)
-        {
-            macro = 1;
-            sym = eval(sym->string, false);
         }
         
-        if (sym->flags & SYM_STRING)
-            stackarg(0, SYM_STRING, sym->string);
+        if ((sym->flags & SYM_MACRO) != 0) {
+            macro = true;
+            sym = eval(sym->string, false);
+            assert(sym != NULL);
+        }
         
-        else
+        if ((sym->flags & SYM_STRING) != 0) {
+            stackarg(0, SYM_STRING, sym->string);
+        } 
+        else {
             stackarg(sym->value, sym->flags & SYM_UNKNOWN, NULL);
+        }
         
         sym->flags |= SYM_REF|SYM_MASREF;
         
-        if (macro)
+        if (macro) {
             FreeSymbolList(sym);
+        }
     }
-    else
-    {
+    else {
         stackarg(0L, SYM_UNKNOWN, NULL);
-        sym = CreateSymbol( str, ptr - str );
+        sym = CreateSymbol(str, ptr - str);
+        assert(sym != NULL);
         sym->flags = SYM_REF|SYM_MASREF|SYM_UNKNOWN;
         ++Redo_eval;
     }

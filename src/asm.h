@@ -331,7 +331,7 @@ struct _SYMBOL
     /* flags */
     unsigned char flags;
     /* addressing mode (expressions) */
-    unsigned char addrmode;
+    address_mode_t addrmode;
     /* current value, never EVER change this to unsigned! [phf] */
     long value;
     /* name length */
