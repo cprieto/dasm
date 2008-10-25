@@ -74,7 +74,7 @@ sortmode_t F_sortmode = SORTMODE_DEFAULT;
 /* -E option [phf] */
 error_format_t F_errorformat = ERRORFORMAT_DEFAULT;
 
-unsigned char	 F_verbose;
+int F_verbose;
 const char	*F_outfile = "a.out";
 char	*F_listfile;
 FILE	*FI_listfile;
