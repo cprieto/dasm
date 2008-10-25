@@ -31,6 +31,8 @@
 #include "errors.h"
 #include "version.h"
 
+#include <assert.h>
+
 /*@unused@*/
 SVNTAG("$Id$");
 
@@ -83,8 +85,22 @@ bool Fisclear;
 unsigned long	 Plab, Pflags;
 
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
-unsigned int	Cvt[]	    = { 0, 2, 0, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0 };
-unsigned int	Opsize[]    = { 0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1 };
+static address_mode_t Cvt[]	    = { 0, 2, 0, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0 };
+static size_t Opsize[]    = { 0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1 };
+
+address_mode_t convert_address_mode(address_mode_t am)
+{
+  //assert(am >= 0); // TODO: what if enum is not unsigned? [phf]
+  assert(am < 17);
+  return Cvt[am];
+}
+
+size_t operand_size(address_mode_t am)
+{
+  //assert(am >= 0); // TODO: what if enum is not unsigned? [phf]
+  assert(am < 17);
+  return Opsize[am];
+}
 
 MNEMONIC Ops[] = {
     { NULL, v_list    , "list",           0,      0, {0,} },

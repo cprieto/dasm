@@ -111,7 +111,6 @@ enum FORMAT
 #define MHASHAND    (MHASHSIZE-1) /*0x03FF*/
 #define MAXMACLEVEL 32
 
-
 	enum ADDRESS_MODES {
 		AM_IMP,					/*    implied         */
 		AM_IMM8,				/*    immediate 8  bits   */
@@ -138,6 +137,10 @@ enum FORMAT
 
 		NUMOC
 	};
+typedef enum ADDRESS_MODES address_mode_t;
+address_mode_t convert_address_mode(address_mode_t am);
+size_t operand_size(address_mode_t am);
+/* TODO: is it really OPERAND size or maybe OPCODE size? [phf] */
 
 #define AF_IMP					( 1L << AM_IMP )
 #define AF_IMM8					( 1L << AM_IMM8 )
@@ -197,7 +200,7 @@ struct _MNEMONIC
     const char *name;
     /* special flags */
     unsigned char flags;
-    /* TODO: ??? [phf] */
+    /* addressing modes ok for this mnemonic? see badcode() macro [phf] */
     unsigned long okmask;
     /* hex codes, byte or word (>xFF) opcodes */
     unsigned int opcode[NUMOC];
@@ -344,10 +347,10 @@ extern IFSTACK    *Ifstack;
 extern SEGMENT    *Csegment;  /*      current segment */
 extern char    *Av[];
 extern char    Avbuf[];
-/*extern unsigned int Adrbytes[];*/
-extern unsigned int Cvt[];
+/*extern unsigned int Adrbytes[];*/ /* unused for years, see 2.12 [phf] */
+/*extern unsigned int Cvt[];*/ /* replaced with function [phf] */
 extern MNEMONIC    Ops[];
-extern unsigned int    Opsize[];
+/*extern unsigned int    Opsize[];*/ /* replaced with function [phf] */
 extern int    Mnext;          /*    mnemonic extension    */
 extern unsigned int    Mlevel;
 
