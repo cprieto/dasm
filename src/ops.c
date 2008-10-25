@@ -479,7 +479,7 @@ v_incbin(char *str, MNEMONIC *dummy)
     
     binfile = pfopen(buf, "rb");
     if (binfile != NULL) {
-        if (Redo) {
+        if (Redo != 0) {
             /* optimize: don't actually read the file if not needed */
             fseek(binfile, 0, SEEK_END);
             Glen = ftell(binfile);
@@ -1408,7 +1408,7 @@ generate(void)
     static unsigned long org;
     int i;
     
-    if (!Redo)
+    if (Redo == 0)
     {
         if (!(Csegment->flags & SF_BSS))
         {
@@ -1511,10 +1511,8 @@ generate(void)
 
 void closegenerate(void)
 {
-    if (!Redo)
-    {
-        if ( F_format == FORMAT_RAS )
-        {
+    if (Redo == 0) {
+        if (F_format == FORMAT_RAS) {
             fseek(FI_temp, Seekback, 0);
             putc((Seglen & 0xFF), FI_temp);
             putc(((Seglen >> 8) & 0xFF), FI_temp);
