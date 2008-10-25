@@ -445,7 +445,7 @@ getfilename(char *str)
         buf = checked_malloc(strlen(str)+1);
         strcpy(buf, str);
         
-        for (str = buf; *str && *str != '\"'; ++str);
+        for (str = buf; *str != '\0' && *str != '\"'; ++str);
         *str = 0;
         
         return buf;
@@ -456,53 +456,55 @@ getfilename(char *str)
 void
 v_include(char *str, MNEMONIC *dummy)
 {
-    char    *buf;
+    char *buf;
     
     programlabel();
     buf = getfilename(str);
     
     pushinclude(buf);
     
-    if (buf != str)
+    if (buf != str) {
         free(buf);
+    }
 }
-
 
 void
 v_incbin(char *str, MNEMONIC *dummy)
 {
-    char    *buf;
-    FILE    *binfile;
+    char *buf;
+    FILE *binfile;
     
     programlabel();
     buf = getfilename(str);
     
     binfile = pfopen(buf, "rb");
-    if (binfile) {
+    if (binfile != NULL) {
         if (Redo) {
             /* optimize: don't actually read the file if not needed */
             fseek(binfile, 0, SEEK_END);
             Glen = ftell(binfile);
             generate();     /* does not access Gen[] if Redo is set */
         }
-        else
-        {
+        else {
             for (;;) {
                 Glen = fread(Gen, 1, sizeof(Gen), binfile);
-                if (Glen <= 0)
+                if (Glen <= 0) {
                     break;
+                }
                 generate();
             }
         }
-        fclose(binfile);
+        if (fclose(binfile) != 0) {
+            warning_fmt("Problem closing binary include file '%s'.\n", buf);
+        }
     }
-    else
-    {
-        printf("unable to open %s\n", buf);
+    else {
+        warning_fmt("Unable to open binary include file '%s'.\n", buf);
     }
     
-    if (buf != str)
+    if (buf != str) {
         free(buf);
+    }
     Glen = 0;		    /* don't list hexdump */
 }
 
