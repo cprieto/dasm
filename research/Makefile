@@ -1,7 +1,9 @@
 # $Id$
-CFLAGS=-O0 # try -O3 for fun...
+CFLAGS=-O0 -std=c99 -Wall -Wextra # try -O3 for fun...
 
-all: compare_mod_and minunit_example get_set_progname
+ALL=compare_mod_and minunit_example get_set_progname sizeof args
+
+all: $(ALL)
 
 clean:
-	rm -rf compare_mod_and minunit_example get_set_progname
+	rm -rf $(ALL)
