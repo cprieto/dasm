@@ -376,8 +376,7 @@ nofile:
 nextpass:
     
     
-    if ( F_verbose )
-    {
+    if (F_verbose > 0) {
         (void) puts("");
         printf("START OF PASS: %d\n", pass);
     }

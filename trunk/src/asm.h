@@ -366,7 +366,7 @@ extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
 extern sortmode_t F_sortmode; /* -T option [phf] */
-extern unsigned char    F_verbose;
+extern int F_verbose;
 extern const char    *F_outfile;
 extern char    *F_listfile;
 extern FILE    *FI_listfile;
