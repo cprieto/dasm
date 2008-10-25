@@ -517,7 +517,7 @@ v_seg(char *str, MNEMONIC *dummy)
 {
     SEGMENT *seg;
     
-    for (seg = Seglist; seg; seg = seg->next) {
+    for (seg = Seglist; seg != NULL; seg = seg->next) {
         if (strcmp(str, seg->name) == 0) {
             Csegment = seg;
             programlabel();
@@ -1002,16 +1002,16 @@ void
 v_eqm(char *str, MNEMONIC *dummy)
 {
     SYMBOL *lab;
-    int len = strlen(Av[0]);
+    size_t len = strlen(Av[0]);
     
     if ((lab = findsymbol(Av[0], len)) != NULL) {
-        if (lab->flags & SYM_STRING) {
+        if ((lab->flags & SYM_STRING) != 0) {
             free(lab->string);
         }
     }
     else
     {
-        lab = CreateSymbol( Av[0], len );
+        lab = CreateSymbol(Av[0], len);
     }
     lab->value = 0;
     lab->flags = SYM_STRING | SYM_SET | SYM_MACRO;
@@ -1026,7 +1026,7 @@ v_echo(char *str, MNEMONIC *dummy)
     char buf[256];
     int len;
     
-    for (s = sym; s; s = s->next) {
+    for (s = sym; s != NULL; s = s->next) {
         if (!(s->flags & SYM_UNKNOWN)) {
             if (s->flags & (SYM_MACRO|SYM_STRING)) {
                 len = snprintf(buf, sizeof(buf), "%s", s->string);
@@ -1036,14 +1036,16 @@ v_echo(char *str, MNEMONIC *dummy)
                 len = snprintf(buf, sizeof(buf), "$%lx", s->value);
                 assert(len < (int)sizeof(buf));
             }
-            if (FI_listfile)
+            if (FI_listfile != NULL) {
                 fprintf(FI_listfile, " %s", buf);
+            }
             printf(" %s", buf);
         }
     }
     (void) puts("");
-    if (FI_listfile)
+    if (FI_listfile != NULL) {
         putc('\n', FI_listfile);
+    }
 }
 
 void v_set(char *str, MNEMONIC *dummy)
@@ -1052,8 +1054,9 @@ void v_set(char *str, MNEMONIC *dummy)
     SYMBOL *lab;
     
     lab = findsymbol(Av[0], strlen(Av[0]));
-    if (!lab)
-        lab = CreateSymbol( Av[0], strlen(Av[0]) );
+    if (lab == NULL) {
+        lab = CreateSymbol(Av[0], strlen(Av[0]));
+    }
     lab->value = sym->value;
     lab->flags = sym->flags & (SYM_UNKNOWN|SYM_STRING);
     lab->string = sym->string;
@@ -1080,9 +1083,9 @@ v_execmac(char *str, MACRO *mac)
     base->next = NULL;
     strcpy(base->buf, str);
     psl = &base->next;
-    while (*str && *str != '\n') {
+    while (*str != '\0' && *str != '\n') {
         s1 = str;
-        while (*str && *str != '\n' && *str != ',')
+        while (*str != '\0' && *str != '\n' && *str != ',')
             ++str;
         sl = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+1+(str-s1));
         sl->next = NULL;
@@ -1318,13 +1321,14 @@ v_incdir(char *str, MNEMONIC *dummy)
 {
     STRLIST **tail;
     char *buf;
-    int found = 0;
+    bool found = false;
     
     buf = getfilename(str);
     
     for (tail = &incdirlist; *tail; tail = &(*tail)->next) {
-        if (strcmp((*tail)->buf, buf) == 0)
-            found = 1;
+        if (strcmp((*tail)->buf, buf) == 0) {
+            found = true;
+        }
     }
     
     if (!found) {
@@ -1335,8 +1339,9 @@ v_incdir(char *str, MNEMONIC *dummy)
         *tail = newdir;
     }
     
-    if (buf != str)
+    if (buf != str) {
         free(buf);
+    }
 }
 
 static void
