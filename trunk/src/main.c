@@ -709,9 +709,9 @@ static void clearsegs(void)
 {
     SEGMENT *seg;
     
-    for (seg = Seglist; seg; seg = seg->next) {
+    for (seg = Seglist; seg != NULL; seg = seg->next) {
         seg->flags = (seg->flags & SF_BSS) | SF_UNKNOWN;
-        seg->rflags= seg->initflags = seg->initrflags = SF_UNKNOWN;
+        seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
     }
 }
 
@@ -1118,14 +1118,16 @@ void v_macro(char *str, MNEMONIC *dummy)
         
         mne = parse(buf);
         if (Av[1][0]) {
-            if (mne && mne->flags & MF_ENDM) {
-                if (!defined)
+            if (mne != NULL && (mne->flags & MF_ENDM) != 0) {
+                if (!defined) {
                     mac->strlist = base;
+                }
                 return;
             }
         }
-        if (!skipit && F_listfile != NULL && ListMode)
+        if (!skipit && F_listfile != NULL && ListMode) {
             outlistfile(comment);
+        }
         if (!defined) {
             sl = small_alloc(STRLISTSIZE+1+strlen(buf));
             strcpy(sl->buf, buf);
@@ -1145,7 +1147,7 @@ void addhashtable(MNEMONIC *mne)
     int i, j;
     unsigned int opcode[NUMOC];
     
-    for (; mne->vect; ++mne) {
+    for (; mne->vect != NULL; ++mne) {
         memcpy(opcode, mne->opcode, sizeof(mne->opcode));
         for (i = j = 0; i < NUMOC; ++i) {
             mne->opcode[i] = 0;     /* not really needed */
