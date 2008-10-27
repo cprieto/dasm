@@ -408,7 +408,7 @@ nextpass:
     }
     pushinclude(av[1]);
     
-    while ( pIncfile )
+    while (pIncfile != NULL)
     {
         for (;;) {
             const char *comment;
@@ -1171,23 +1171,26 @@ void pushinclude(char *str)
     FILE *fi;
     
     if ((fi = pfopen(str, "r")) != NULL) {
-        if (F_verbose > 1 && F_verbose != 5 )
+        if (F_verbose > 1 && F_verbose != 5) {
             printf("%.*s Including file \"%s\"\n", Inclevel*4, "", str);
+        }
         ++Inclevel;
         
-        if (F_listfile != NULL)
+        if (F_listfile != NULL) {
+            assert(FI_listfile != NULL);
             fprintf(FI_listfile, "------- FILE %s LEVEL %d PASS %d\n", str, Inclevel, pass);
+        }
         
         inf = zero_malloc(sizeof(INCFILE));
-        inf->next    = pIncfile;
-        inf->name    = strcpy(checked_malloc(strlen(str)+1), str);
+        inf->next = pIncfile;
+        inf->name = strcpy(checked_malloc(strlen(str)+1), str);
         inf->fi = fi;
         inf->lineno = 0;
         pIncfile = inf;
-        return;
     }
-    printf("Warning: Unable to open '%s'\n", str);
-    return;
+    else {
+        warning_fmt("Unable to open include file '%s'.\n", str);
+    }
 }
 
 /**
@@ -1208,7 +1211,6 @@ static void exit_handler(void)
 int main(int argc, char **argv)
 {
     bool bTableSort = false;
-//    int nError;
 
     setprogname(argv[0]);
 
@@ -1217,11 +1219,9 @@ int main(int argc, char **argv)
         panic_fmt("Could not install exit handler!");
     }
 
-//    nError =
     MainShadow(argc, argv, &bTableSort);
 
 #if 0
-    /* TODO: avoid accessing error table here! */
     if (nError)
     {
         printf("Fatal assembly error: %s\n", sErrorDef[nError].sDescription);
@@ -1236,8 +1236,6 @@ int main(int argc, char **argv)
     else {
       return EXIT_SUCCESS;
     }
-    
-//    return nError;
 }
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

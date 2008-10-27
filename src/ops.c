@@ -1126,10 +1126,11 @@ void v_end(char *str, MNEMONIC *dummy)
 {
     /* Only ENDs current file and any macro calls within it */
     
-    while ( pIncfile->flags & INF_MACRO)
+    while ((pIncfile->flags & INF_MACRO) != 0) {
         v_endm(NULL, NULL);
+    }
     
-    fseek( pIncfile->fi, 0, SEEK_END);
+    fseek(pIncfile->fi, 0, SEEK_END);
 }
 
 void
@@ -1297,23 +1298,23 @@ v_repend(char *str, MNEMONIC *dummy)
     }
     if (Reploop && Reploop->file == pIncfile) {
         if (Reploop->flags == 0 && --Reploop->count) {
-            if (pIncfile->flags & INF_MACRO)
+            if ((pIncfile->flags & INF_MACRO) != 0) {
                 pIncfile->strlist = (STRLIST *)Reploop->seek;
-            else
-                fseek(pIncfile->fi,Reploop->seek,0);
+            }
+            else {
+                fseek(pIncfile->fi, Reploop->seek, 0);
+            }
             pIncfile->lineno = Reploop->lineno;
         }
-        else
-        {
+        else {
             rmnode((void **)&Reploop, sizeof(REPLOOP));
             v_endif(NULL,NULL);
         }
         return;
     }
     (void) puts("no repeat");
+    /* TODO: is this an error or a warning or what? [phf] */
 }
-
-
 
 static STRLIST *incdirlist;
 
