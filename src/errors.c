@@ -186,7 +186,7 @@ static void vanotify(error_level_t level, const char *fmt, va_list ap)
     /* buffer for formatting output in */
     static char notify_buffer[NOTIFY_BUFFER_SIZE];
     /* file pointer we write the message to */
-    FILE *out = (F_listfile != NULL) ? FI_listfile : stderr;
+    FILE *out = (FI_listfile != NULL) ? FI_listfile : stderr;
     /* include file we're in right now (if any) */
     INCFILE *file = pIncfile;
     /* level of severity description, grab from "levels" table later */

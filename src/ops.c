@@ -581,7 +581,7 @@ static int gethexdig(int c)
     
     /* TODO: refactor into error handling code */
     (void) puts("(Must be a valid hex digit)");
-    if (F_listfile != NULL) {
+    if (FI_listfile != NULL) {
         fputs("(Must be a valid hex digit)\n", FI_listfile);
     }
     
