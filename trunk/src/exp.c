@@ -68,7 +68,7 @@ typedef void (*opfunc_t)();
 
 #endif
 
-static void stackarg(long val, int flags, const char *ptr1);
+static void stackarg(long val, int flags, /*@null@*/ const char *ptr1);
 
 static void doop(opfunc_t, int pri);
 static void evaltop(void);
@@ -587,7 +587,7 @@ static void evaltop(void)
     }
 }
 
-static void stackarg(long val, int flags, const char *ptr1)
+static void stackarg(long val, int flags, /*@null@*/ const char *ptr1)
 {
     char *str = NULL;
     
