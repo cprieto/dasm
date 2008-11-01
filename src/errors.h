@@ -37,7 +37,9 @@
 
 /**
  * @file errors.h
+ *
  * @brief Error handling for DASM.
+ *
  * @note The idea for separate error levels came from syslog(3)
  * and vague memories of Ralf Michl's Java version of same.
  * The idea for printf-style interfaces came from Thomas Mathys
@@ -50,24 +52,32 @@
  */
 typedef enum
 {
-    ERRORFORMAT_DEFAULT,
-    ERRORFORMAT_WOE = ERRORFORMAT_DEFAULT,
+    /* actual error formats */
+    ERRORFORMAT_WOE,
     ERRORFORMAT_DILLON,
     ERRORFORMAT_GNU,
-    ERRORFORMAT_MAX
+    /* meta data */
+    ERRORFORMAT_MIN = ERRORFORMAT_WOE,
+    ERRORFORMAT_DEFAULT = ERRORFORMAT_WOE,
+    ERRORFORMAT_MAX = ERRORFORMAT_GNU
 }
 error_format_t;
 
 /**
- * @brief Global that holds current error format for -E option.
- * @todo global to allow main.c command line parsing to write, fix this
+ * @brief Valid error format for -E option?
  */
-extern error_format_t F_error_format;
+bool valid_error_format(int format);
 
 /**
- * @brief Global that tells us whether to stop after the current pass?
+ * @brief Set error format, -E option.
  */
-extern bool bStopAtEnd;
+void set_error_format(error_format_t format);
+
+/**
+ * @brief How many fatals so far, tells us whether to stop after the
+ * current pass.
+ */
+size_t number_of_fatals(void);
 
 /**
  * @brief How many errors so far?
@@ -84,6 +94,8 @@ size_t number_of_warnings(void);
  */
 typedef enum
 {
+    /* actual error levels */
+
     /* displayed in debug mode, -d option */
     ERRORLEVEL_DEBUG,
     /* displayed in high verbose mode, -v option */
@@ -91,27 +103,34 @@ typedef enum
     /* displayed in low verbose mode, -v option */
     ERRORLEVEL_NOTICE,
     /* displayed if warnings enabled, -w option */
-    ERRORLEVEL_DEFAULT,
-    ERRORLEVEL_WARNING = ERRORLEVEL_DEFAULT,
+    ERRORLEVEL_WARNING,
     /* regular error, always displayed, assembly continues */
     ERRORLEVEL_ERROR,
     /* fatal error, always displayed, assembly stops after current pass */
     ERRORLEVEL_FATAL,
     /* panic insanity, always displayed, breaks out right away */
     ERRORLEVEL_PANIC,
-    /* end of severity levels enum */
-    ERRORLEVEL_MAX
+
+    /* meta data */
+    ERRORLEVEL_MIN = ERRORLEVEL_DEBUG,
+    ERRORLEVEL_DEFAULT = ERRORLEVEL_WARNING,
+    ERRORLEVEL_MAX = ERRORLEVEL_PANIC
 }
 error_level_t;
 
 /**
- * @brief Global that holds current error level, messages
- * down to and including this level are printed.
+ * @brief Valid error level?
+ */
+bool valid_error_level(int level);
+
+/**
+ * @brief Set error level, messages down to and including
+ * this level are printed.
  * @todo Currently command line options don't affect this
  * thing yet, need to adapt main.c and then all the code
  * of course... :-/
  */
-extern error_level_t F_error_level;
+void set_error_level(error_level_t level);
 
 /**
  * @brief Length of buffer for source locations.

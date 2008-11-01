@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     pIncfile->name = strdup("someFileName");
     pIncfile->lineno = 47;
     /* enable all messages */
-    F_error_level = ERRORLEVEL_DEBUG;
+    set_error_level(ERRORLEVEL_DEBUG);
     /* test SUPER new API :-) */
     debug_fmt(WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
     info_fmt(WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
