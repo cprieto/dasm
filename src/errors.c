@@ -41,6 +41,8 @@
     of tracking all the FILE* we write error messages to. Maybe it's
     enough to have a short array of them, configurable on demand? We
     could then just loop through them and write the message repeatedly.
+    Dillon's format is the only trouble since it's slightly different
+    when going to the listing file...
 */
 
 #include "errors.h"
@@ -79,11 +81,12 @@ static const char *levels[] =
 /* Super low-level panic for disasters *inside* the errors module! */
 static void internal_panic(const char *message)
 {
-  (void) fputs("\n", stderr);
-  (void) fputs(getprogname(), stderr);
-  (void) fputs(": FATAL INTERNAL PANIC (errors.c): ", stderr);
-  (void) fputs(message, stderr);
-  (void) fputs("\n", stderr);
+  fprintf(
+    stderr,
+    "\n%s: FATAL INTERNAL PANIC (errors.c): %s\n\n",
+    getprogname(),
+    message
+  );
   exit(EXIT_FAILURE);
 }
 
@@ -107,6 +110,15 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
         need a different format for that, even if just in case!
         Error handling should not depend purely on source code
         analysis, right? Command line options come to mind... [phf]
+    */
+
+    /*
+        DARN: the original asmerr() would set bStopAtEnd if the
+        error had the "fatal" flag set in the record that described
+        it; if would *abort* on a true argument; in my previous
+        reading of the code, I had assumed that a true argument
+        meant simply "fatal" and not abort. To be verified again
+        and addressed, maybe there are a few more panics around... [phf]
     */
 
     switch (F_error_format)
@@ -157,7 +169,7 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
             }
             else
             {
-                fprintf(out, "dasm: %s: ", level);
+                fprintf(out, "%s: %s: ", getprogname(), level);
             }
             break;
 
@@ -168,10 +180,11 @@ static void print_part_one(FILE *out, const INCFILE *file, const char *level)
 }
 
 #define NOTIFY_BUFFER_SIZE 1024
-static char notify_buffer[NOTIFY_BUFFER_SIZE]; /* TODO: why global? */
 
 static void vanotify(error_level_t level, const char *fmt, va_list ap)
 {
+    /* buffer for formatting output in */
+    static char notify_buffer[NOTIFY_BUFFER_SIZE];
     /* file pointer we write the message to */
     FILE *out = (F_listfile != NULL) ? FI_listfile : stderr;
     /* include file we're in right now (if any) */
@@ -194,7 +207,7 @@ static void vanotify(error_level_t level, const char *fmt, va_list ap)
     /* find the file we're in */
     /* TODO: how does this work? why no NULL ptr check in original? */
     /* TODO: theory: find first non-macro, one is guaranteed to exist? */
-    while (file != NULL && (file->flags & INF_MACRO))
+    while (file != NULL && (file->flags & INF_MACRO) != 0)
     {
         file = file->next;
     }
