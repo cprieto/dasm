@@ -412,8 +412,8 @@ nextpass:
     {
         for (;;) {
             const char *comment;
-            if ( pIncfile->flags & INF_MACRO) {
-                if ( pIncfile->strlist == NULL) {
+            if ((pIncfile->flags & INF_MACRO) != 0) {
+                if (pIncfile->strlist == NULL) {
                     Av[0] = "";
                     v_mexit(NULL, NULL);
                     continue;

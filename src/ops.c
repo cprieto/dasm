@@ -1140,7 +1140,7 @@ v_endm(char *str, MNEMONIC *dummy)
     STRLIST *args, *an;
     
     /* programlabel(); contrary to documentation */
-    if (inc->flags & INF_MACRO) {
+    if ((inc->flags & INF_MACRO) != 0) {
         --Mlevel;
         for (args = inc->args; args; args = an) {
             an = args->next;
@@ -1259,7 +1259,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
     /* Don't allow negative values for REPEAT loops [AD] */
     /* TODO: refactor with == 0 case above? [phf] */
     
-    if ( sym->value < 0 )
+    if (sym->value < 0)
     {
         pushif( 0 );
         FreeSymbolList(sym);
@@ -1274,10 +1274,12 @@ void v_repeat(char *str, MNEMONIC *dummy)
     rp = zero_malloc(sizeof(REPLOOP));
     rp->next = Reploop;
     rp->file = pIncfile;
-    if (pIncfile->flags & INF_MACRO)
+    if ((pIncfile->flags & INF_MACRO) != 0) {
         rp->seek = (long)pIncfile->strlist;
-    else
+    }
+    else {
         rp->seek = ftell(pIncfile->fi);
+    }
     rp->lineno = pIncfile->lineno;
     rp->count = sym->value;
     if ((rp->flags = sym->flags) != 0) {
