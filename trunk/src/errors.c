@@ -62,8 +62,8 @@ SVNTAG("$Id$");
 bool bStopAtEnd = false;
 error_format_t F_error_format = ERRORFORMAT_DEFAULT;
 error_level_t F_error_level = ERRORLEVEL_DEFAULT;
-unsigned int nof_errors = 0;
-unsigned int nof_warnings = 0;
+static size_t nof_errors = 0;
+static size_t nof_warnings = 0;
 char source_location_buffer[SOURCE_LOCATION_LENGTH];
 
 /* TODO: another X macro hack? or just leave it? */
@@ -77,6 +77,16 @@ static const char *levels[] =
     [ERRORLEVEL_FATAL] = "fatal",
     [ERRORLEVEL_PANIC] = "***panic***",
 };
+
+size_t number_of_errors(void)
+{
+  return nof_errors;
+}
+
+size_t number_of_warnings(void)
+{
+  return nof_warnings;
+}
 
 /* Super low-level panic for disasters *inside* the errors module! */
 static void internal_panic(const char *message)
