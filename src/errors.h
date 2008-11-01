@@ -27,6 +27,7 @@
 */
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 /* remove cool GNU stuff for other compilers */
 /* TODO: find more permanent place for this, more .h might need it! */
@@ -69,11 +70,14 @@ extern error_format_t F_error_format;
 extern bool bStopAtEnd;
 
 /**
- * @brief Globals to track number of errors and warnings.
- * @todo Unused so far in output, but might be useful?
+ * @brief How many errors so far?
  */
-extern unsigned int nof_errors;
-extern unsigned int nof_warnings;
+size_t number_of_errors(void);
+
+/**
+ * @brief How many warnings so far?
+ */
+size_t number_of_warnings(void);
 
 /**
  * @brief Severity of error messages.

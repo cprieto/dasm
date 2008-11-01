@@ -1234,7 +1234,7 @@ int main(int argc, char **argv)
     
     DumpSymbolTable(bTableSort);
 
-    if (nof_errors > 0) {
+    if (number_of_errors() > 0) {
       return EXIT_FAILURE;
     }
     else {
