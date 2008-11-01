@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     pIncfile->name = strdup("someFileName");
     pIncfile->lineno = 47;
     /* enable all messages */
-    F_error_level = ERRORLEVEL_DEBUG;
+    set_error_level(ERRORLEVEL_DEBUG);
     /* the tests */
     puts(getprogname());
     setprogname(argv[0]);

@@ -259,14 +259,16 @@ fail:
             /* TODO: need to improve option parsing and errors for it [phf] */
             /* TODO: fixed range checking for -Wextra below, but what if
                enum is *not* unsigned in other compilers? hmmm... [phf] */
-            case 'E':
-                F_error_format = atoi(str);
-                if (/*F_error_format < ERRORFORMAT_DEFAULT
-                   ||*/ F_error_format >= ERRORFORMAT_MAX )
-                {
+            case 'E': {
+                int format = atoi(str);
+                if (valid_error_format(format)) {
+                    set_error_format(format);
+                }
+                else {
                     panic_fmt("Invalid error format for -E, must be 0, 1, 2");
                 }
                 break;
+            }
 
             case 'T':
                 F_sortmode = atoi(str);
@@ -533,7 +535,7 @@ nextpass:
             Redo_if <<= 1;
             ++pass;
             
-            if ( bStopAtEnd )
+            if (number_of_fatals() > 0)
             {
                 printf("Unrecoverable error(s) in pass, aborting assembly!\n");
             }

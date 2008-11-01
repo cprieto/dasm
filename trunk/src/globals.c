@@ -73,8 +73,6 @@ int F_format = FORMAT_DEFAULT;
 
 /* -T option [phf] */
 sortmode_t F_sortmode = SORTMODE_DEFAULT;
-/* -E option [phf] */
-error_format_t F_errorformat = ERRORFORMAT_DEFAULT;
 
 int F_verbose;
 const char	*F_outfile = "a.out";

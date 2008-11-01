@@ -59,9 +59,9 @@
 SVNTAG("$Id$");
 
 /* TODO: globals that ended up here, need to be refactored eventually */
-bool bStopAtEnd = false;
-error_format_t F_error_format = ERRORFORMAT_DEFAULT;
-error_level_t F_error_level = ERRORLEVEL_DEFAULT;
+static error_format_t F_error_format = ERRORFORMAT_DEFAULT;
+static error_level_t F_error_level = ERRORLEVEL_DEFAULT;
+static size_t nof_fatals = 0;
 static size_t nof_errors = 0;
 static size_t nof_warnings = 0;
 char source_location_buffer[SOURCE_LOCATION_LENGTH];
@@ -77,6 +77,41 @@ static const char *levels[] =
     [ERRORLEVEL_FATAL] = "fatal",
     [ERRORLEVEL_PANIC] = "***panic***",
 };
+
+bool valid_error_format(int format)
+{
+    return (ERRORFORMAT_MIN <= format && format <= ERRORFORMAT_MAX);
+}
+
+void set_error_format(error_format_t format)
+{
+    assert(valid_error_format(format));
+    F_error_format = format;
+}
+
+bool valid_error_level(int level)
+{
+    return (ERRORLEVEL_MIN <= level && level <= ERRORLEVEL_MAX);
+}
+
+void set_error_level(error_level_t level)
+{
+    assert(valid_error_level(level));
+    F_error_level = level;
+}
+
+/**
+ * @brief Display this error level?
+ */
+static bool visible_error_level(error_level_t level)
+{
+    return (level >= F_error_level);
+}
+
+size_t number_of_fatals(void)
+{
+  return nof_fatals;
+}
 
 size_t number_of_errors(void)
 {
@@ -202,11 +237,9 @@ static void vanotify(error_level_t level, const char *fmt, va_list ap)
     /* level of severity description, grab from "levels" table later */
     const char *lev = NULL;
 
-    /* TODO: fixed range checking for -Wextra below, but what if
-       enum is *not* unsigned in other compilers? hmmm... [phf] */
-    assert(/*ERRORLEVEL_DEBUG <= level &&*/ level < ERRORLEVEL_MAX);
+    assert(valid_error_level(level));
 
-    if (level < F_error_level)
+    if (!visible_error_level(level))
     {
         /* condition not severe enough */
         return;
@@ -252,13 +285,13 @@ static void vanotify(error_level_t level, const char *fmt, va_list ap)
     }
     if (level == ERRORLEVEL_ERROR)
     {
-         nof_errors +=1;
+         nof_errors += 1;
     }
 
     /* fatal and higher errors lead to (eventual) termination */
     if (level >= ERRORLEVEL_FATAL)
     {
-        bStopAtEnd = true; /* stop after current pass */
+        nof_fatals += 1; /* stop after current pass */
     }
     if (level == ERRORLEVEL_PANIC)
     {
