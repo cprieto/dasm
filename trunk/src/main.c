@@ -459,8 +459,9 @@ nextpass:
                     programlabel();
             }
             
-            if (F_listfile != NULL && ListMode)
+            if (FI_listfile != NULL && ListMode) {
                 outlistfile(comment);
+            }
         }
         
         while (Reploop != NULL && Reploop->file == pIncfile)
@@ -481,7 +482,7 @@ nextpass:
         if (F_verbose > 1)
         printf("back to: %s\n", Incfile->name);
             */
-            if (F_listfile != NULL) {
+            if (FI_listfile != NULL) {
                 fprintf(FI_listfile, "------- FILE %s\n", pIncfile->name);
             }
         }
@@ -606,10 +607,13 @@ static void outlistfile(const char *comment)
     int i, j;
     int len;
     
-
-    if ( pIncfile->flags & INF_NOLIST )
+    /* TODO: what does this mean exactly? [phf] */
+    if ((pIncfile->flags & INF_NOLIST) != 0) {
         return;
+    }
     
+    assert(FI_listfile != NULL);
+
     xtrue = (Ifstack->xtrue && Ifstack->acctrue) ? ' ' : '-';
     c = (Pflags & SF_BSS) ? 'U' : ' ';
     ptr = Extstr;
@@ -1091,8 +1095,9 @@ void v_macro(char *str, MNEMONIC *dummy)
         defined = true;
     } else {
         defined = (findmne(str) != NULL);
-        if (F_listfile != NULL && ListMode)
+        if (FI_listfile != NULL && ListMode) {
             outlistfile("");
+        }
     }
     if (!defined) {
         base = NULL;
@@ -1125,7 +1130,7 @@ void v_macro(char *str, MNEMONIC *dummy)
                 return;
             }
         }
-        if (!skipit && F_listfile != NULL && ListMode) {
+        if (!skipit && FI_listfile != NULL && ListMode) {
             outlistfile(comment);
         }
         if (!defined) {
@@ -1176,8 +1181,7 @@ void pushinclude(char *str)
         }
         ++Inclevel;
         
-        if (F_listfile != NULL) {
-            assert(FI_listfile != NULL);
+        if (FI_listfile != NULL) {
             fprintf(FI_listfile, "------- FILE %s LEVEL %d PASS %d\n", str, Inclevel, pass);
         }
         
