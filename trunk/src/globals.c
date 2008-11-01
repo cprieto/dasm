@@ -78,8 +78,8 @@ error_format_t F_errorformat = ERRORFORMAT_DEFAULT;
 
 int F_verbose;
 const char	*F_outfile = "a.out";
-char	*F_listfile;
-FILE	*FI_listfile;
+/*@null@*/ char	*F_listfile;
+/*@null@*/ FILE	*FI_listfile;
 FILE	*FI_temp;
 bool Fisclear;
 unsigned long	 Plab, Pflags;

@@ -370,8 +370,8 @@ extern int   F_format;
 extern sortmode_t F_sortmode; /* -T option [phf] */
 extern int F_verbose;
 extern const char    *F_outfile;
-extern char    *F_listfile;
-extern FILE    *FI_listfile;
+/*@null@*/ extern char    *F_listfile;
+/*@null@*/ extern FILE    *FI_listfile;
 extern FILE    *FI_temp;
 extern bool Fisclear;
 extern unsigned long    Plab, Pflags;
