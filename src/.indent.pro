@@ -6,9 +6,10 @@
  * Indentation for the dasm project using GNU indent.
  * Based on example by Daniel Mittler <dmittler at jhu dot edu>.
  */
+--dont-format-comments
 --blank-lines-after-declarations
 --blank-lines-after-procedures
---blank-lines-before-block-comments
+/*--blank-lines-before-block-comments*/
 --break-before-boolean-operator
 --braces-on-if-line
 --braces-on-struct-decl-line
