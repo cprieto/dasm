@@ -55,7 +55,7 @@ static unsigned int hash_symbol(const char *str, size_t len)
     return hash_string(str, len) & SHASHAND;
 }
 
-void setspecial(int value, int flags)
+void setspecial(int value, dasm_flag_t flags)
 {
     special.value = value;
     special.flags = flags;
@@ -208,15 +208,16 @@ void programlabel(void)
         {
             ++Redo;
             Redo_why |= REASON_FORWARD_REFERENCE;
-            if (Xdebug)
+            if (Xdebug) {
                 printf("redo 13: '%s' %04x %04x\n", sym->name, sym->flags, cflags);
+            }
         }
-        else if ((cflags & SYM_UNKNOWN) && (sym->flags & SYM_REF))
+        else if ((cflags & SYM_UNKNOWN) != 0 && (sym->flags & SYM_REF) != 0)
         {
             ++Redo;
             Redo_why |= REASON_FORWARD_REFERENCE;
         }
-        else if (!(cflags & SYM_UNKNOWN) && !(sym->flags & SYM_UNKNOWN))
+        else if ((cflags & SYM_UNKNOWN) == 0 && (sym->flags & SYM_UNKNOWN) == 0)
         {
             if (pc != sym->value)
             {
@@ -476,7 +477,7 @@ void ShowSymbols(FILE *file, bool bTableSort)
             /* TODO: format is different here that above [phf] */
             fprintf(file, "%-24s %-12s", symArray[i]->name, sftos(symArray[i]->value, symArray[i]->flags));
 
-            if (symArray[i]->flags & SYM_STRING) {
+            if ((symArray[i]->flags & SYM_STRING) != 0) {
                 /* If a string, display actual string */
                 /* TODO: we don't do this above? [phf] */
                 fprintf(file, " \"%s\"", symArray[i]->string);

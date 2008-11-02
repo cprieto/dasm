@@ -128,7 +128,7 @@ static void ShowSegments(void)
     printf(SHOW_SEGMENTS_FORMAT, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC");
     
     for (seg = Seglist; seg != NULL; seg = seg->next) {
-        bss = (seg->flags & SF_BSS) ? "[u]" : "   ";
+        bss = ((seg->flags & SF_BSS) != 0) ? "[u]" : "   ";
 
         printf(
             SHOW_SEGMENTS_FORMAT,
@@ -437,9 +437,9 @@ nextpass:
             
             if (Av[1][0])
             {
-                if (mne)
+                if (mne != NULL)
                 {
-                    if ((mne->flags & MF_IF) || (Ifstack->xtrue && Ifstack->acctrue))
+                    if ((mne->flags & MF_IF) != 0 || (Ifstack->xtrue && Ifstack->acctrue))
                         (*mne->vect)(Av[2], mne);
                 }
                 else
@@ -644,7 +644,7 @@ static void outlistfile(const char *comment)
     Extstr = NULL;
 }
 
-char *sftos(long val, int flags)
+char *sftos(long val, dasm_flag_t flags)
 {
     static char buf[MAX_SYM_LEN + 14];
     static char c;
@@ -698,7 +698,7 @@ char *sftos(long val, int flags)
         strcat( ptr, " " );
     }
     
-    if (flags & (SYM_MASREF|SYM_SET)) {
+    if ((flags & (SYM_MASREF|SYM_SET)) != 0) {
         strcat( ptr, ")" );
     }
     else {

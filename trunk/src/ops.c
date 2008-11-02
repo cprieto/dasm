@@ -66,6 +66,8 @@ void v_processor(char *str, MNEMONIC *dummy)
     static unsigned long Processor = 0;
     unsigned long PreviousProcessor = Processor;
 
+    assert(str != NULL);
+
     Processor = 0;
 
     if (strcmp(str,"6502") == 0) {
@@ -138,49 +140,51 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     short opidx;
     SYMBOL *symbase;
     unsigned int opsize;
+
+    assert(str != NULL);
+    assert(mne != NULL);
     
     Csegment->flags |= SF_REF;
     programlabel();
     symbase = eval(str, true);
     
-    if ( bTrace )
+    if (bTrace) {
         printf("PC: %04lx  MNEMONIC: %s  addrmode: %d  ", Csegment->org, mne->name, symbase->addrmode);
+    }
 
-    for (sym = symbase; sym; sym = sym->next)
-    {
-        if (sym->flags & SYM_UNKNOWN)
-        {
+    for (sym = symbase; sym != NULL; sym = sym->next) {
+        if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_MNEMONIC_NOT_RESOLVED;
         }
     }
     sym = symbase;
     
-    if (mne->flags & MF_IMOD)
-    {
-        if (sym->next != NULL)
-        {
+    if ((mne->flags & MF_IMOD) != 0) {
+        if (sym->next != NULL) {
             sym->addrmode = AM_BITMOD;
-            if ((mne->flags & MF_REL) && sym->next != NULL)
+            if ((mne->flags & MF_REL) != 0 && sym->next != NULL) {
                 sym->addrmode = AM_BITBRAMOD;
+            }
         }
     }
     addrmode = sym->addrmode;
-    if ((sym->flags & SYM_UNKNOWN) || sym->value >= 0x100)
+    if ((sym->flags & SYM_UNKNOWN) != 0 || sym->value >= 0x100) {
         opsize = 2;
-    else
-        opsize = (sym->value) ? 1 : 0;
+    }
+    else {
+        opsize = (sym->value != 0) ? 1 : 0;
+    }
     
     while (badcode(mne,addrmode) && convert_address_mode(addrmode) != 0) {
         addrmode = convert_address_mode(addrmode);
     }
     
-    if ( bTrace ) {
+    if (bTrace) {
         printf("mnemask: %08lx adrmode: %d  Cvt[am]: %d\n", mne->okmask, addrmode, convert_address_mode(addrmode));
     }
     
-    if (badcode(mne,addrmode))
-    {
+    if (badcode(mne,addrmode)) {
         /* [phf] removed
         char sBuffer[128];
         sprintf( sBuffer, "%s %s", mne->name, str );
@@ -191,12 +195,9 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         return;
     }
     
-    if (Mnext >= 0 && Mnext < NUMOC)            /*	Force	*/
-    {
+    if (Mnext >= 0 && Mnext < NUMOC) {           /*	Force	*/
         addrmode = Mnext;
-        
-        if (badcode(mne,addrmode))
-        {
+        if (badcode(mne,addrmode)) {
             /* [phf] removed
             asmerr( ERROR_ILLEGAL_FORCED_ADDRESSING_MODE, false, mne->name );
             */
@@ -206,19 +207,20 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         }
     }
     
-    if ( bTrace )
+    if (bTrace) {
         printf("final addrmode = %d\n", addrmode);
+    }
     
-    while (opsize > operand_size(addrmode))
-    {
+    while (opsize > operand_size(addrmode)) {
         if (convert_address_mode(addrmode) == 0 || badcode(mne,convert_address_mode(addrmode)))
         {
             /* [phf] removed
             char sBuffer[128];
             */
             
-            if (sym->flags & SYM_UNKNOWN)
+            if ((sym->flags & SYM_UNKNOWN) != 0) {
                 break;
+            }
             
             /* [phf] removed
             sprintf( sBuffer, "%s %s", mne->name, str );
@@ -231,13 +233,11 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     }
     opcode = mne->opcode[addrmode];
     opidx = 1 + (opcode > 0xFF);
-    if (opidx == 2)
-    {
+    if (opidx == 2) {
         Gen[0] = opcode >> 8;
         Gen[1] = opcode;
     }
-    else
-    {
+    else {
         Gen[0] = opcode;
     }
     
@@ -245,8 +245,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     {
     case AM_BITMOD:
         sym = symbase->next;
-        if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
-        {
+        if ((sym->flags & SYM_UNKNOWN) == 0 && sym->value >= 0x100) {
             /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
             */
@@ -255,43 +254,35 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         }
         Gen[opidx++] = sym->value;
         
-        if (!(symbase->flags & SYM_UNKNOWN))
-        {
-            if (symbase->value > 7)
-            {
+        if ((symbase->flags & SYM_UNKNOWN) == 0) {
+            if (symbase->value > 7) {
                 /* [phf] removed
                 asmerr( ERROR_ILLEGAL_BIT_SPECIFICATION, false, str );
                 */
                 error_fmt(ERROR_INVALID_BIT, str);
             }
-            else
-            {
+            else {
                 Gen[0] += symbase->value << 1;
             }
         }
         break;
         
     case AM_BITBRAMOD:
-        
-        if (!(symbase->flags & SYM_UNKNOWN))
-        {
-            if (symbase->value > 7)
-            {
+        if ((symbase->flags & SYM_UNKNOWN) == 0) {
+            if (symbase->value > 7) {
                 /* [phf] removed
                 asmerr( ERROR_ILLEGAL_BIT_SPECIFICATION, false, str );
                 */
                 error_fmt(ERROR_INVALID_BIT, str);
             }
-            else
-            {
+            else {
                 Gen[0] += symbase->value << 1;
             }
         }
         
         sym = symbase->next;
         
-        if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
-        {
+        if ((sym->flags & SYM_UNKNOWN) == 0 && sym->value >= 0x100) {
             /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
             */
@@ -307,17 +298,15 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         break;
         
     default:
-        if (operand_size(addrmode) > 0)
+        if (operand_size(addrmode) > 0) {
             Gen[opidx++] = sym->value;
-        if (operand_size(addrmode) == 2)
-        {
-            if (MsbOrder)
-            {
+        }
+        if (operand_size(addrmode) == 2) {
+            if (MsbOrder) {
                 Gen[opidx-1] = sym->value >> 8;
                 Gen[opidx++] = sym->value;
             }
-            else
-            {
+            else {
                 Gen[opidx++] = sym->value >> 8;
             }
         }
@@ -325,12 +314,10 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         break;
     }
     
-    if (mne->flags & MF_MASK)
+    if ((mne->flags & MF_MASK) != 0)
     {
-        if (sym)
-        {
-            if (!(sym->flags & SYM_UNKNOWN) && sym->value >= 0x100)
-            {
+        if (sym != NULL) {
+            if ((sym->flags & SYM_UNKNOWN) == 0 && sym->value >= 0x100) {
                 /* [phf] removed
                 asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
                 */
@@ -341,8 +328,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
             Gen[opidx] = sym->value;
             sym = sym->next;
         }
-        else
-        {
+        else {
             /* [phf] removed
             asmerr( ERROR_NOT_ENOUGH_ARGS, true, NULL );
             */
@@ -353,11 +339,11 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         ++opidx;
     }
     
-    if ((mne->flags & MF_REL) || addrmode == AM_REL)
+    if ((mne->flags & MF_REL) != 0 || addrmode == AM_REL)
     {
         ++opidx;		/*  to end of instruction   */
         
-        if (!sym)
+        if (sym == NULL)
         {
             /* [phf] removed
             asmerr( ERROR_NOT_ENOUGH_ARGS, true, NULL );
@@ -365,21 +351,18 @@ void v_mnemonic(char *str, MNEMONIC *mne)
             fatal_fmt(ERROR_INVALID_ARGS);
             /* TODO: fatal? really? how about str for details? */
         }
-        else if (!(sym->flags & SYM_UNKNOWN))
-        {
+        else if ((sym->flags & SYM_UNKNOWN) == 0) {
             long    pc;
             dasm_flag_t pcf;
             long    dest;
-            
+            /* TODO: this code seems to be in isPCKnown() as well */
             pc = (Csegment->flags & SF_RORG) ? Csegment->rorg : Csegment->org;
             pcf= (Csegment->flags & SF_RORG) ? Csegment->rflags : Csegment->flags;
             
-            if ((pcf & (SF_UNKNOWN|2)) == 0)
-            {
+            if ((pcf & (SF_UNKNOWN|2)) == 0) {
                 dest = sym->value - pc - opidx;
                 /* [phf] mnef8.c generate_branch() checks different range! */
-                if (dest >= 128 || dest < -128)
-                {
+                if (dest >= 128 || dest < -128) {
                     /* [phf] removed
                     char sBuffer[64];
                     sprintf( sBuffer, "%ld", dest );
@@ -389,8 +372,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
                     /* TODO: this doesn't say by how much it's out of range! */
                 }
             }
-            else
-            {
+            else {
                 /* Don't bother - we'll take another pass */
                 dest = 0;
             }
@@ -404,12 +386,14 @@ void v_mnemonic(char *str, MNEMONIC *mne)
 
 void v_trace(char *str, MNEMONIC *dummy)
 {
+    assert(str != NULL);
     bTrace = (str[1] == 'n');
 }
 
 void v_list(char *str, MNEMONIC *dummy)
 {
     programlabel();
+    assert(str != NULL);
     
     Glen = 0;		/*  Only so outlist() works */
 
@@ -440,6 +424,7 @@ void v_list(char *str, MNEMONIC *dummy)
 static char *
 getfilename(char *str)
 {
+    assert(str != NULL);
     if (*str == '\"') {
         char	*buf;
         
@@ -459,7 +444,9 @@ void
 v_include(char *str, MNEMONIC *dummy)
 {
     char *buf;
-    
+
+    assert(str != NULL);
+
     programlabel();
     buf = getfilename(str);
     
@@ -475,7 +462,9 @@ v_incbin(char *str, MNEMONIC *dummy)
 {
     char *buf;
     FILE *binfile;
-    
+
+    assert(str != NULL);
+
     programlabel();
     buf = getfilename(str);
     
@@ -516,6 +505,8 @@ void
 v_seg(char *str, MNEMONIC *dummy)
 {
     SEGMENT *seg;
+
+    assert(str != NULL);
     
     for (seg = Seglist; seg != NULL; seg = seg->next) {
         if (strcmp(str, seg->name) == 0) {
@@ -539,10 +530,12 @@ v_hex(char *str, MNEMONIC *dummy)
 {
     int i;
     int result;
-    
+
+    assert(str != NULL);
+
     programlabel();
     Glen = 0;
-    for (i = 0; str[i]; ++i) {
+    for (i = 0; str[i] != '\0'; ++i) {
         if (str[i] == ' ')
             continue;
         result = (gethexdig(str[i]) << 4) + gethexdig(str[i+1]);
@@ -607,7 +600,10 @@ v_dc(char *str, MNEMONIC *mne)
     SYMBOL *tmp;
     unsigned long  value;
     const char *macstr = NULL; /* "might be used uninitialised" */
-    char vmode = 0;
+    bool vmode = false;
+
+    assert(str != NULL);
+    assert(mne != NULL);
     
     Glen = 0;
     programlabel();
@@ -641,7 +637,7 @@ v_dc(char *str, MNEMONIC *mne)
 
     if (mne->name[1] == 'v') {
         int i;
-        vmode = 1;
+        vmode = true;
         for (i = 0; str[i] && str[i] != ' '; ++i);
         tmp = findsymbol(str, i);
         str += i;
@@ -649,7 +645,7 @@ v_dc(char *str, MNEMONIC *mne)
             (void) puts("EQM label not found");
             return;
         }
-        if (tmp->flags & SYM_MACRO) {
+        if ((tmp->flags & SYM_MACRO) != 0) {
 //            macstr = (void *)tmp->string;
             macstr = tmp->string;
         }
@@ -662,18 +658,18 @@ v_dc(char *str, MNEMONIC *mne)
     sym = eval(str, false);
     for (; sym; sym = sym->next) {
         value = sym->value;
-        if (sym->flags & SYM_UNKNOWN) {
+        if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_DC_NOT_RESOVED;
         }
-        if (sym->flags & SYM_STRING) {
+        if ((sym->flags & SYM_STRING) != 0) {
             const char *ptr = sym->string;
             while ((value = *ptr) != 0) {
                 if (vmode) {
                     setspecial(value, 0);
                     tmp = eval(macstr, false);
                     value = tmp->value;
-                    if (tmp->flags & SYM_UNKNOWN) {
+                    if ((tmp->flags & SYM_UNKNOWN) != 0) {
                         ++Redo;
                         Redo_why |= REASON_DV_NOT_RESOLVED_PROBABLY;
                     }
@@ -720,7 +716,7 @@ v_dc(char *str, MNEMONIC *mne)
                 setspecial(value, sym->flags);
                 tmp = eval(macstr, false);
                 value = tmp->value;
-                if (tmp->flags & SYM_UNKNOWN) {
+                if ((tmp->flags & SYM_UNKNOWN) != 0) {
                     ++Redo;
                     Redo_why |= REASON_DV_NOT_RESOLVED_COULD;
                 }
@@ -772,22 +768,26 @@ v_ds(char *str, MNEMONIC *dummy)
     SYMBOL *sym;
     int mult = 1;
     long filler = 0;
+
+    assert(str != NULL);
     
-    if (Mnext == AM_WORD)
+    if (Mnext == AM_WORD) {
         mult = 2;
-    if (Mnext == AM_LONG)
+    }
+    else if (Mnext == AM_LONG) {
         mult = 4;
+    }
     programlabel();
     if ((sym = eval(str, false)) != NULL) {
-        if (sym->next)
+        if (sym->next != NULL) {
             filler = sym->next->value;
-        if (sym->flags & SYM_UNKNOWN) {
+        }
+        if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_DS_NOT_RESOLVED;
         }
-        else
-        {
-            if (sym->next && sym->next->flags & SYM_UNKNOWN) {
+        else {
+            if (sym->next != NULL && (sym->next->flags & SYM_UNKNOWN) != 0) {
                 ++Redo;
                 Redo_why |= REASON_DS_NOT_RESOLVED;
             }
@@ -795,31 +795,38 @@ v_ds(char *str, MNEMONIC *dummy)
         }
         FreeSymbolList(sym);
     }
+    /* TODO: what if eval returns NULL? */
+    assert(sym != NULL);
 }
 
 void
 v_org(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
+
+    assert(str != NULL);
     
     sym = eval(str, false);
+    assert(sym != NULL);
+
     Csegment->org = sym->value;
     
-    if (sym->flags & SYM_UNKNOWN)
+    if ((sym->flags & SYM_UNKNOWN) != 0) {
         Csegment->flags |= SYM_UNKNOWN;
-    else
+    }
+    else {
         Csegment->flags &= ~SYM_UNKNOWN;
-    
-    if (Csegment->initflags & SYM_UNKNOWN)
-    {
+    }
+
+    if ((Csegment->initflags & SYM_UNKNOWN) != 0) {
         Csegment->initorg = sym->value;
         Csegment->initflags = sym->flags;
     }
-    
-    if (sym->next)
+
+    if (sym->next != NULL)
     {
         OrgFill = sym->next->value;
-        if (sym->next->flags & SYM_UNKNOWN)
+        if ((sym->next->flags & SYM_UNKNOWN) != 0)
         {
             /* [phf] removed
             asmerr( ERROR_VALUE_UNDEFINED, true, NULL );
@@ -837,15 +844,20 @@ void
 v_rorg(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
+
+    assert(str != NULL);
+    assert(sym != NULL);
     
     Csegment->flags |= SF_RORG;
     if (sym->addrmode != AM_IMP) {
         Csegment->rorg = sym->value;
-        if (sym->flags & SYM_UNKNOWN)
+        if ((sym->flags & SYM_UNKNOWN) != 0) {
             Csegment->rflags |= SYM_UNKNOWN;
-        else
+        }
+        else {
             Csegment->rflags &= ~SYM_UNKNOWN;
-        if (Csegment->initrflags & SYM_UNKNOWN) {
+        }
+        if ((Csegment->initrflags & SYM_UNKNOWN) != 0) {
             Csegment->initrorg = sym->value;
             Csegment->initrflags = sym->flags;
         }
@@ -869,44 +881,48 @@ v_align(char *str, MNEMONIC *dummy)
     /* was "unsigned char rorg = Csegment->flags & SF_RORG;" and it
        might just be used as a bool, not really flags... [phf] */
     dasm_flag_t rorg = Csegment->flags & SF_RORG;
+
+    assert(str != NULL);
+    assert(sym != NULL);
     
-    if (rorg)
+    if (rorg) {
         Csegment->rflags |= SF_REF;
-    else
+    }
+    else {
         Csegment->flags |= SF_REF;
-    if (sym->next) {
-        if (sym->next->flags & SYM_UNKNOWN) {
+    }
+    if (sym->next != NULL) {
+        if ((sym->next->flags & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_ALIGN_NOT_RESOLVED;
         }
-        else
-        {
+        else {
             fill = sym->next->value;
         }
     }
+    /* TODO: major code duplication in next if/else */
     if (rorg) {
-        if ((Csegment->rflags | sym->flags) & SYM_UNKNOWN) {
+        if (((Csegment->rflags | sym->flags) & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN;
         }
-        else
-        {
+        else {
             long n = sym->value - (Csegment->rorg % sym->value);
-            if (n != sym->value)
+            if (n != sym->value) {
                 genfill(fill, n, 1);
+            }
         }
     }
-    else
-    {
-        if ((Csegment->flags | sym->flags) & SYM_UNKNOWN) {
+    else {
+        if (((Csegment->flags | sym->flags) & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN;
         }
-        else
-        {
+        else {
             long n = sym->value - (Csegment->org % sym->value);
-            if (n != sym->value)
+            if (n != sym->value) {
                 genfill(fill, n, 1);
+            }
         }
     }
     FreeSymbolList(sym);
@@ -927,7 +943,8 @@ v_equ(char *str, MNEMONIC *dummy)
     SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
 
-    assert (sym != NULL);
+    assert(str != NULL);
+    assert(sym != NULL);
     
     /*
     * If we encounter a line of the form
@@ -997,7 +1014,6 @@ v_equ(char *str, MNEMONIC *dummy)
         Gen[Glen++] = v;
     }
     
-    
     FreeSymbolList(sym);
 }
 
@@ -1006,6 +1022,8 @@ v_eqm(char *str, MNEMONIC *dummy)
 {
     SYMBOL *lab;
     size_t len = strlen(Av[0]);
+
+    assert(str != NULL);
     
     if ((lab = findsymbol(Av[0], len)) != NULL) {
         if ((lab->flags & SYM_STRING) != 0) {
@@ -1028,10 +1046,13 @@ v_echo(char *str, MNEMONIC *dummy)
     SYMBOL *s;
     char buf[256];
     int len;
+
+    assert(str != NULL);
+    assert(sym != NULL); /* maybe not needed, we check NULL below? [phf] */
     
     for (s = sym; s != NULL; s = s->next) {
-        if (!(s->flags & SYM_UNKNOWN)) {
-            if (s->flags & (SYM_MACRO|SYM_STRING)) {
+        if ((s->flags & SYM_UNKNOWN) == 0) {
+            if ((s->flags & (SYM_MACRO|SYM_STRING)) != 0) {
                 len = snprintf(buf, sizeof(buf), "%s", s->string);
                 assert(len < (int)sizeof(buf));
             }
@@ -1055,6 +1076,9 @@ void v_set(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
+
+    assert(str != NULL);
+    assert(sym != NULL);
     
     lab = findsymbol(Av[0], strlen(Av[0]));
     if (lab == NULL) {
@@ -1074,6 +1098,9 @@ v_execmac(char *str, MACRO *mac)
     STRLIST *base;
     STRLIST **psl, *sl;
     char *s1;
+
+    assert(str != NULL);
+    assert(mac != NULL);
     
     programlabel();
     
@@ -1140,11 +1167,13 @@ v_endm(char *str, MNEMONIC *dummy)
 {
     INCFILE *inc = pIncfile;
     STRLIST *args, *an;
+
+    assert(inc != NULL);
     
     /* programlabel(); contrary to documentation */
     if ((inc->flags & INF_MACRO) != 0) {
         --Mlevel;
-        for (args = inc->args; args; args = an) {
+        for (args = inc->args; args != NULL; args = an) {
             an = args->next;
             free(args);
         }
@@ -1169,9 +1198,11 @@ void
 v_ifconst(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
+    assert(str != NULL);
     
     programlabel();
     sym = eval(str, false);
+    assert(sym != NULL);
     pushif(sym->flags == 0);
     FreeSymbolList(sym);
 }
@@ -1180,9 +1211,11 @@ void
 v_ifnconst(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
+    assert(str != NULL);
     
     programlabel();
     sym = eval(str, false);
+    assert(sym != NULL);
     pushif(sym->flags != 0);
     FreeSymbolList(sym);
 }
@@ -1191,6 +1224,7 @@ void
 v_if(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
+    assert(str != NULL);
     
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         pushif(0);
@@ -1198,7 +1232,8 @@ v_if(char *str, MNEMONIC *dummy)
     }
     programlabel();
     sym = eval(str, false);
-    if (sym->flags) {
+    assert(sym != NULL);
+    if (sym->flags != 0) {
         ++Redo;
         Redo_why |= REASON_IF_NOT_RESOLVED;
         pushif(0);
@@ -1207,8 +1242,7 @@ v_if(char *str, MNEMONIC *dummy)
         Redo_if |= 1;
         
     }
-    else
-    {
+    else {
         pushif(!!sym->value);
     }
     FreeSymbolList(sym);
@@ -1216,7 +1250,7 @@ v_if(char *str, MNEMONIC *dummy)
 
 void v_else(char *str, MNEMONIC *dummy)
 {
-    if (Ifstack->acctrue && !(Ifstack->flags & IFF_BASE)) {
+    if (Ifstack->acctrue && (Ifstack->flags & IFF_BASE) == 0) {
         programlabel();
         Ifstack->xtrue = !Ifstack->xtrue;
     }
@@ -1226,15 +1260,16 @@ void
 v_endif(char *str, MNEMONIC *dummy)
 {
     IFSTACK *ifs = Ifstack;
+    assert(ifs != NULL);
     
-    if (!(ifs->flags & IFF_BASE)) {
-        if (ifs->acctrue)
+    if ((ifs->flags & IFF_BASE) == 0) {
+        if (ifs->acctrue) {
             programlabel();
+        }
         if (ifs->file != pIncfile) {
             (void) puts("too many endif's");
         }
-        else
-        {
+        else {
             Ifstack = ifs->next;
             free(ifs);
         }
@@ -1245,6 +1280,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
 {
     REPLOOP *rp;
     SYMBOL *sym;
+    assert(str != NULL);
     
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         pushif(0);
@@ -1252,6 +1288,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
     }
     programlabel();
     sym = eval(str, false);
+    assert(sym != NULL);
     if (sym->value == 0) {
         pushif(0);
         FreeSymbolList(sym);
@@ -1300,7 +1337,7 @@ v_repend(char *str, MNEMONIC *dummy)
         v_endif(NULL,NULL);
         return;
     }
-    if (Reploop && Reploop->file == pIncfile) {
+    if (Reploop != NULL && Reploop->file == pIncfile) {
         if (Reploop->flags == 0 && --Reploop->count) {
             if ((pIncfile->flags & INF_MACRO) != 0) {
                 pIncfile->strlist = (STRLIST *)Reploop->seek;
@@ -1328,10 +1365,11 @@ v_incdir(char *str, MNEMONIC *dummy)
     STRLIST **tail;
     char *buf;
     bool found = false;
+    assert(str != NULL);
     
     buf = getfilename(str);
     
-    for (tail = &incdirlist; *tail; tail = &(*tail)->next) {
+    for (tail = &incdirlist; *tail != NULL; tail = &(*tail)->next) {
         if (strcmp((*tail)->buf, buf) == 0) {
             found = true;
         }
@@ -1423,7 +1461,7 @@ generate(void)
     
     if (Redo == 0)
     {
-        if (!(Csegment->flags & SF_BSS))
+        if ((Csegment->flags & SF_BSS) == 0)
         {
             for (i = Glen - 1; i >= 0; --i)
                 CheckSum += Gen[i];
@@ -1431,7 +1469,7 @@ generate(void)
             if (Fisclear)
             {
                 Fisclear = false;
-                if (Csegment->flags & SF_UNKNOWN)
+                if ((Csegment->flags & SF_UNKNOWN) != 0)
                 {
                     ++Redo;
                     Redo_why |= REASON_OBSCURE;
@@ -1518,8 +1556,9 @@ generate(void)
     
     Csegment->org += Glen;
     
-    if (Csegment->flags & SF_RORG)
+    if ((Csegment->flags & SF_RORG) != 0) {
         Csegment->rorg += Glen;
+    }
 }
 
 void closegenerate(void)

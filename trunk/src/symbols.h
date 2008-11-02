@@ -30,7 +30,7 @@
 
 #include <stdbool.h>
 
-void  setspecial(int value, int flags);
+void  setspecial(int value, dasm_flag_t flags);
 SYMBOL *allocsymbol(void);
 SYMBOL *findsymbol(const char *str, size_t len);
 SYMBOL *CreateSymbol(const char *str, size_t len);
