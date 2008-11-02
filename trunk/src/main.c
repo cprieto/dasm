@@ -61,7 +61,6 @@ static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
 
 static char     *Extstr;
-/*unsigned char     Listing = 1;*/
 static int     pass;
 
 static bool F_ListAllPasses = false;

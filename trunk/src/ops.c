@@ -368,7 +368,7 @@ void v_mnemonic(char *str, MNEMONIC *mne)
         else if (!(sym->flags & SYM_UNKNOWN))
         {
             long    pc;
-            unsigned char pcf;
+            dasm_flag_t pcf;
             long    dest;
             
             pc = (Csegment->flags & SF_RORG) ? Csegment->rorg : Csegment->org;
@@ -866,7 +866,9 @@ v_align(char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     unsigned char fill = 0;
-    unsigned char rorg = Csegment->flags & SF_RORG;
+    /* was "unsigned char rorg = Csegment->flags & SF_RORG;" and it
+       might just be used as a bool, not really flags... [phf] */
+    dasm_flag_t rorg = Csegment->flags & SF_RORG;
     
     if (rorg)
         Csegment->rflags |= SF_REF;
