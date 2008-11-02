@@ -387,7 +387,7 @@ extern unsigned long  CheckSum;
 
 /* main.c */
 void    findext(char *str);
-char   *sftos(long val, int flags);
+char   *sftos(long val, dasm_flag_t flags);
 void    rmnode(void **base, size_t bytes);
 void    addhashtable(MNEMONIC *mne);
 void    pushinclude(char *str);

@@ -136,18 +136,21 @@ static void emit_opcode3(unsigned char byte0, unsigned char byte1, unsigned char
  * result : zero = current program counter is unknown
  *          nonzero = current program counter is known
  */
-static int isPCKnown(void) {
-    unsigned char pcf;
-    pcf= (Csegment->flags & SF_RORG) ? Csegment->rflags : Csegment->flags;
+static int isPCKnown(void)
+{
+    dasm_flag_t pcf;
+    pcf = ((Csegment->flags & SF_RORG) != 0) ? Csegment->rflags : Csegment->flags;
     return ((pcf & (SF_UNKNOWN|2)) == 0) ? 1 : 0;
+    /* TODO: can probably just return expression as bool? */
 }
 
 
 /*
  * returns the current program counter
  */
-static long getPC(void) {
-    return (Csegment->flags & SF_RORG) ? Csegment->rorg : Csegment->org;
+static long getPC(void)
+{
+    return ((Csegment->flags & SF_RORG) != 0) ? Csegment->rorg : Csegment->org;
 }
 
 
@@ -174,7 +177,7 @@ static int parse_value(char *str, unsigned long *value) {
         */
         error_fmt(ERROR_SYNTAX_ONE, str); /* TODO: fatal? since true passed? */
     }
-    else if (sym->flags & SYM_UNKNOWN) {
+    else if ((sym->flags & SYM_UNKNOWN) != 0) {
         ++Redo;
         Redo_why |= REASON_MNEMONIC_NOT_RESOLVED;
         result = 1;

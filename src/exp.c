@@ -68,7 +68,7 @@ typedef void (*opfunc_t)();
 
 #endif
 
-static void stackarg(long val, int flags, /*@null@*/ const char *ptr1);
+static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1);
 
 static void doop(opfunc_t, int pri);
 static void evaltop(void);
@@ -587,7 +587,7 @@ static void evaltop(void)
     }
 }
 
-static void stackarg(long val, int flags, /*@null@*/ const char *ptr1)
+static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
 {
     char *str = NULL;
     
@@ -595,7 +595,7 @@ static void stackarg(long val, int flags, /*@null@*/ const char *ptr1)
         printf("stackarg %ld (@%d)\n", val, Argi);
     
     Lastwasop = false;
-    if (flags & SYM_STRING)
+    if ((flags & SYM_STRING) != 0)
     {
         /*
            Why unsigned char? Looks like we're converting to
