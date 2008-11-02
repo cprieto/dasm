@@ -20,4 +20,4 @@ test:
 clean:
 	(cd atari2600; make clean; cd ..)
 	(cd channel-f; make clean; cd ..)
-	rm -rf *.bin *.hex
+	rm -rf *.bin *.hex *.valgrind
