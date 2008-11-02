@@ -81,6 +81,12 @@ enum FORMAT
     FORMAT_MAX
 };
 
+/* to get a handle on the type used for flags; originally
+   DASM used "unsigned char" for all of these, leading to
+   load of warnings when integer arithmetic/assignments
+   were done [phf] */
+typedef unsigned char dasm_flag_t;
+
 /* ??? [phf] */
 #define MAX_SYM_LEN 1024
 /* maximum length genfill() will generate */
@@ -199,7 +205,7 @@ struct _MNEMONIC
     /* actual name */
     const char *name;
     /* special flags */
-    unsigned char flags;
+    dasm_flag_t flags;
     /* addressing modes ok for this mnemonic? see badcode() macro [phf] */
     unsigned long okmask;
     /* hex codes, byte or word (>xFF) opcodes */
@@ -215,7 +221,7 @@ struct _MACRO
     MACRO *next;
     void (*vect)(char *, MACRO *);
     char *name;
-    unsigned char flags;
+    dasm_flag_t flags;
     STRLIST *strlist;
 };
 
@@ -234,7 +240,7 @@ struct _INCFILE
     /* line number in file */
     unsigned long lineno;
     /* flags (macro) */
-    unsigned char flags;
+    dasm_flag_t flags;
 
     /* Only if Macro */
 
@@ -264,7 +270,7 @@ struct _REPLOOP
     /* which include file are we in */
     INCFILE *file;
     /* TODO: ??? [phf] */
-    unsigned char flags;
+    dasm_flag_t flags;
 };
 
 #define IFF_UNKNOWN 0x01    /*      value unknown        */
@@ -278,7 +284,7 @@ struct _IFSTACK
     /* which include file are we in */
     INCFILE *file;
     /* TODO: ??? [phf] */
-    unsigned char flags;
+    dasm_flag_t flags;
     /* 1 if true, 0 if false */
     bool xtrue;
     /* accumulatively true (not incl this one) */
@@ -298,9 +304,9 @@ struct _SEGMENT
     /* name of segment */
     char *name;
     /* for ORG */
-    unsigned char flags;
+    dasm_flag_t flags;
     /* for RORG */
-    unsigned char rflags;
+    dasm_flag_t rflags;
     /* current org */
     unsigned long org;
     /* current rorg */
@@ -308,8 +314,8 @@ struct _SEGMENT
     /* TODO: ??? all these ??? [phf] */
     unsigned long initorg;
     unsigned long initrorg;
-    unsigned char initflags;
-    unsigned char initrflags;
+    dasm_flag_t initflags;
+    dasm_flag_t initrflags;
 };
 
 #define SYM_UNKNOWN 0x01    /*      value unknown     */
@@ -329,7 +335,7 @@ struct _SYMBOL
     /* if symbol is actually a string */
     char *string;
     /* flags */
-    unsigned char flags;
+    dasm_flag_t flags;
     /* addressing mode (expressions) */
     address_mode_t addrmode;
     /* current value, never EVER change this to unsigned! [phf] */
@@ -357,7 +363,6 @@ extern unsigned int    Mlevel;
 extern bool bTrace;
 extern bool Xdebug;
 extern bool MsbOrder;
-extern unsigned char    Outputformat;
 extern unsigned long    Redo_why;
 
 extern int Redo;
@@ -381,7 +386,6 @@ extern bool    ListMode;
 extern unsigned long  CheckSum;
 
 /* main.c */
-/*extern unsigned char Listing;*/
 void    findext(char *str);
 char   *sftos(long val, int flags);
 void    rmnode(void **base, size_t bytes);
