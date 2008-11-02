@@ -90,6 +90,9 @@ clean:
 cscope:
 	ls *.h *.c >cscope.files
 
+splint:
+	-splint $(SRCS) | grep "Finished"
+
 # target to test compiles when neither __BSD__ nor __APPLE__ are
 # defined
 nobsd:
