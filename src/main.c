@@ -489,9 +489,7 @@ nextpass:
             }
         }
     }
-    
-    
-    
+
     if (F_verbose >= 1) {
         ShowSegments();
     }
@@ -950,6 +948,14 @@ void findext(char *str)
 
 void rmnode(void **base,  /*@unused@*/ size_t bytes)
 {
+    /* [phf] base is a pointer to a pointer to a struct,
+       the address of a pointer; node is the pointer
+       to the struct itself, and if that pointer is NULL
+       we do nothing; if it's not NULL, we overwrite the
+       original pointer (the variable whose address we
+       were passed) with the content of the first element
+       of the struct (the next field?); then we free the
+       original struct we were pointing to; tricky! */
     void *node;
     
     if ((node = *base) != NULL) {
@@ -1209,6 +1215,20 @@ static void exit_handler(void)
     /* free all small allocations we ever made */
     small_free_all();
 
+    /*
+        Valgrind found a memory leak, apparently we never free
+        the first IFSTACK we allocate; possible that the leak
+        has been around for 20 years. I'd like to move this
+        earlier, maybe into MainShadow() where the IFSTACK is
+        zero_malloc()ed, but that lead to segmentation faults.
+        Here it makes valgrind happy and doesn't seem to lead
+        to other problems. A *real* fix will probably have to
+        wait until most of dasm is cleaned up. [phf, 2008/11/01]
+    */
+    assert(Ifstack != NULL); // one left to free
+    rmnode((void **)&Ifstack, sizeof(IFSTACK)); // free it
+    assert(Ifstack == NULL); // and we're NULL
+    
     /* TODO: more cleanup actions here? */
 
     debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
