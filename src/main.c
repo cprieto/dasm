@@ -614,7 +614,7 @@ static void outlistfile(const char *comment)
     assert(FI_listfile != NULL);
 
     xtrue = (Ifstack->xtrue && Ifstack->acctrue) ? ' ' : '-';
-    c = (Pflags & SF_BSS) ? 'U' : ' ';
+    c = ((Pflags & SF_BSS) != 0) ? 'U' : ' ';
     ptr = Extstr;
     dot = "";
     if (ptr)

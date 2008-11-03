@@ -379,7 +379,8 @@ extern const char    *F_outfile;
 /*@null@*/ extern FILE    *FI_listfile;
 extern FILE    *FI_temp;
 extern bool Fisclear;
-extern unsigned long    Plab, Pflags;
+extern unsigned long Plab;
+extern dasm_flag_t Pflags;
 extern char    Inclevel;
 extern bool    ListMode;
 
