@@ -78,7 +78,8 @@ const char	*F_outfile = "a.out";
 /*@null@*/ FILE	*FI_listfile;
 FILE	*FI_temp;
 bool Fisclear;
-unsigned long	 Plab, Pflags;
+unsigned long Plab;
+dasm_flag_t Pflags;
 
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
 static address_mode_t Cvt[]	    = { 0, 2, 0, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0 };
