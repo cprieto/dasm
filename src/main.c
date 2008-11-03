@@ -196,6 +196,32 @@ static void ShowSegments(void)
     printf( "\n" );
 }
 
+static void print_usage(void)
+{
+    (void) puts(DASM_ID);
+    DASM_PRINT_LEGAL
+    (void) puts("");
+    (void) puts("Usage: dasm sourcefile [options]");
+    (void) puts("");
+    (void) puts("-f#      output format 1-3 (default 1)");
+    (void) puts("-oname   output file name (else a.out)");
+    (void) puts("-lname   list file name (else none generated)");
+    (void) puts("-Lname   list file, containing all passes");
+    (void) puts("-sname   symbol dump file name (else none generated)");
+    (void) puts("-v#      verboseness 0-4 (default 0)");
+    (void) puts("-d#      debug mode (for developers)");
+    (void) puts("-Dsymbol              define symbol, set to 0");
+    (void) puts("-Dsymbol=expression   define symbol, set to expression");
+    (void) puts("-Msymbol=expression   define symbol using EQM (same as -D)");
+    (void) puts("-Idir    search directory for INCLUDE and INCBIN");
+    (void) puts("-p#      maximum number of passes");
+    (void) puts("-P#      maximum number of passes, with fewer checks");
+    (void) puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
+    (void) puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
+    (void) puts("");
+    DASM_PRINT_BUGS
+}
+
 static int MainShadow(int ac, char **av, bool *pbTableSort )
 {
     
@@ -220,29 +246,7 @@ static int MainShadow(int ac, char **av, bool *pbTableSort )
     {
 
 fail:
-    (void) puts(DASM_ID);
-    DASM_PRINT_LEGAL
-    (void) puts("");
-    (void) puts("Usage: dasm sourcefile [options]");
-    (void) puts("");
-    (void) puts("-f#      output format 1-3 (default 1)");
-    (void) puts("-oname   output file name (else a.out)");
-    (void) puts("-lname   list file name (else none generated)");
-    (void) puts("-Lname   list file, containing all passes");
-    (void) puts("-sname   symbol dump file name (else none generated)");
-    (void) puts("-v#      verboseness 0-4 (default 0)");
-    (void) puts("-d#      debug mode (for developers)");
-    (void) puts("-Dsymbol              define symbol, set to 0");
-    (void) puts("-Dsymbol=expression   define symbol, set to expression");
-    (void) puts("-Msymbol=expression   define symbol using EQM (same as -D)");
-    (void) puts("-Idir    search directory for INCLUDE and INCBIN");
-    (void) puts("-p#      maximum number of passes");
-    (void) puts("-P#      maximum number of passes, with fewer checks");
-    (void) puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
-    (void) puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
-    (void) puts("");
-    DASM_PRINT_BUGS
-
+    print_usage();
     fatal_fmt("Check command-line format.");
 //    return ERROR_COMMAND_LINE;
     return EXIT_FAILURE; // needed for rest of code to work? [phf]
@@ -1223,10 +1227,15 @@ static void exit_handler(void)
         Here it makes valgrind happy and doesn't seem to lead
         to other problems. A *real* fix will probably have to
         wait until most of dasm is cleaned up. [phf, 2008/11/01]
+
+        Note that an IFSTACK is only allocated when we actually
+        read some source, so I had to switch from an assert to
+        a conditional here. [phf, 2008/11/02]
     */
-    assert(Ifstack != NULL); // one left to free
-    rmnode((void **)&Ifstack, sizeof(IFSTACK)); // free it
-    assert(Ifstack == NULL); // and we're NULL
+    if (Ifstack != NULL) { // one left to free
+        rmnode((void **)&Ifstack, sizeof(IFSTACK)); // free it
+        assert(Ifstack == NULL); // and we're NULL
+    }
     
     /* TODO: more cleanup actions here? */
 
