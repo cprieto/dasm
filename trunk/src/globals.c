@@ -69,9 +69,6 @@ unsigned long	CheckSum;	    /*	output data checksum		*/
 
 int F_format = FORMAT_DEFAULT;
 
-/* -T option [phf] */
-sortmode_t F_sortmode = SORTMODE_DEFAULT;
-
 int F_verbose;
 const char	*F_outfile = "a.out";
 /*@null@*/ char	*F_listfile;

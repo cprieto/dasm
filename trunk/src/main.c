@@ -222,11 +222,8 @@ static void print_usage(void)
     DASM_PRINT_BUGS
 }
 
-static int MainShadow(int ac, char **av, bool *pbTableSort )
+static int MainShadow(int ac, char **av)
 {
-    
-    
-    
 //    int nError = ERROR_NONE;
     bool bDoAllPasses = false;
     int nMaxPasses = 10;
@@ -273,17 +270,17 @@ fail:
                 break;
             }
 
-            case 'T':
-                F_sortmode = atoi(str);
-                if (/*F_sortmode < SORTMODE_DEFAULT
-                   ||*/ F_sortmode >= SORTMODE_MAX )
-                {
+            case 'T': {
+                int mode = atoi(str);
+                if (valid_sort_mode(mode)) {
+                    set_sort_mode(mode);
+                }
+                else {
                     panic_fmt("Invalid sorting mode for -T option, must be 0 or 1");
                 }
-                /* TODO: refactor into regular configuration [phf] */
-                *pbTableSort = (F_sortmode != SORTMODE_DEFAULT);
                 break;
-                
+            }
+
             case 'd':
                 /* TODO: change like -T to allow 0 or 1 only (for now) [phf] */
                 Xdebug = atoi(str) != 0;
@@ -499,7 +496,7 @@ nextpass:
     
     if (F_verbose >= 3) {
         if (Redo == 0 || F_verbose == 4) {
-            ShowSymbols( stdout, *pbTableSort );
+            ShowSymbols(stdout);
         }
         ShowUnresolvedSymbols();
     }
@@ -1244,8 +1241,6 @@ static void exit_handler(void)
 
 int main(int argc, char **argv)
 {
-    bool bTableSort = false;
-
     setprogname(argv[0]);
 
     if (atexit(exit_handler) != 0)
@@ -1253,7 +1248,7 @@ int main(int argc, char **argv)
         panic_fmt("Could not install exit handler!");
     }
 
-    MainShadow(argc, argv, &bTableSort);
+    MainShadow(argc, argv);
 
 #if 0
     if (nError)
@@ -1262,7 +1257,7 @@ int main(int argc, char **argv)
     }
 #endif
     
-    DumpSymbolTable(bTableSort);
+    DumpSymbolTable();
 
     if (number_of_errors() > 0) {
       return EXIT_FAILURE;
