@@ -38,10 +38,36 @@ void FreeSymbolList(SYMBOL *sym);
 void programlabel(void);
 void debug_symbol_hash_collisions(void);
 void clearrefs(void);
-void ShowSymbols(FILE *file, bool bTableSort);
+void ShowSymbols(FILE *file);
 size_t ShowUnresolvedSymbols(void);
 void set_symbol_file_name(const char *name);
-void DumpSymbolTable(bool bTableSort);
+void DumpSymbolTable(void);
+
+/**
+ * @brief Sort mode for symbol table for -T option.
+ */
+typedef enum
+{
+    /* actual sort modes */
+    SORTMODE_ALPHA,
+    SORTMODE_ADDRESS,
+
+    /* meta data */
+    SORTMODE_MIN = SORTMODE_ALPHA,
+    SORTMODE_DEFAULT = SORTMODE_ALPHA,
+    SORTMODE_MAX = SORTMODE_ADDRESS
+}
+sortmode_t;
+
+/**
+ * @brief Valid sort mode for -T option?
+ */
+bool valid_sort_mode(int mode);
+
+/**
+ * @brief Set sort mode, -T option.
+ */
+void set_sort_mode(sortmode_t mode);
 
 #endif /* _DASM_SYMBOLS_H */
 

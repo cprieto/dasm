@@ -39,6 +39,9 @@ SVNTAG("$Id$");
 #define SHASHSIZE   1024
 #define SHASHAND    (SHASHSIZE-1) /*0x03FF*/
 
+/* -T option [phf] */
+static sortmode_t F_sortmode = SORTMODE_DEFAULT;
+
 /*symbol hash table */
 static SYMBOL *SHash[SHASHSIZE];
 
@@ -49,6 +52,17 @@ static SYMBOL specchk;
 /* Name of symbol file if we should write one. */
 /*@null@*/
 static const char *symbol_file_name = NULL;
+
+bool valid_sort_mode(int mode)
+{
+    return (SORTMODE_MIN <= mode && mode <= SORTMODE_MAX);
+}
+
+void set_sort_mode(sortmode_t mode)
+{
+    assert(valid_sort_mode(mode));
+    F_sortmode = mode;
+}
 
 static unsigned int hash_symbol(const char *str, size_t len)
 {
@@ -420,9 +434,8 @@ static int CompareAddress( const void *arg1, const void *arg2 )
 
 /*
   Display symbol table. Sorted if enough memory, unsorted otherwise.
-  bTableSort true -> by address, false -> by name [phf]
 */
-void ShowSymbols(FILE *file, bool bTableSort)
+void ShowSymbols(FILE *file)
 {
     SYMBOL **symArray;
     SYMBOL *sym;
@@ -460,15 +473,18 @@ void ShowSymbols(FILE *file, bool bTableSort)
             }
         }
                 
-        if ( bTableSort ) {
+        if (F_sortmode == SORTMODE_ADDRESS) {
             /* Sort via address */
             fprintf(file, " (sorted by address)\n");
             qsort(symArray, nPtr, sizeof(SYMBOL*), CompareAddress);
         }
-        else {
+        else if (F_sortmode == SORTMODE_ALPHA) {
             /* Sort via name */
             fprintf(file, " (sorted by symbol)\n");
             qsort(symArray, nPtr, sizeof(SYMBOL*), CompareAlpha);
+        }
+        else {
+            assert(false);
         }
                 
         /* Now display sorted list */
@@ -500,13 +516,13 @@ void set_symbol_file_name(const char *name)
     symbol_file_name = name;
 }
 
-void DumpSymbolTable(bool bTableSort)
+void DumpSymbolTable(void)
 {
     if (symbol_file_name != NULL)
     {
         FILE *fi = fopen(symbol_file_name, "w");
         if (fi != NULL) {
-            ShowSymbols(fi, bTableSort);
+            ShowSymbols(fi);
             if (fclose(fi) != 0) {
                 warning_fmt("Problem closing symbol file '%s'.\n",
                             symbol_file_name);
