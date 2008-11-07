@@ -65,17 +65,64 @@ int main(int argc, char *argv[])
     union align { long l; void *p; void (*fp)(void); };
     const size_t BIG = ((size_t) 1) << 31;
     char buffer[256];
+    char fuffer[256];
+    char poop[5] = {'a', 'b', 'c', 'd', 'X'};
+    size_t res;
     setprogname(argv[0]);
+
     /* test some string functions */
-    strlcpy(buffer, "Hello 47!", sizeof(buffer));
-    assert(!match_either_case(buffer, "hello 47!"));
+    res = strlcpy(poop, "Hello 47!", sizeof(poop)-1);
+    assert(res == 9);
+    assert(poop[0] == 'H');
+    assert(poop[1] == 'e');
+    assert(poop[2] == 'l');
+    assert(poop[3] == '\0');
+    assert(poop[4] == 'X');
+
+    res = strlcpy(buffer, "Hello 47!", sizeof(buffer));
+    assert(res == 9);
     assert(strcmp(buffer, "Hello 47!") == 0);
-    strlower(buffer);
-    assert(strcmp(buffer, "hello 47!") == 0);
-    assert(match_either_case(buffer, "hello 47!"));
-    strupper(buffer);
+
+    assert(!match_either_case(buffer, "hello 47!"));
+
+    res = strlower(fuffer, buffer, sizeof(fuffer));
+    assert(res == 9);
+    assert(strcmp(fuffer, "hello 47!") == 0);
+
+    assert(match_either_case(fuffer, "hello 47!"));
+
+    res = strupper(buffer, fuffer, sizeof(buffer));
+    assert(res == 9);
     assert(strcmp(buffer, "HELLO 47!") == 0);
+
     assert(match_either_case(buffer, "hello 47!"));
+
+    res = strlcpy(buffer, "\r\t\n    ", sizeof(buffer));
+    assert(res == 7);
+
+    res = strip_whitespace(poop, buffer, sizeof(poop)-1);
+    assert(res == 0);
+    assert(poop[0] == '\0');
+    assert(poop[1] == 'e');
+    assert(poop[2] == 'l');
+    assert(poop[3] == '\0');
+    assert(poop[4] == 'X');
+
+    res = strlcpy(buffer, "\rThere are\tso\nmany good things!    ", sizeof(buffer));
+    assert(res == 35);
+
+    res = strip_whitespace(poop, buffer, sizeof(poop)-1);
+    assert(res == 25);
+    assert(poop[0] == 'T');
+    assert(poop[1] == 'h');
+    assert(poop[2] == 'e');
+    assert(poop[3] == '\0');
+    assert(poop[4] == 'X');
+
+    res = strip_whitespace(fuffer, buffer, sizeof(fuffer));
+    assert(res == 25);
+    assert(strcmp(fuffer, "Therearesomanygoodthings!") == 0);
+
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;

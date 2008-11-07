@@ -206,32 +206,67 @@ unsigned int hash_string(const char *string, size_t length)
     return hash;
 }
 
-/*@temp@*/
-char *strlower(char *str)
+size_t strlower(char *dst, const char *src, size_t size)
 {
-    char *ptr;
-    assert(str != NULL);
+    /* strlcpy checks the assertions anyway */
+    size_t result = strlcpy(dst, src, size);
 
-    for (ptr = str; *ptr != '\0'; ptr++)
-    {
-        *ptr = (char) tolower((int)*ptr);
+    for (/* blank */; *dst != '\0'; dst++) {
+        *dst = (char) tolower((int)*dst);
     }
 
-    return str;
+    return result;
 }
 
-/*@temp@*/
-char *strupper(char *str)
+size_t strupper(char *dst, const char *src, size_t size)
 {
-    char *ptr;
-    assert(str != NULL);
+    /* strlcpy checks the assertions anyway */
+    size_t result = strlcpy(dst, src, size);
 
-    for (ptr = str; *ptr != '\0'; ptr++)
-    {
-        *ptr = (char) toupper((int)*ptr);
+    for (/* blank */; *dst != '\0'; dst++) {
+        *dst = (char) toupper((int)*dst);
     }
 
-    return str;
+    return result;
+}
+
+size_t strip_whitespace(char *dst, const char *src, size_t size)
+{
+    /* TODO: there must be a simpler way to write this... */
+    size_t n = size;
+    size_t needed = 0;
+
+    assert(dst != NULL);
+    assert(src != NULL);
+    assert(size > 0);
+
+    /* copy while still room and src not over */
+    while (n > 1 && *src != '\0') {
+        if (isspace(*src)) {
+            src++;
+        }
+        else {
+            *dst++ = *src++;
+            n--;
+            needed++;
+        }
+    }
+
+    *dst = '\0';
+    n--;
+
+    /* ran out of space with work left */
+    if (n == 0 && *src != '\0') {
+        while (*src != '\0') {
+            if (!isspace(*src)) {
+                needed++;
+            }
+            src++;
+        }
+        return needed;
+    }
+
+    return needed;
 }
 
 bool match_either_case(const char *string, const char *either)
@@ -242,15 +277,16 @@ bool match_either_case(const char *string, const char *either)
     assert(string != NULL);
     assert(either != NULL);
 
-    res = strlcpy(buffer, either, sizeof(buffer));
+    res = strlower(buffer, either, sizeof(buffer));
     assert(res < sizeof(buffer));
 
-    (void) strlower(buffer);
     if (strcmp(string, buffer) == 0) {
         return true;
     }
 
-    (void) strupper(buffer);
+    res = strupper(buffer, either, sizeof(buffer));
+    assert(res < sizeof(buffer));
+
     if (strcmp(string, buffer) == 0) {
         return true;
     }
