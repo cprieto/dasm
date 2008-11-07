@@ -107,25 +107,33 @@ unsigned int hash_string(const char *string, size_t length);
 
 /**
  * @brief
- *   Convert string to lower case, destructively.
+ *   Convert string to lower case.
  *
  * @pre
- *   string != NULL
+ *   dst != NULL && src != NULL && size > 0
  */
 
-/*@temp@*/
-char *strlower(char *string);
+size_t strlower(char *dst, const char *src, size_t size);
 
 /**
  * @brief
- *   Convert string to upper case, destructively.
+ *   Convert string to upper case.
  *
  * @pre
- *   string != NULL
+ *   dst != NULL && src != NULL && size > 0
  */
 
-/*@temp@*/
-char *strupper(char *string);
+size_t strupper(char *dst, const char *src, size_t size);
+
+/**
+ * @brief
+ *   Remove all whitespace from a string.
+ *
+ * @pre
+ *   dst != NULL && src != NULL && size > 0
+ */
+
+size_t strip_whitespace(char *dst, const char *src, size_t size);
 
 /**
  * @brief
