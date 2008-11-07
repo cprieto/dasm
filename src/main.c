@@ -64,10 +64,8 @@ static char     *Extstr;
 static int     pass;
 
 static bool F_ListAllPasses = false;
-
-
-
-
+static bool bDoAllPasses = false;
+static int nMaxPasses = 10;
 
 /* debugging helper for hash collisions */
 /*
@@ -222,11 +220,173 @@ static void print_usage(void)
     DASM_PRINT_BUGS
 }
 
+static void parse_options_fail(void)
+{
+    print_usage();
+    /* TODO: if we passed a message, we could be more detailed */
+    fatal_fmt("Check command-line format.");
+    /* TODO: is this the best we can do? */
+    exit(EXIT_FAILURE);
+}
+
+static bool char_starts_option(char c)
+{
+    return (c == '-')  /* Unix */
+        || (c == '/'); /* Windows */
+}
+
+static void parse_error_format(char *str)
+{
+    int format = atoi(str);
+    if (valid_error_format(format)) {
+        set_error_format(format);
+    }
+    else {
+        panic_fmt("Invalid error format for -E, must be 0, 1, 2");
+    }
+}
+
+static void parse_sort_mode(char *str)
+{
+    int mode = atoi(str);
+    if (valid_sort_mode(mode)) {
+        set_sort_mode(mode);
+    }
+    else {
+        panic_fmt("Invalid sorting mode for -T option, must be 0 or 1");
+    }
+}
+
+static void parse_debug_trace(char *str)
+{
+    /* TODO: change like -T to allow 0 or 1 only (for now) [phf] */
+    Xdebug = atoi(str) != 0;
+    printf("Debug trace %s\n", Xdebug ? "ON" : "OFF");
+}
+
+static void parse_define(char kind, char *str)
+{
+    const char *name = str; /* first the name we define */
+
+    assert(kind == 'M' || kind == 'D');
+
+    /* then the value it is defined to */
+    /* TODO: strchr? */
+    while (*str != '\0' && *str != '=') {
+        ++str;
+    }
+    if (*str == '=') {
+        *str = '\0';
+        ++str;
+    }
+    else {
+        /* TODO: warning! introduce new ident "value" to avoid? */
+        str = "0";
+    }
+
+    Av[0] = name;
+
+    if (kind == 'M') {
+        v_eqm(str, NULL);
+    }
+    else { // kind == 'D'
+        v_set(str, NULL);
+    }
+}
+
+static void parse_output_format(char *str)
+{
+    /* TODO: switch to enum format/check */
+    F_format = atoi(str);
+    if (F_format < FORMAT_DEFAULT || F_format >= FORMAT_MAX) {
+        panic_fmt("Illegal format specification");
+    }
+}
+
+/* TODO: still need to improve option parsing and errors for it [phf] */
+static void parse_options(int ac, char **av)
+{
+    int i;
+
+    if (ac < 2) {
+        parse_options_fail(/* No source file given. */);
+    }
+    
+    for (i = 2; i < ac; ++i) {
+        if (char_starts_option(av[i][0])) {
+            char *str = av[i]+2;
+            /* all options require an argument! */
+            if (strlen(str) == 0) {
+                /* TODO: print usage, too? can't use panic then... */
+                panic_fmt("Missing argument for -%c option!", av[i][1]);
+            }
+            switch(av[i][1])
+            {
+            case 'E':
+                parse_error_format(str);
+                break;
+
+            case 'T':
+                parse_sort_mode(str);
+                break;
+
+            case 'd':
+                parse_debug_trace(str);
+                break;
+
+            case 'M':
+            case 'D':
+                parse_define(av[i][1], str);
+                break;
+
+            case 'f':
+                parse_output_format(str);
+                break;
+
+            case 'o':
+                F_outfile = str;
+                break;
+
+            case 'L':
+                F_ListAllPasses = true;
+                /* fall through to 'l' */
+            case 'l':
+                F_listfile = str;
+                break;
+
+            case 'P':
+                bDoAllPasses = true;
+                /* fall through to 'p' */
+            case 'p':
+                nMaxPasses = atoi(str);
+                break;
+
+            case 's':
+                set_symbol_file_name(str);
+                break;
+
+            case 'v':
+                F_verbose = atoi(str);
+                break;
+
+            case 'I':
+                v_incdir(str, NULL);
+                break;
+                
+            default:
+                parse_options_fail(/* Unknown option. */);
+                break;
+            }
+            /* TODO: "continue" because surrounding "if" has no "else"?  */
+            continue;
+        }
+        parse_options_fail(/* Illegal start of option. */);
+    }
+}
+
 static int MainShadow(int ac, char **av)
 {
 //    int nError = ERROR_NONE;
-    bool bDoAllPasses = false;
-    int nMaxPasses = 10;
     
     char buf[MAXLINE];
     int i;
@@ -239,132 +399,17 @@ static int MainShadow(int ac, char **av)
     addhashtable(Ops);
     pass = 1;
 
-    if (ac < 2)
-    {
+    parse_options(ac, av);
 
-fail:
-    print_usage();
-    fatal_fmt("Check command-line format.");
-//    return ERROR_COMMAND_LINE;
-    return EXIT_FAILURE; // needed for rest of code to work? [phf]
-    }
-    
-    for (i = 2; i < ac; ++i)
-    {
-        if ( ( av[i][0] == '-' ) || ( av[i][0] == '/' ) )
-        {
-            char *str = av[i]+2;
-            switch(av[i][1])
-            {
-            /* TODO: need to improve option parsing and errors for it [phf] */
-            /* TODO: fixed range checking for -Wextra below, but what if
-               enum is *not* unsigned in other compilers? hmmm... [phf] */
-            case 'E': {
-                int format = atoi(str);
-                if (valid_error_format(format)) {
-                    set_error_format(format);
-                }
-                else {
-                    panic_fmt("Invalid error format for -E, must be 0, 1, 2");
-                }
-                break;
-            }
-
-            case 'T': {
-                int mode = atoi(str);
-                if (valid_sort_mode(mode)) {
-                    set_sort_mode(mode);
-                }
-                else {
-                    panic_fmt("Invalid sorting mode for -T option, must be 0 or 1");
-                }
-                break;
-            }
-
-            case 'd':
-                /* TODO: change like -T to allow 0 or 1 only (for now) [phf] */
-                Xdebug = atoi(str) != 0;
-                printf( "Debug trace %s\n", Xdebug ? "ON" : "OFF" );
-                break;
-                
-            case 'M':
-            case 'D':
-                while (*str != '\0' && *str != '=')
-                    ++str;
-                if (*str == '=')
-                {
-                    *str = '\0';
-                    ++str;
-                }
-                else
-                {
-                    str = "0";
-                }
-                Av[0] = av[i]+2;
-                
-                if (av[i][1] == 'M')
-                    v_eqm(str, NULL);
-                else
-                    v_set(str, NULL);
-                break;
-                
-            case 'f':   /*  F_format    */
-                F_format = atoi(str);
-                if (F_format < FORMAT_DEFAULT || F_format >= FORMAT_MAX )
-                    panic_fmt("Illegal format specification");
-                break;
-                
-            case 'o':   /*  F_outfile   */
-                F_outfile = str;
-nofile:
-                if (*str == '\0')
-                    panic_fmt("-o Switch requires file name.");
-                break;
-
-            case 'L':
-                F_ListAllPasses = true;
-                /* fall through to 'l' */
-
-            case 'l':   /*  F_listfile  */
-                F_listfile = str;
-                goto nofile;
-                
-            case 'P':   /*  F_Passes   */
-                bDoAllPasses = true;
-                
-                /* fall through to 'p' */
-            case 'p':   /*  F_passes   */
-                nMaxPasses = atoi(str);
-                break;
-                
-            case 's':   /*  F_symfile   */
-                set_symbol_file_name(str);
-                goto nofile;
-            case 'v':   /*  F_verbose   */
-                F_verbose = atoi(str);
-                break;
-                
-            case 'I':
-                v_incdir(str, NULL);
-                break;
-                
-            default:
-                goto fail;
-            }
-            continue;
-        }
-        goto fail;
-    }
-    
-    /*    INITIAL SEGMENT */
-    
+    /* INITIAL SEGMENT */
     {
         SEGMENT *seg = small_alloc(sizeof(SEGMENT));
         seg->name = strcpy(small_alloc(sizeof(ISEGNAME)), ISEGNAME);
         seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
         Csegment = Seglist = seg;
     }
-    /*    TOP LEVEL IF    */
+
+    /* TOP LEVEL IF */
     {
         IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
         ifs->file = NULL;
