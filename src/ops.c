@@ -191,7 +191,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         asmerr( ERROR_ILLEGAL_ADDRESSING_MODE, false, sBuffer );
         */
         error_fmt("Invalid addressing mode '%s %s'.", mne->name, str);
-        FreeSymbolList(symbase);
+        free_symbol_list(symbase);
         return;
     }
     
@@ -202,7 +202,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             asmerr( ERROR_ILLEGAL_FORCED_ADDRESSING_MODE, false, mne->name );
             */
             error_fmt("Invalid forced addressing mode on '%s'.", mne->name);
-            FreeSymbolList(symbase);
+            free_symbol_list(symbase);
             return;
         }
     }
@@ -381,7 +381,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
     }
     Glen = opidx;
     generate();
-    FreeSymbolList(symbase);
+    free_symbol_list(symbase);
 }
 
 void v_trace(const char *str, MNEMONIC *dummy)
@@ -672,7 +672,7 @@ v_dc(const char *str, MNEMONIC *mne)
                         ++Redo;
                         Redo_why |= REASON_DV_NOT_RESOLVED_PROBABLY;
                     }
-                    FreeSymbolList(tmp);
+                    free_symbol_list(tmp);
                 }
                 switch(Mnext) {
                 default: /* TODO: defense? or AM_BYTE really default? [phf] */
@@ -719,7 +719,7 @@ v_dc(const char *str, MNEMONIC *mne)
                     ++Redo;
                     Redo_why |= REASON_DV_NOT_RESOLVED_COULD;
                 }
-                FreeSymbolList(tmp);
+                free_symbol_list(tmp);
             }
             switch(Mnext) {
             default: /* TODO: defense? [phf] */
@@ -756,7 +756,7 @@ v_dc(const char *str, MNEMONIC *mne)
         }
     }
     generate();
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 
@@ -792,7 +792,7 @@ v_ds(const char *str, MNEMONIC *dummy)
             }
             genfill(filler, sym->value, mult);
         }
-        FreeSymbolList(sym);
+        free_symbol_list(sym);
     }
     /* TODO: what if eval returns NULL? */
     assert(sym != NULL);
@@ -836,7 +836,7 @@ v_org(const char *str, MNEMONIC *dummy)
     }
     
     programlabel();
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void
@@ -862,7 +862,7 @@ v_rorg(const char *str, MNEMONIC *dummy)
         }
     }
     programlabel();
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void
@@ -924,7 +924,7 @@ v_align(const char *str, MNEMONIC *dummy)
             }
         }
     }
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
     programlabel();
 }
 
@@ -1032,7 +1032,7 @@ v_equ(const char *str, MNEMONIC *dummy)
         Gen[Glen++] = v;
     }
     
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void
@@ -1106,7 +1106,7 @@ void v_set(const char *str, MNEMONIC *dummy)
     lab->flags = sym->flags & (SYM_UNKNOWN|SYM_STRING);
     lab->string = sym->string;
     sym->flags &= ~(SYM_STRING|SYM_MACRO);
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void
@@ -1222,7 +1222,7 @@ v_ifconst(const char *str, MNEMONIC *dummy)
     sym = eval(str, false);
     assert(sym != NULL);
     pushif(sym->flags == 0);
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void
@@ -1235,7 +1235,7 @@ v_ifnconst(const char *str, MNEMONIC *dummy)
     sym = eval(str, false);
     assert(sym != NULL);
     pushif(sym->flags != 0);
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void
@@ -1263,7 +1263,7 @@ v_if(const char *str, MNEMONIC *dummy)
     else {
         pushif(!!sym->value);
     }
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 }
 
 void v_else(const char *str, MNEMONIC *dummy)
@@ -1309,7 +1309,7 @@ void v_repeat(const char *str, MNEMONIC *dummy)
     assert(sym != NULL);
     if (sym->value == 0) {
         pushif(0);
-        FreeSymbolList(sym);
+        free_symbol_list(sym);
         return;
     }
     
@@ -1319,7 +1319,7 @@ void v_repeat(const char *str, MNEMONIC *dummy)
     if (sym->value < 0)
     {
         pushif( 0 );
-        FreeSymbolList(sym);
+        free_symbol_list(sym);
 
         /* [phf] removed
         asmerr( ERROR_REPEAT_NEGATIVE, false, NULL );
@@ -1344,7 +1344,7 @@ void v_repeat(const char *str, MNEMONIC *dummy)
         Redo_why |= REASON_REPEAT_NOT_RESOLVED;
     }
     Reploop = rp;
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
     pushif(1);
 }
 

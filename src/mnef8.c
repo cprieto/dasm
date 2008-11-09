@@ -186,7 +186,7 @@ static int parse_value(const char *str, unsigned long *value) {
     else {
         *value = sym->value;
     }
-    FreeSymbolList(sym);
+    free_symbol_list(sym);
 
     return result;
 }

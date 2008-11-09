@@ -165,7 +165,7 @@ SYMBOL *CreateSymbol(const char *str, size_t len)
         str = buf;
     }
     
-    sym = allocsymbol();
+    sym = alloc_symbol();
     name = small_alloc(len + 1);
     memcpy(name, str, len); /* small_alloc zeros the array for us */
     sym->name = name;
@@ -278,7 +278,7 @@ void programlabel(void)
 /*@null@*/
 static SYMBOL *symbol_free_list = NULL;
 
-SYMBOL *allocsymbol(void)
+SYMBOL *alloc_symbol(void)
 {
     SYMBOL *sym;
 
@@ -294,7 +294,7 @@ SYMBOL *allocsymbol(void)
     return sym;
 }
 
-static void freesymbol(SYMBOL *sym)
+static void free_symbol(SYMBOL *sym)
 {
     assert(sym != NULL);
 
@@ -306,13 +306,13 @@ static void freesymbol(SYMBOL *sym)
 }
 
 /* empty list okay to free */
-void FreeSymbolList(SYMBOL *sym)
+void free_symbol_list(SYMBOL *sym)
 {
     SYMBOL *next;
 
     while (sym != NULL) {
         next = sym->next;
-        freesymbol(sym);
+        free_symbol(sym);
         sym = next;
     }
 }
