@@ -186,13 +186,19 @@ struct _STRLIST
 #define MF_IMOD					0x40    /*  instruction byte mod.    */
 #define MF_ENDM					0x80    /*  is v_endm            */
 
+/*
+  [phf] It is *very* important that MNEMONIC and MACRO share
+  the same layout of the first few fields, see v_macro() for
+  the reason (they share the same hashtable!).
+*/
+
 typedef struct _MNEMONIC MNEMONIC;
 struct _MNEMONIC
 {
     /* next mnemonic in hash list */
     MNEMONIC *next;
     /* dispatch */
-    void (*vect)(char *, MNEMONIC *);
+    void (*vect)(const char *, MNEMONIC *);
     /* actual name */
     const char *name;
     /* special flags */
@@ -210,8 +216,8 @@ typedef struct _MACRO MACRO;
 struct _MACRO
 {
     MACRO *next;
-    void (*vect)(char *, MACRO *);
-    char *name;
+    void (*vect)(const char *, MACRO *);
+    const char *name;
     dasm_flag_t flags;
     STRLIST *strlist;
 };
@@ -225,7 +231,7 @@ struct _INCFILE
     /* previously pushed context */
     INCFILE *next;
     /* file name */
-    char *name;
+    const char *name;
     /* file handle */
     FILE *fi;
     /* line number in file */
@@ -381,49 +387,48 @@ void    findext(char *str);
 char   *sftos(long val, dasm_flag_t flags);
 void    rmnode(void **base, size_t bytes);
 void    addhashtable(MNEMONIC *mne);
-void    pushinclude(char *str);
+void    pushinclude(const char *str);
 
 /* ops.c */
 extern    unsigned char Gen[];
 extern    int Glen;
-void    v_set(char *str, MNEMONIC *);
-void    v_mexit(char *str, MNEMONIC *);
+void    v_mexit(const char *str, MNEMONIC *);
 void    closegenerate(void);
 void    generate(void);
 
-void v_list(char *, MNEMONIC *);
-void v_include(char *, MNEMONIC *);
-void v_seg(char *, MNEMONIC *);
-void v_dc(char *, MNEMONIC *);
-void v_ds(char *, MNEMONIC *);
-void v_org(char *, MNEMONIC *);
-void v_rorg(char *, MNEMONIC *);
-void v_rend(char *, MNEMONIC *);
-void v_align(char *, MNEMONIC *);
-void v_subroutine(char *, MNEMONIC *);
-void v_equ(char *, MNEMONIC *);
-void v_eqm(char *, MNEMONIC *);
-void v_set(char *, MNEMONIC *);
-void v_macro(char *, MNEMONIC *);
-void v_endm(char *, MNEMONIC *);
-void v_mexit(char *, MNEMONIC *);
-void v_ifconst(char *, MNEMONIC *);
-void v_ifnconst(char *, MNEMONIC *);
-void v_if(char *, MNEMONIC *);
-void v_else(char *, MNEMONIC *);
-void v_endif(char *, MNEMONIC *);
-void v_repeat(char *, MNEMONIC *);
-void v_repend(char *, MNEMONIC *);
-void v_err(char *, MNEMONIC *);
-void v_hex(char *, MNEMONIC *);
-void v_trace(char *, MNEMONIC *);
-void v_end(char *, MNEMONIC *);
-void v_echo(char *, MNEMONIC *);
-void v_processor(char *, MNEMONIC *);
-void v_incbin(char *, MNEMONIC *);
-void v_incdir(char *, MNEMONIC *);
-void v_execmac(char *str, MACRO *mac);
-void v_mnemonic(char *str, MNEMONIC *mne);
+void v_list(const char *, MNEMONIC *);
+void v_include(const char *, MNEMONIC *);
+void v_seg(const char *, MNEMONIC *);
+void v_dc(const char *, MNEMONIC *);
+void v_ds(const char *, MNEMONIC *);
+void v_org(const char *, MNEMONIC *);
+void v_rorg(const char *, MNEMONIC *);
+void v_rend(const char *, MNEMONIC *);
+void v_align(const char *, MNEMONIC *);
+void v_subroutine(const char *, MNEMONIC *);
+void v_equ(const char *, MNEMONIC *);
+void v_eqm(const char *, MNEMONIC *);
+void v_set(const char *, MNEMONIC *);
+void v_macro(const char *, MNEMONIC *);
+void v_endm(const char *, MNEMONIC *);
+void v_mexit(const char *, MNEMONIC *);
+void v_ifconst(const char *, MNEMONIC *);
+void v_ifnconst(const char *, MNEMONIC *);
+void v_if(const char *, MNEMONIC *);
+void v_else(const char *, MNEMONIC *);
+void v_endif(const char *, MNEMONIC *);
+void v_repeat(const char *, MNEMONIC *);
+void v_repend(const char *, MNEMONIC *);
+void v_err(const char *, MNEMONIC *);
+void v_hex(const char *, MNEMONIC *);
+void v_trace(const char *, MNEMONIC *);
+void v_end(const char *, MNEMONIC *);
+void v_echo(const char *, MNEMONIC *);
+void v_processor(const char *, MNEMONIC *);
+void v_incbin(const char *, MNEMONIC *);
+void v_incdir(const char *, MNEMONIC *);
+void v_execmac(const char *str, MACRO *mac);
+void v_mnemonic(const char *str, MNEMONIC *mne);
 
 FILE *pfopen(const char *, const char *);
 

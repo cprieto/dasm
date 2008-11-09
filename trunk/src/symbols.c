@@ -186,7 +186,7 @@ void programlabel(void)
     size_t len;
     SYMBOL *sym;
     SEGMENT *cseg = Csegment;
-    char *str;
+    const char *str;
     /* was "unsigned char rorg = cseg->flags & SF_RORG;" and it
        might just be used as a bool, not really flags... [phf] */
     dasm_flag_t rorg = cseg->flags & SF_RORG;

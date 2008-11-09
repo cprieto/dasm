@@ -36,6 +36,7 @@
 #include "version.h"
 
 #include <assert.h>
+#include <ctype.h>
 
 /*@unused@*/
 SVNTAG("$Id$");
@@ -60,7 +61,7 @@ static void clearsegs(void);
 static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
 
-static char     *Extstr;
+static const char     *Extstr;
 static int     pass;
 
 static bool F_ListAllPasses = false;
@@ -266,31 +267,25 @@ static void parse_debug_trace(char *str)
 
 static void parse_define(char kind, char *str)
 {
-    const char *name = str; /* first the name we define */
+    /*const*/ char *name = str; /* the name we define */
+    const char *value = "0"; /* the value we define it to */
+    char *equals; /* location of '=' in str, if any */
 
     assert(kind == 'M' || kind == 'D');
 
-    /* then the value it is defined to */
-    /* TODO: strchr? */
-    while (*str != '\0' && *str != '=') {
-        ++str;
-    }
-    if (*str == '=') {
-        *str = '\0';
-        ++str;
-    }
-    else {
-        /* TODO: warning! introduce new ident "value" to avoid? */
-        str = "0";
+    equals = strchr(str, '=');
+    if (equals != NULL) {
+        *equals = '\0'; /* terminate name */
+        value = equals + 1; /* override default value */
     }
 
     Av[0] = name;
 
     if (kind == 'M') {
-        v_eqm(str, NULL);
+        v_eqm(value, NULL);
     }
     else { // kind == 'D'
-        v_set(str, NULL);
+        v_set(value, NULL);
     }
 }
 
@@ -389,7 +384,6 @@ static int MainShadow(int ac, char **av)
 //    int nError = ERROR_NONE;
     
     char buf[MAXLINE];
-    int i;
     MNEMONIC *mne;
     
     int oldredo = -1;
@@ -520,7 +514,7 @@ nextpass:
         if (fclose(pIncfile->fi) != 0) {
             warning_fmt("Problem closing include file '%s'.\n", pIncfile->name);
         }
-        free(pIncfile->name);
+        free(pIncfile->name); /* can't do anything about this warning :-( [phf] */
         --Inclevel;
         rmnode((void **)&pIncfile, sizeof(INCFILE));
         
@@ -919,11 +913,11 @@ void findext(char *str)
         *str = 0;
         ++str;
         Extstr = str;
-        switch(str[0]|0x20) {
+        switch(tolower(str[0])) {
         case '0':
         case 'i':
             Mnext = AM_IMP;
-            switch(str[1]|0x20) {
+            switch(tolower(str[1])) {
             case 'x':
                 Mnext = AM_0X;
                 break;
@@ -938,7 +932,7 @@ void findext(char *str)
             case 'd':
             case 'b':
             case 'z':
-                switch(str[1]|0x20) {
+                switch(tolower(str[1])) {
                 case 'x':
                     Mnext = AM_BYTEADRX;
                     break;
@@ -959,7 +953,7 @@ void findext(char *str)
                 case 'e':
                 case 'w':
                 case 'a':
-                    switch(str[1]|0x20) {
+                    switch(tolower(str[1])) {
                     case 'x':
                         Mnext = AM_WORDADRX;
                         break;
@@ -1120,9 +1114,8 @@ static MNEMONIC *findmne(const char *str)
         str++;
     }
 
-    res = strlcpy(buf, str, sizeof(buf));
+    res = strlower(buf, str, sizeof(buf));
     assert(res < sizeof(buf));
-    strlower(buf);
 
     for (mne = MHash[hash_mnemonic(buf)]; mne != NULL; mne = mne->next) {
         if (strcmp(buf, mne->name) == 0) {
@@ -1132,7 +1125,7 @@ static MNEMONIC *findmne(const char *str)
     return mne;
 }
 
-void v_macro(char *str, MNEMONIC *dummy)
+void v_macro(const char *str, MNEMONIC *dummy)
 {
     STRLIST *base;
     bool defined = false;
@@ -1142,12 +1135,18 @@ void v_macro(char *str, MNEMONIC *dummy)
     unsigned int i;
     char buf[MAXLINE];
     int skipit = !(Ifstack->xtrue && Ifstack->acctrue);
-    
-    strlower(str);
+    char sbuf[MAX_SYM_LEN]; /* TODO: fixed size? [phf] */
+    size_t res;
+
+    assert(str != NULL);
+
+    res = strlower(sbuf, str, sizeof(sbuf));
+    assert(res < sizeof(sbuf));
+
     if (skipit) {
         defined = true;
     } else {
-        defined = (findmne(str) != NULL);
+        defined = (findmne(sbuf) != NULL);
         if (FI_listfile != NULL && ListMode) {
             outlistfile("");
         }
@@ -1156,10 +1155,10 @@ void v_macro(char *str, MNEMONIC *dummy)
         base = NULL;
         slp = &base;
         mac = small_alloc(sizeof(MACRO));
-        i = hash_mnemonic(str);
+        i = hash_mnemonic(sbuf);
         mac->next = (MACRO *)MHash[i];
         mac->vect = v_execmac;
-        mac->name = strcpy(small_alloc(strlen(str)+1), str);
+        mac->name = strcpy(small_alloc(strlen(sbuf)+1), sbuf);
         mac->flags = MF_MACRO;
         MHash[i] = (MNEMONIC *)mac;
     }
@@ -1223,7 +1222,7 @@ static unsigned int hash_mnemonic(const char *str)
     return hash_string(str, strlen(str)) & MHASHAND;
 }
 
-void pushinclude(char *str)
+void pushinclude(const char *str)
 {
     INCFILE *inf;
     FILE *fi;

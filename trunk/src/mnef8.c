@@ -37,6 +37,7 @@
 #include "version.h"
 
 #include <ctype.h> /* for isspace() */
+#include <assert.h>
 
 /*@unused@*/
 SVNTAG("$Id$");
@@ -163,7 +164,7 @@ static long getPC(void)
  * result : zero = ok or syntax error
  *          nonzero = unresolved expression
  */
-static int parse_value(char *str, unsigned long *value) {
+static int parse_value(const char *str, unsigned long *value) {
 
     SYMBOL *sym;
     int result = 0;
@@ -215,7 +216,7 @@ static int parse_value(char *str, unsigned long *value) {
  * result : zero = ok or syntax error
  *          nonzero = unresolved expression
  */
-static int parse_scratchpad_register(char *str, unsigned char *reg) {
+static int parse_scratchpad_register(const char *str, unsigned char *reg) {
 
     unsigned long regnum;
 
@@ -316,7 +317,7 @@ static int parse_special_register(char *str) {
 }
 
 
-static void v_ins_outs(char *str, MNEMONIC *mne) {
+static void v_ins_outs(const char *str, MNEMONIC *mne) {
 
     unsigned long operand;
 
@@ -332,7 +333,7 @@ static void v_ins_outs(char *str, MNEMONIC *mne) {
 }
 
 
-static void v_sl_sr(char *str, MNEMONIC *mne) {
+static void v_sl_sr(const char *str, MNEMONIC *mne) {
 
     unsigned long operand;
 
@@ -361,7 +362,7 @@ static void v_sl_sr(char *str, MNEMONIC *mne) {
 }
 
 
-static void v_lis(char *str, MNEMONIC *mne) {
+static void v_lis(const char *str, MNEMONIC *mne) {
 
     unsigned long operand;
 
@@ -377,7 +378,7 @@ static void v_lis(char *str, MNEMONIC *mne) {
 }
 
 
-static void v_lisu_lisl(char *str, MNEMONIC *mne) {
+static void v_lisu_lisl(const char *str, MNEMONIC *mne) {
 
     unsigned long operand;
 
@@ -397,7 +398,7 @@ static void v_lisu_lisl(char *str, MNEMONIC *mne) {
  * handles opcodes with a scratchpad register operand:
  * as, asd, ds, ns, xs
  */
-static void v_sreg_op(char *str, MNEMONIC *mne) {
+static void v_sreg_op(const char *str, MNEMONIC *mne) {
 
     unsigned char reg;
 
@@ -406,14 +407,65 @@ static void v_sreg_op(char *str, MNEMONIC *mne) {
     emit_opcode1(mne->opcode[0] | reg);
 }
 
-
-static void v_lr(char *str, MNEMONIC *mne) {
-
+/*
+ * helper for parsing comma-separated parameter lists [phf]
+ */
+static void find_commas(const char *str, int *nof_commas, int *first_comma)
+{
     int i;
+
+    *nof_commas = 0;
+    *first_comma = 0;
+
+    for (i=0; str[i] != '\0'; i++) {
+        if (',' == str[i]) {
+            (*nof_commas)++;
+            (*first_comma) = i;
+        }
+    }
+}
+
+/*
+ * extract the two operands seperated at given position in str [phf]
+ * TODO: this is quite ugly, we should find a better way
+ */
+static void extract_operands(const char *str, int cindex, char *op1, char *op2, size_t size)
+{
+  int len = strlen(str);
+  char one[MAX_SYM_LEN];
+  char two[MAX_SYM_LEN];
+  size_t res;
+
+  assert(cindex > 0);
+  assert(cindex < len);
+  assert(len < MAX_SYM_LEN);
+
+  strncpy(one, str, cindex);
+  one[cindex] = '\0';
+
+  strncpy(two, str+cindex+1, len-cindex);
+  two[len-cindex] = '\0';
+
+  /* TODO: When this was done inline, v_lr() stripped two whitespaces
+     while v_bf_bt() didn't bother; we now remove all whitespace
+     anyway; apparently parse() in main.c does some whitespace
+     stuff as well, at least according to Thomas Mathys; I still
+     need to investigate some more when exactly this needs to be
+     done and whether it could be done in one place only. [phf] */
+
+  res = strip_whitespace(op1, one, size);
+  assert(res < size);
+
+  res = strip_whitespace(op2, two, size);
+  assert(res < size);
+}
+
+static void v_lr(const char *str, MNEMONIC *mne) {
+
     int ncommas;
     int cindex;
-    char *op1;
-    char *op2;
+    char op1[MAX_SYM_LEN];
+    char op2[MAX_SYM_LEN];
     unsigned char reg_dst;
     unsigned char reg_src;
     int opcode;
@@ -421,14 +473,7 @@ static void v_lr(char *str, MNEMONIC *mne) {
     programlabel();
 
     /* a valid operand string must contain exactly one comma. find it. */
-    ncommas = 0;
-    cindex = 0;
-    for (i=0; str[i]; i++) {
-        if (',' == str[i]) {
-        ncommas++;
-        cindex = i;
-        }
-    }
+    find_commas(str, &ncommas, &cindex);
     if (1 != ncommas) {
     	/* [phf] removed
         f8err(ERROR_SYNTAX_ERROR, mne->name, str, false);
@@ -438,15 +483,7 @@ static void v_lr(char *str, MNEMONIC *mne) {
     }
 
     /* extract operand strings  */
-    str[cindex] = 0;
-    op1 = str;
-    op2 = &str[cindex+1];
-    if ( (0 != cindex) && (isspace(str[cindex-1])) ) {
-        str[cindex-1] = 0;
-    }
-    if (isspace(*op2)) {
-        op2++;
-    }
+    extract_operands(str, cindex, op1, op2, MAX_SYM_LEN);
 
     /* parse operand strings for register names */
     reg_dst = parse_special_register(op1);
@@ -464,12 +501,6 @@ static void v_lr(char *str, MNEMONIC *mne) {
             emit_opcode1(0);
             return;
         }
-    }
-
-    /* restore operand string */
-    str[cindex] = ',';
-    if ( (0 != cindex) && (0 == str[cindex-1])) {
-        str[cindex-1] = ' ';
     }
 
     /* generate opcode */
@@ -557,7 +588,7 @@ static void v_lr(char *str, MNEMONIC *mne) {
  * opcode : opcode of the branch (for instance 0x8f for BR7)
  * str    : operand string
  */
-static void generate_branch(unsigned char opcode, char *str) {
+static void generate_branch(unsigned char opcode, const char *str) {
 
     unsigned long target_adr;
     long disp;
@@ -597,29 +628,21 @@ static void generate_branch(unsigned char opcode, char *str) {
  * handles the following branch mnemonics:
  * bc, bm, bnc, bno, bnz, bp, br, br7, bz
  */
-static void v_branch(char *str, MNEMONIC *mne) {
+static void v_branch(const char *str, MNEMONIC *mne) {
     generate_branch(mne->opcode[0], str);
 }
 
 
-static void v_bf_bt(char *str, MNEMONIC *mne) {
+static void v_bf_bt(const char *str, MNEMONIC *mne) {
 
     int ncommas;
     int cindex;
-    int i;
-    char *op1;
-    char *op2;
+    char op1[MAX_SYM_LEN];
+    char op2[MAX_SYM_LEN];
     unsigned long value;
 
     /* a valid operand string must contain exactly one comma. find it. */
-    ncommas = 0;
-    cindex = 0;
-    for (i=0; str[i]; i++) {
-        if (',' == str[i]) {
-        ncommas++;
-        cindex = i;
-        }
-    }
+    find_commas(str, &ncommas, &cindex);
     if (1 != ncommas) {
         /* [phf] removed
         f8err(ERROR_SYNTAX_ERROR, mne->name, str, false);
@@ -629,9 +652,7 @@ static void v_bf_bt(char *str, MNEMONIC *mne) {
     }
 
     /* extract operands */
-    str[cindex] = 0;
-    op1 = str;
-    op2 = &str[cindex+1];
+    extract_operands(str, cindex, op1, op2, MAX_SYM_LEN);
 
     /* parse first operand*/
     if (parse_value(op1, &value)) {
@@ -641,7 +662,6 @@ static void v_bf_bt(char *str, MNEMONIC *mne) {
     }
 
     /* check first operand */
-    str[cindex] = ',';		/* restore operand string */
     if ('f' == mne->name[1]) {
         /* bf */
         if (value > 15) {
@@ -670,7 +690,7 @@ static void v_bf_bt(char *str, MNEMONIC *mne) {
  * handles instructions that take a word operand:
  * dci, jmp, pi
  */
-static void v_wordop(char *str, MNEMONIC *mne) {
+static void v_wordop(const char *str, MNEMONIC *mne) {
 
     unsigned long value;
 
@@ -690,7 +710,7 @@ static void v_wordop(char *str, MNEMONIC *mne) {
  * handles instructions that take a byte operand:
  * ai, ci, in, li, ni, oi, out, xi
  */
-static void v_byteop(char *str, MNEMONIC *mne) {
+static void v_byteop(const char *str, MNEMONIC *mne) {
 
     unsigned long value;
 
