@@ -361,7 +361,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             if (wantmode)
             {
                 if (cur->addrmode == AM_INDWORD &&
-                    str[1] == ',' && (str[2]|0x20) == 'y')
+                    str[1] == ',' && tolower(str[2]) == 'y')
                 {
                     cur->addrmode = AM_INDBYTEY;
                     str += 2;
@@ -414,7 +414,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             while(Opi != Opibase)
                 evaltop();
             Lastwasop = true;
-            scr = str[1]|0x20;	  /* to lower case */
+            scr = tolower(str[1]);
             
             if (cur->addrmode == AM_INDWORD && scr == 'x' && !IsAlphaNum( str[2] ))
             {
