@@ -284,7 +284,7 @@ static void parse_define(char kind, char *str)
     if (kind == 'M') {
         v_eqm(value, NULL);
     }
-    else { // kind == 'D'
+    else { /* kind == 'D' */
         v_set(value, NULL);
     }
 }
@@ -381,7 +381,7 @@ static void parse_options(int ac, char **av)
 
 static int MainShadow(int ac, char **av)
 {
-//    int nError = ERROR_NONE;
+/*    int nError = ERROR_NONE;*/
     
     char buf[MAXLINE];
     MNEMONIC *mne;
@@ -432,8 +432,8 @@ nextpass:
     if (FI_temp == NULL) {
         printf("Warning: Unable to [re]open '%s'\n", F_outfile);
         fatal_fmt("Unable to open file.");
-//        return ERROR_FILE_ERROR;
-        return EXIT_FAILURE; // needed for rest of code to work? [phf]
+/*        return ERROR_FILE_ERROR;*/
+        return EXIT_FAILURE; /* needed for rest of code to work? [phf] */
     }
     if (F_listfile != NULL) {
 
@@ -443,8 +443,8 @@ nextpass:
         if (FI_listfile == NULL) {
             printf("Warning: Unable to [re]open '%s'\n", F_listfile);
             fatal_fmt("Unable to open file.");
-//            return ERROR_FILE_ERROR;
-            return EXIT_FAILURE; // needed for rest of code to work? [phf]
+/*            return ERROR_FILE_ERROR;*/
+            return EXIT_FAILURE; /* needed for rest of code to work? [phf] */
         }
     }
     pushinclude(av[1]);
@@ -558,8 +558,8 @@ nextpass:
             {
                 ShowUnresolvedSymbols();
                 fatal_fmt("Source is not resolvable.");
-//                return ERROR_NOT_RESOLVABLE;
-                return EXIT_FAILURE; // needed for rest of code to work? [phf]
+/*                return ERROR_NOT_RESOLVABLE;*/
+                return EXIT_FAILURE; /* needed for rest of code to work? [phf] */
             }
             
             oldredo = Redo;
@@ -597,7 +597,7 @@ nextpass:
     if (Xdebug)
         debug_hash_collisions();
 
-//    return nError;
+/*    return nError;*/
     return EXIT_SUCCESS;
 }
 
@@ -1273,9 +1273,9 @@ static void exit_handler(void)
         read some source, so I had to switch from an assert to
         a conditional here. [phf, 2008/11/02]
     */
-    if (Ifstack != NULL) { // one left to free
-        rmnode((void **)&Ifstack, sizeof(IFSTACK)); // free it
-        assert(Ifstack == NULL); // and we're NULL
+    if (Ifstack != NULL) { /* one left to free */
+        rmnode((void **)&Ifstack, sizeof(IFSTACK)); /* free it */
+        assert(Ifstack == NULL); /* and we're NULL */
     }
     
     /* TODO: more cleanup actions here? */

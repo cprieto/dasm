@@ -84,14 +84,14 @@ static size_t Opsize[]    = { 0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1 
 
 address_mode_t convert_address_mode(address_mode_t am)
 {
-  //assert(am >= 0); // TODO: what if enum is not unsigned? [phf]
+  /*assert(am >= 0); // TODO: what if enum is not unsigned? [phf] */
   assert(am < 17);
   return Cvt[am];
 }
 
 size_t operand_size(address_mode_t am)
 {
-  //assert(am >= 0); // TODO: what if enum is not unsigned? [phf]
+  /*assert(am >= 0); // TODO: what if enum is not unsigned? [phf] */
   assert(am < 17);
   return Opsize[am];
 }

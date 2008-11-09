@@ -395,20 +395,17 @@ void v_list(const char *str, MNEMONIC *dummy)
     programlabel();
     assert(str != NULL);
     
-    Glen = 0;		/*  Only so outlist() works */
+    Glen = 0; /* Only so outlist() works */
 
     /*
-      TODO: match less than the whole string? I fixed match_either_case
-      to match the whole string now, we'll see if anyone ever complains
-      about it... [phf]
+      The strncmp() cascade that used to be here compared less
+      than the whole string (only to the first difference). In
+      match_either_case() we compare the whole string. I doubt
+      anyone will complain, but you never know... [phf]
     */
 
-//    if (strncmp(str, "localoff", 7) == 0 || strncmp(str, "LOCALOFF", 7) == 0)
-//    else if (strncmp(str, "localon", 7) == 0 || strncmp(str, "LOCALON", 7) == 0)
-//    else if (strncmp(str, "off", 2) == 0 || strncmp(str, "OFF", 2) == 0)
-
     if (match_either_case(str, "LOCALOFF")) {
-        pIncfile->flags |=  INF_NOLIST;
+        pIncfile->flags |= INF_NOLIST;
     }
     else if (match_either_case(str, "LOCALON")) {
         pIncfile->flags &= ~INF_NOLIST;
@@ -649,7 +646,6 @@ v_dc(const char *str, MNEMONIC *mne)
             return;
         }
         if ((tmp->flags & SYM_MACRO) != 0) {
-//            macstr = (void *)tmp->string;
             macstr = tmp->string;
         }
         else
