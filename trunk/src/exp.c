@@ -157,7 +157,7 @@ SYMBOL *eval(const char *str, bool wantmode)
     Argibase = Argi;
     Opibase = Opi;
     Lastwasop = true;
-    base = cur = allocsymbol();
+    base = cur = alloc_symbol();
     
 
     while (*str != '\0')
@@ -433,7 +433,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             }
             else
             {
-                SYMBOL *pNewSymbol = allocsymbol();
+                SYMBOL *pNewSymbol = alloc_symbol();
                 cur->next = pNewSymbol;
                 --Argi;
                 if (Argi < Argibase)
@@ -954,7 +954,7 @@ static const char *pushsymbol(const char *str)
         sym->flags |= SYM_REF|SYM_MASREF;
         
         if (macro) {
-            FreeSymbolList(sym);
+            free_symbol_list(sym);
         }
     }
     else {

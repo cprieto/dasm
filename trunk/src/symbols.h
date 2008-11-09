@@ -31,17 +31,33 @@
 #include <stdbool.h>
 
 void  setspecial(int value, dasm_flag_t flags);
-SYMBOL *allocsymbol(void);
 SYMBOL *findsymbol(const char *str, size_t len);
 SYMBOL *CreateSymbol(const char *str, size_t len);
-void FreeSymbolList(SYMBOL *sym);
 void programlabel(void);
-void debug_symbol_hash_collisions(void);
 void clearrefs(void);
 void ShowSymbols(FILE *file);
 size_t ShowUnresolvedSymbols(void);
-void set_symbol_file_name(const char *name);
 void DumpSymbolTable(void);
+
+/**
+ * @brief Allocate a fresh symbol.
+ * @note Uses small_alloc() internally and manages a custom
+ * free list of symbols to reuse memory.
+ */
+SYMBOL *alloc_symbol(void);
+
+/**
+ * @brief Free zero or more symbols.
+ * @note Manages a custom free list of symbols to reuse memory.
+ */
+void free_symbol_list(SYMBOL *sym);
+
+/**
+ * @brief A symbol file of the given name will be produced.
+ * @warning Can only be called once!
+ * @pre name != NULL
+ */
+void set_symbol_file_name(const char *name);
 
 /**
  * @brief Sort mode for symbol table for -T option.
@@ -68,6 +84,12 @@ bool valid_sort_mode(int mode);
  * @brief Set sort mode, -T option.
  */
 void set_sort_mode(sortmode_t mode);
+
+/**
+ * @brief Print statistics about symbol hash table.
+ * @warning For debugging only.
+ */
+void debug_symbol_hash_collisions(void);
 
 #endif /* _DASM_SYMBOLS_H */
 
