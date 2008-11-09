@@ -76,7 +76,7 @@ enum FORMAT
    DASM used "unsigned char" for all of these, leading to
    load of warnings when integer arithmetic/assignments
    were done [phf] */
-typedef unsigned char dasm_flag_t;
+typedef int dasm_flag_t;
 
 /* ??? [phf] */
 #define MAX_SYM_LEN 1024
