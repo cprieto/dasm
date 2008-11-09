@@ -38,16 +38,27 @@
  *   Dealing with symbols.
  */
 
-void  setspecial(int value, dasm_flag_t flags);
 void programlabel(void);
-void clearrefs(void);
 void ShowSymbols(FILE *file);
 size_t ShowUnresolvedSymbols(void);
 void DumpSymbolTable(void);
 
 /**
- * @brief Create symbol with given name and add it to the hash
- * table.
+ * @brief Remove the SYM_REF flag from all symbols in the
+ * hash table.
+ */
+void clear_all_symbol_refs(void);
+
+/**
+ * @brief Set the special symbol for ".." used as part of
+ * a DV pseudo-op.
+ * @note Only the value and flags fields of the symbol are
+ * set.
+ */
+void set_special_dv_symbol(int value, dasm_flag_t flags);
+
+/**
+ * @brief Create symbol with given name and add it to the hash table.
  * @warning Truncates names to MAX_SYM_LEN!
  * @note Generates custom names for local symbols (those starting
  * with '.' or ending with '$'). Uses alloc_symbol() internally.
@@ -61,9 +72,10 @@ SYMBOL *create_symbol(const char *str, size_t len);
  * @brief Find symbol with given name in hash table.
  * @warning Truncates names to MAX_SYM_LEN!
  * @note Handles special names such as '.' for current PC,
- * ".." for something "special" I don't understand yet (see
- * setspecial()), and "..." for the current checksum; also
- * handles local names (those starting with '.' or ending with '$').
+ * ".." for the special argument to EQM as part of DV (see
+ * set_special_dv_symbol()), and "..." for the current checksum; also
+ * handles local names (those starting with '.' or ending
+ * with '$').
  * @pre str != NULL && len > 0
  */
 SYMBOL *find_symbol(const char *str, size_t len);

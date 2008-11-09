@@ -40,22 +40,27 @@
 /*@unused@*/
 SVNTAG("$Id$");
 
-#define SHASHSIZE   1024
-#define SHASHAND    (SHASHSIZE-1) /*0x03FF*/
+#define SHASHSIZE 1024
+#define SHASHAND (SHASHSIZE-1) /* 0x03FF */
 
-/* -T option [phf] */
-static sortmode_t F_sortmode = SORTMODE_DEFAULT;
-
-/*symbol hash table */
+/* Hash table for symbols. */
 static SYMBOL *SHash[SHASHSIZE];
 
-static SYMBOL org;
-static SYMBOL special;
-static SYMBOL specchk;
+/* Special symbols returned by find_symbol. */
+static SYMBOL special_org; /* "." or current origin (PC) */
+static SYMBOL special_dv_eqm; /* ".." or special symbol in EQM as part of DV */
+static SYMBOL special_checksum; /* "..." or current checksum */
 
 /* Name of symbol file if we should write one. */
 /*@null@*/
 static const char *symbol_file_name = NULL;
+
+/* Custom memory management for SYMBOLs.  */
+/*@null@*/
+static SYMBOL *symbol_free_list = NULL;
+
+/* How to sort the symbol table for -T option. */
+static sortmode_t F_sortmode = SORTMODE_DEFAULT;
 
 bool valid_sort_mode(int mode)
 {
@@ -73,10 +78,10 @@ static unsigned int hash_symbol(const char *str, size_t len)
     return hash_string(str, len) & SHASHAND;
 }
 
-void setspecial(int value, dasm_flag_t flags)
+void set_special_dv_symbol(int value, dasm_flag_t flags)
 {
-    special.value = value;
-    special.flags = flags;
+    special_dv_eqm.value = value;
+    special_dv_eqm.flags = flags;
 }
 
 SYMBOL *find_symbol(const char *str, size_t len)
@@ -98,22 +103,22 @@ SYMBOL *find_symbol(const char *str, size_t len)
         /* TODO: isn't '*' a synonym for '.' since Olaf's version? [phf] */
         if (len == 1) {
             if ((Csegment->flags & SF_RORG) != 0) {
-                org.flags = Csegment->rflags & SYM_UNKNOWN;
-                org.value = Csegment->rorg;
+                special_org.flags = Csegment->rflags & SYM_UNKNOWN;
+                special_org.value = Csegment->rorg;
             }
             else {
-                org.flags = Csegment->flags & SYM_UNKNOWN;
-                org.value = Csegment->org;
+                special_org.flags = Csegment->flags & SYM_UNKNOWN;
+                special_org.value = Csegment->org;
             }
-            return &org;
+            return &special_org;
         }
         if (len == 2 && str[1] == '.') {
-            return &special;
+            return &special_dv_eqm;
         }
         if (len == 3 && str[1] == '.' && str[2] == '.') {
-            specchk.flags = 0;
-            specchk.value = CheckSum;
-            return &specchk;
+            special_checksum.flags = 0;
+            special_checksum.value = CheckSum;
+            return &special_checksum;
         }
         assert(len < INT_MAX);
         sprintf(buf, "%lu%.*s", Localindex, (int) len, str);
@@ -280,13 +285,6 @@ void programlabel(void)
     sym->flags = (sym->flags & ~SYM_UNKNOWN) | (cflags & SYM_UNKNOWN);
 }
 
-/*
-  Custom memory management for SYMBOLs.
-*/
-
-/*@null@*/
-static SYMBOL *symbol_free_list = NULL;
-
 SYMBOL *alloc_symbol(void)
 {
     SYMBOL *sym;
@@ -314,7 +312,6 @@ static void free_symbol(SYMBOL *sym)
     symbol_free_list = sym;
 }
 
-/* empty list okay to free */
 void free_symbol_list(SYMBOL *sym)
 {
     SYMBOL *next;
@@ -326,29 +323,7 @@ void free_symbol_list(SYMBOL *sym)
     }
 }
 
-void debug_symbol_hash_collisions(void)
-{
-    SYMBOL *sym;
-    int sym_collisions = 0;
-    int i;
-    bool first;
-
-    for (i = 0; i < SHASHSIZE; i++)
-    {
-      first = true;
-      for (sym = SHash[i]; sym != NULL; sym = sym->next)
-      {
-        if (!first) {
-          sym_collisions += 1;
-        }
-        first = false;
-      }
-    }
-
-    printf("Collisions for SYMBOLS: %d\n", sym_collisions);
-}
-
-void clearrefs(void)
+void clear_all_symbol_refs(void)
 {
     SYMBOL *sym;
     size_t i;
@@ -542,6 +517,28 @@ void DumpSymbolTable(void)
                         symbol_file_name);
         }
     }
+}
+
+void debug_symbol_hash_collisions(void)
+{
+    const SYMBOL *sym;
+    int collisions = 0;
+    int i;
+    bool first;
+
+    for (i = 0; i < SHASHSIZE; i++) {
+        first = true;
+        for (sym = SHash[i]; sym != NULL; sym = sym->next) {
+            if (!first) {
+                collisions += 1;
+            }
+            else {
+                first = false;
+            }
+        }
+    }
+
+    printf("Collisions for SYMBOLS: %d\n", collisions);
 }
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
