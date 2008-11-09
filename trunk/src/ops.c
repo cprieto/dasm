@@ -598,9 +598,9 @@ v_dc(const char *str, MNEMONIC *mne)
 {
     SYMBOL *sym;
     SYMBOL *tmp;
-    unsigned long  value;
+    unsigned long value; /* TODO: argh, this receives sym->value! [phf] */
     const char *macstr = NULL; /* "might be used uninitialised" */
-    bool vmode = false;
+    bool vmode = false; /* is this a DV pseudo-op? */
 
     assert(str != NULL);
     assert(mne != NULL);
@@ -642,7 +642,7 @@ v_dc(const char *str, MNEMONIC *mne)
         tmp = find_symbol(str, i);
         str += i;
         if (tmp == NULL) {
-            (void) puts("EQM label not found");
+            (void) puts("EQM label not found"); /* TODO: error? [phf] */
             return;
         }
         if ((tmp->flags & SYM_MACRO) != 0) {
@@ -650,13 +650,13 @@ v_dc(const char *str, MNEMONIC *mne)
         }
         else
         {
-            (void) puts("must specify EQM label for DV");
+            (void) puts("must specify EQM label for DV"); /* TODO: error? [phf] */
             return;
         }
     }
     sym = eval(str, false);
     for (; sym; sym = sym->next) {
-        value = sym->value;
+        value = sym->value; /* TODO: we're assigning to UNSIGNED! [phf] */
         if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo;
             Redo_why |= REASON_DC_NOT_RESOVED;
@@ -665,7 +665,7 @@ v_dc(const char *str, MNEMONIC *mne)
             const char *ptr = sym->string;
             while ((value = *ptr) != 0) {
                 if (vmode) {
-                    setspecial(value, 0);
+                    set_special_dv_symbol(value, 0);
                     tmp = eval(macstr, false);
                     value = tmp->value;
                     if ((tmp->flags & SYM_UNKNOWN) != 0) {
@@ -712,7 +712,7 @@ v_dc(const char *str, MNEMONIC *mne)
         else
         {
             if (vmode) {
-                setspecial(value, sym->flags);
+                set_special_dv_symbol(value, sym->flags);
                 tmp = eval(macstr, false);
                 value = tmp->value;
                 if ((tmp->flags & SYM_UNKNOWN) != 0) {

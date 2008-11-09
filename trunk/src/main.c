@@ -588,7 +588,7 @@ nextpass:
             }
             else
             {
-                clearrefs();
+                clear_all_symbol_refs();
                 clearsegs();
                 goto nextpass;
             }
