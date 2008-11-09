@@ -33,6 +33,10 @@
 #include <assert.h>
 #include <limits.h>
 
+/**
+ * @file symbols.c
+ */
+
 /*@unused@*/
 SVNTAG("$Id$");
 
