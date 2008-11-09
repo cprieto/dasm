@@ -30,6 +30,14 @@
 
 #include <stdbool.h>
 
+/**
+ * @file
+ *   symbols.h
+ *
+ * @brief
+ *   Dealing with symbols.
+ */
+
 void  setspecial(int value, dasm_flag_t flags);
 void programlabel(void);
 void clearrefs(void);
