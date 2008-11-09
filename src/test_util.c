@@ -68,9 +68,14 @@ int main(int argc, char *argv[])
     char fuffer[256];
     char poop[5] = {'a', 'b', 'c', 'd', 'X'};
     size_t res;
+    char* excellent = NULL;
     setprogname(argv[0]);
 
     /* test some string functions */
+    excellent = checked_strdup("Peter's own thing!");
+    assert(excellent != NULL);
+    assert(strcmp(excellent, "Peter's own thing!") == 0);
+
     res = strlcpy(poop, "Hello 47!", sizeof(poop)-1);
     assert(res == 9);
     assert(poop[0] == 'H');
@@ -126,7 +131,7 @@ int main(int argc, char *argv[])
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));
     pIncfile->next = NULL;
-    pIncfile->name = strdup("someFileName");
+    pIncfile->name = checked_strdup("someFileName");
     pIncfile->lineno = 47;
     /* enable all messages */
     set_error_level(ERRORLEVEL_DEBUG);

@@ -206,6 +206,13 @@ unsigned int hash_string(const char *string, size_t length)
     return hash;
 }
 
+char *checked_strdup(const char *s)
+{
+  assert(s != NULL);
+  assert(strlen(s) > 0);
+  return strcpy(checked_malloc(strlen(s)+1), s);
+}
+
 size_t strlower(char *dst, const char *src, size_t size)
 {
     /* strlcpy checks the assertions anyway */

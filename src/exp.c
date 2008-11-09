@@ -393,7 +393,7 @@ SYMBOL *eval(const char *str, bool wantmode)
                 {
                     int len = snprintf(buf,sizeof(buf),"%ld",Argstack[Argi-1]);
                     assert(len < (int)sizeof(buf));
-                    Argstring[Argi-1] = strcpy(checked_malloc(strlen(buf)+1),buf);
+                    Argstring[Argi-1] = checked_strdup(buf);
                 }
             }
             break;

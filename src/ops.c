@@ -517,7 +517,7 @@ v_seg(const char *str, MNEMONIC *dummy)
     }
     Csegment = seg = zero_malloc(sizeof(SEGMENT));
     seg->next = Seglist;
-    seg->name = strcpy(checked_malloc(strlen(str)+1), str);
+    seg->name = checked_strdup(str);
     seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
     Seglist = seg;
     if (Mnext == AM_BSS)
@@ -1054,7 +1054,7 @@ v_eqm(const char *str, MNEMONIC *dummy)
     }
     lab->value = 0;
     lab->flags = SYM_STRING | SYM_SET | SYM_MACRO;
-    lab->string = strcpy(checked_malloc(strlen(str)+1), str);
+    lab->string = checked_strdup(str);
 }
 
 void
