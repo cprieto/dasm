@@ -75,11 +75,11 @@ void setspecial(int value, dasm_flag_t flags)
     special.flags = flags;
 }
 
-SYMBOL *findsymbol(const char *str, size_t len)
+SYMBOL *find_symbol(const char *str, size_t len)
 {
     unsigned int hash;
     SYMBOL *sym;
-    char buf[MAX_SYM_LEN + 14];     /* historical */
+    char buf[MAX_SYM_LEN+14]; /* historical */
 
     assert(str != NULL);
     assert(len > 0);
@@ -91,6 +91,7 @@ SYMBOL *findsymbol(const char *str, size_t len)
 
     if (str[0] == '.') {
         /* TODO: shouldn't this be a big else-if cascade instead? [phf] */
+        /* TODO: isn't '*' a synonym for '.' since Olaf's version? [phf] */
         if (len == 1) {
             if ((Csegment->flags & SF_RORG) != 0) {
                 org.flags = Csegment->rflags & SYM_UNKNOWN;
@@ -135,18 +136,20 @@ SYMBOL *findsymbol(const char *str, size_t len)
     return sym;
 }
 
-SYMBOL *CreateSymbol(const char *str, size_t len)
+SYMBOL *create_symbol(const char *str, size_t len)
 {
     SYMBOL *sym;
-    unsigned int h1;
-    char buf[ MAX_SYM_LEN + 14 ];           /* historical */
+    unsigned int hash;
+    char buf[MAX_SYM_LEN + 14]; /* historical */
     char *name;
 
     assert(str != NULL);
     assert(len > 0);
 
-    if (len > MAX_SYM_LEN )
+    if (len > MAX_SYM_LEN) {
+        /* TODO: truncate? is that good? [phf] */
         len = MAX_SYM_LEN;
+    }
     
     if (str[0] == '.')
     {
@@ -155,25 +158,27 @@ SYMBOL *CreateSymbol(const char *str, size_t len)
         len = strlen(buf);
         str = buf;
     }
-    
-    
-    else if (str[len - 1] == '$')
+    else if (str[len-1] == '$')
     {
         assert(len < INT_MAX);
         sprintf(buf, "%lu$%.*s", Localdollarindex, (int) len, str);
         len = strlen(buf);
         str = buf;
     }
-    
+    else {
+        /* not a special identifier? i think that's what this case is,
+           there was no "else" at all originally [phf] */
+    }
+
     sym = alloc_symbol();
-    name = small_alloc(len + 1);
+    name = small_alloc(len+1);
     memcpy(name, str, len); /* small_alloc zeros the array for us */
     sym->name = name;
     sym->namelen = len;
-    h1 = hash_symbol(str, len);
-    sym->next = SHash[h1];
-    sym->flags= SYM_UNKNOWN;
-    SHash[h1] = sym;
+    hash = hash_symbol(str, len);
+    sym->next = SHash[hash];
+    sym->flags = SYM_UNKNOWN;
+    SHash[hash] = sym;
     return sym;
 }
 
@@ -216,7 +221,7 @@ void programlabel(void)
     *		known and phase error	 (origin known)
     */
     
-    if ((sym = findsymbol(str, len)) != NULL)
+    if ((sym = find_symbol(str, len)) != NULL)
     {
         if ((sym->flags & (SYM_UNKNOWN|SYM_REF)) == (SYM_UNKNOWN|SYM_REF))
         {
@@ -265,7 +270,7 @@ void programlabel(void)
     }
     else
     {
-        sym = CreateSymbol( str, len );
+        sym = create_symbol( str, len );
     }
     sym->value = pc;
     sym->flags = (sym->flags & ~SYM_UNKNOWN) | (cflags & SYM_UNKNOWN);

@@ -31,13 +31,34 @@
 #include <stdbool.h>
 
 void  setspecial(int value, dasm_flag_t flags);
-SYMBOL *findsymbol(const char *str, size_t len);
-SYMBOL *CreateSymbol(const char *str, size_t len);
 void programlabel(void);
 void clearrefs(void);
 void ShowSymbols(FILE *file);
 size_t ShowUnresolvedSymbols(void);
 void DumpSymbolTable(void);
+
+/**
+ * @brief Create symbol with given name and add it to the hash
+ * table.
+ * @warning Truncates names to MAX_SYM_LEN!
+ * @note Generates custom names for local symbols (those starting
+ * with '.' or ending with '$'). Uses alloc_symbol() internally.
+ * Uses small_alloc() internally for the name of the symbol. The
+ * create symbol is SYM_UNKNOWN.
+ * @pre str != NULL && len > 0
+ */
+SYMBOL *create_symbol(const char *str, size_t len);
+
+/**
+ * @brief Find symbol with given name in hash table.
+ * @warning Truncates names to MAX_SYM_LEN!
+ * @note Handles special names such as '.' for current PC,
+ * ".." for something "special" I don't understand yet (see
+ * setspecial()), and "..." for the current checksum; also
+ * handles local names (those starting with '.' or ending with '$').
+ * @pre str != NULL && len > 0
+ */
+SYMBOL *find_symbol(const char *str, size_t len);
 
 /**
  * @brief Allocate a fresh symbol.

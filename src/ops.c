@@ -639,7 +639,7 @@ v_dc(const char *str, MNEMONIC *mne)
         int i;
         vmode = true;
         for (i = 0; str[i] && str[i] != ' '; ++i);
-        tmp = findsymbol(str, i);
+        tmp = find_symbol(str, i);
         str += i;
         if (tmp == NULL) {
             (void) puts("EQM label not found");
@@ -986,9 +986,9 @@ v_equ(const char *str, MNEMONIC *dummy)
     }
 #endif
     
-    lab = findsymbol(Av[0], strlen(Av[0]));
+    lab = find_symbol(Av[0], strlen(Av[0]));
     if (lab == NULL) {
-        lab = CreateSymbol(Av[0], strlen(Av[0]));
+        lab = create_symbol(Av[0], strlen(Av[0]));
     }
     if ((lab->flags & SYM_UNKNOWN) == 0)
     {
@@ -1043,14 +1043,14 @@ v_eqm(const char *str, MNEMONIC *dummy)
 
     assert(str != NULL);
     
-    if ((lab = findsymbol(Av[0], len)) != NULL) {
+    if ((lab = find_symbol(Av[0], len)) != NULL) {
         if ((lab->flags & SYM_STRING) != 0) {
             free(lab->string);
         }
     }
     else
     {
-        lab = CreateSymbol(Av[0], len);
+        lab = create_symbol(Av[0], len);
     }
     lab->value = 0;
     lab->flags = SYM_STRING | SYM_SET | SYM_MACRO;
@@ -1098,9 +1098,9 @@ void v_set(const char *str, MNEMONIC *dummy)
     assert(str != NULL);
     assert(sym != NULL);
     
-    lab = findsymbol(Av[0], strlen(Av[0]));
+    lab = find_symbol(Av[0], strlen(Av[0]));
     if (lab == NULL) {
-        lab = CreateSymbol(Av[0], strlen(Av[0]));
+        lab = create_symbol(Av[0], strlen(Av[0]));
     }
     lab->value = sym->value;
     lab->flags = sym->flags & (SYM_UNKNOWN|SYM_STRING);
