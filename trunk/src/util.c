@@ -235,10 +235,18 @@ size_t strip_whitespace(char *dst, const char *src, size_t size)
     /* TODO: there must be a simpler way to write this... */
     size_t n = size;
     size_t needed = 0;
+    const char *t;
 
     assert(dst != NULL);
     assert(src != NULL);
     assert(size > 0);
+
+    /* pre-count how many non-space characters we have */
+    for (t = src; *t != '\0'; t++) {
+        if (!isspace(*t)) {
+            needed++;
+        }
+    }
 
     /* copy while still room and src not over */
     while (n > 1 && *src != '\0') {
@@ -248,23 +256,11 @@ size_t strip_whitespace(char *dst, const char *src, size_t size)
         else {
             *dst++ = *src++;
             n--;
-            needed++;
         }
     }
 
     *dst = '\0';
     n--;
-
-    /* ran out of space with work left */
-    if (n == 0 && *src != '\0') {
-        while (*src != '\0') {
-            if (!isspace(*src)) {
-                needed++;
-            }
-            src++;
-        }
-        return needed;
-    }
 
     return needed;
 }
