@@ -1239,7 +1239,7 @@ void pushinclude(const char *str)
         
         inf = zero_malloc(sizeof(INCFILE));
         inf->next = pIncfile;
-        inf->name = strcpy(checked_malloc(strlen(str)+1), str);
+        inf->name = checked_strdup(str);
         inf->fi = fi;
         inf->lineno = 0;
         pIncfile = inf;

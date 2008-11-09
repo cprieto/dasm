@@ -107,6 +107,18 @@ unsigned int hash_string(const char *string, size_t length);
 
 /**
  * @brief
+ *   Return a fresh copy of the given string. Memory is
+ *   allocated with checked_malloc() so it won't return
+ *   NULL on failure like the regular strdup() does.
+ *
+ * @pre
+ *   s != NULL && strlen(s) > 0
+ */
+
+char *checked_strdup(const char *s);
+
+/**
+ * @brief
  *   Convert string to lower case.
  *
  * @pre
