@@ -60,7 +60,7 @@ static int gethexdig(int c);
 *  An opcode modifies the SEGMENT flags in the following ways:
 */
 
-void v_processor(char *str, MNEMONIC *dummy)
+void v_processor(const char *str, MNEMONIC *dummy)
 {
     static bool bCalled = false;
     static unsigned long Processor = 0;
@@ -132,7 +132,7 @@ void v_processor(char *str, MNEMONIC *dummy)
 
 #define badcode(mne,adrmode)  (!(mne->okmask & (1L << adrmode)))
 
-void v_mnemonic(char *str, MNEMONIC *mne)
+void v_mnemonic(const char *str, MNEMONIC *mne)
 {
     int addrmode;
     SYMBOL *sym;
@@ -384,13 +384,13 @@ void v_mnemonic(char *str, MNEMONIC *mne)
     FreeSymbolList(symbase);
 }
 
-void v_trace(char *str, MNEMONIC *dummy)
+void v_trace(const char *str, MNEMONIC *dummy)
 {
     assert(str != NULL);
     bTrace = (str[1] == 'n');
 }
 
-void v_list(char *str, MNEMONIC *dummy)
+void v_list(const char *str, MNEMONIC *dummy)
 {
     programlabel();
     assert(str != NULL);
@@ -421,27 +421,34 @@ void v_list(char *str, MNEMONIC *dummy)
     }
 }
 
-static char *
-getfilename(char *str)
+/*
+  @brief Return a malloc()ed duplicate of the given string
+  with leading and trailing quotation marks removed.
+*/
+static char *getfilename(const char *str)
 {
+    char *buf;
+    char *end;
+
     assert(str != NULL);
+
+    /* Skip leading quote. TODO: while? [phf] */
     if (*str == '\"') {
-        char	*buf;
-        
         str++;
-        buf = checked_malloc(strlen(str)+1);
-        strcpy(buf, str);
-        
-        for (str = buf; *str != '\0' && *str != '\"'; ++str);
-        *str = 0;
-        
-        return buf;
     }
-    return str;
+
+    buf = checked_malloc(strlen(str)+1);
+    strcpy(buf, str);
+        
+    /* Find trailing quote and kill it. */
+    for (end = buf; *end != '\0' && *end != '\"'; ++end);
+    *end = 0;
+        
+    return buf;
 }
 
 void
-v_include(char *str, MNEMONIC *dummy)
+v_include(const char *str, MNEMONIC *dummy)
 {
     char *buf;
 
@@ -452,13 +459,11 @@ v_include(char *str, MNEMONIC *dummy)
     
     pushinclude(buf);
     
-    if (buf != str) {
-        free(buf);
-    }
+    free(buf);
 }
 
 void
-v_incbin(char *str, MNEMONIC *dummy)
+v_incbin(const char *str, MNEMONIC *dummy)
 {
     char *buf;
     FILE *binfile;
@@ -493,16 +498,14 @@ v_incbin(char *str, MNEMONIC *dummy)
         warning_fmt("Unable to open binary include file '%s'.\n", buf);
     }
     
-    if (buf != str) {
-        free(buf);
-    }
+    free(buf);
     Glen = 0;		    /* don't list hexdump */
 }
 
 
 
 void
-v_seg(char *str, MNEMONIC *dummy)
+v_seg(const char *str, MNEMONIC *dummy)
 {
     SEGMENT *seg;
 
@@ -526,7 +529,7 @@ v_seg(char *str, MNEMONIC *dummy)
 }
 
 void
-v_hex(char *str, MNEMONIC *dummy)
+v_hex(const char *str, MNEMONIC *dummy)
 {
     int i;
     int result;
@@ -582,7 +585,7 @@ static int gethexdig(int c)
 }
 
 void
-v_err(char *str, MNEMONIC *dummy)
+v_err(const char *str, MNEMONIC *dummy)
 {
     programlabel();
     /* [phf] removed
@@ -594,7 +597,7 @@ v_err(char *str, MNEMONIC *dummy)
 }
 
 void
-v_dc(char *str, MNEMONIC *mne)
+v_dc(const char *str, MNEMONIC *mne)
 {
     SYMBOL *sym;
     SYMBOL *tmp;
@@ -763,7 +766,7 @@ v_dc(char *str, MNEMONIC *mne)
 
 
 void
-v_ds(char *str, MNEMONIC *dummy)
+v_ds(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     int mult = 1;
@@ -800,7 +803,7 @@ v_ds(char *str, MNEMONIC *dummy)
 }
 
 void
-v_org(char *str, MNEMONIC *dummy)
+v_org(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
 
@@ -841,7 +844,7 @@ v_org(char *str, MNEMONIC *dummy)
 }
 
 void
-v_rorg(char *str, MNEMONIC *dummy)
+v_rorg(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
 
@@ -867,14 +870,14 @@ v_rorg(char *str, MNEMONIC *dummy)
 }
 
 void
-v_rend(char *str, MNEMONIC *dummy)
+v_rend(const char *str, MNEMONIC *dummy)
 {
     programlabel();
     Csegment->flags &= ~SF_RORG;
 }
 
 void
-v_align(char *str, MNEMONIC *dummy)
+v_align(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     unsigned char fill = 0;
@@ -930,7 +933,7 @@ v_align(char *str, MNEMONIC *dummy)
 }
 
 void
-v_subroutine(char *str, MNEMONIC *dummy)
+v_subroutine(const char *str, MNEMONIC *dummy)
 {
     ++Lastlocalindex;
     Localindex = Lastlocalindex;
@@ -938,7 +941,7 @@ v_subroutine(char *str, MNEMONIC *dummy)
 }
 
 void
-v_equ(char *str, MNEMONIC *dummy)
+v_equ(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
@@ -947,13 +950,32 @@ v_equ(char *str, MNEMONIC *dummy)
     assert(sym != NULL);
     
     /*
-    * If we encounter a line of the form
-    *   . = expr	; or . EQU expr
-    * treat it as one of
-    *     org expr
-    *     rorg expr
-    * depending on whether we have a relocatable origin now or not.
+        If we encounter a line of the form
+            . = expr
+            . EQU expr
+            * = expr
+            * EQU expr
+        treat it as one of
+            org expr
+            rorg expr
+        depending on whether we have a relocatable origin now or not.
     */
+    if (strlen(Av[0]) == 1) {
+        if (Av[0][0] == '*') {
+            Av[0][0] = '.';
+        }
+        if (Av[0][0] == '.') {
+            if ((Csegment->flags & SF_RORG) != 0) {
+                v_rorg(str, dummy);
+            }
+            else {
+                v_org(str, dummy);
+            }
+            return;
+        }
+    }
+
+#if 0
     if (strlen(Av[0]) == 1 && (Av[0][0] == '.'
         || (Av[0][0] == '*' && (Av[0][0] = '.') && 1)           /*AD: huh?*/
         )) {
@@ -966,7 +988,7 @@ v_equ(char *str, MNEMONIC *dummy)
         }
         return;
     }
-    
+#endif
     
     lab = findsymbol(Av[0], strlen(Av[0]));
     if (lab == NULL) {
@@ -1018,7 +1040,7 @@ v_equ(char *str, MNEMONIC *dummy)
 }
 
 void
-v_eqm(char *str, MNEMONIC *dummy)
+v_eqm(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *lab;
     size_t len = strlen(Av[0]);
@@ -1040,7 +1062,7 @@ v_eqm(char *str, MNEMONIC *dummy)
 }
 
 void
-v_echo(char *str, MNEMONIC *dummy)
+v_echo(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *s;
@@ -1072,7 +1094,7 @@ v_echo(char *str, MNEMONIC *dummy)
     }
 }
 
-void v_set(char *str, MNEMONIC *dummy)
+void v_set(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
@@ -1092,12 +1114,12 @@ void v_set(char *str, MNEMONIC *dummy)
 }
 
 void
-v_execmac(char *str, MACRO *mac)
+v_execmac(const char *str, MACRO *mac)
 {
     INCFILE *inc;
     STRLIST *base;
     STRLIST **psl, *sl;
-    char *s1;
+    const char *sone; /* used to be "s1" which clashed with "sl" [phf] */
 
     assert(str != NULL);
     assert(mac != NULL);
@@ -1114,15 +1136,15 @@ v_execmac(char *str, MACRO *mac)
     strcpy(base->buf, str);
     psl = &base->next;
     while (*str != '\0' && *str != '\n') {
-        s1 = str;
+        sone = str;
         while (*str != '\0' && *str != '\n' && *str != ',')
             ++str;
-        sl = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+1+(str-s1));
+        sl = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+1+(str-sone));
         sl->next = NULL;
         *psl = sl;
         psl = &sl->next;
-        memcpy(sl->buf, s1, (str-s1));
-        sl->buf[str-s1] = 0;
+        memcpy(sl->buf, sone, (str-sone));
+        sl->buf[str-sone] = 0;
         if (*str == ',')
             ++str;
         while (*str == ' ')
@@ -1151,7 +1173,7 @@ v_execmac(char *str, MACRO *mac)
     
 }
 
-void v_end(char *str, MNEMONIC *dummy)
+void v_end(const char *str, MNEMONIC *dummy)
 {
     /* Only ENDs current file and any macro calls within it */
     
@@ -1163,7 +1185,7 @@ void v_end(char *str, MNEMONIC *dummy)
 }
 
 void
-v_endm(char *str, MNEMONIC *dummy)
+v_endm(const char *str, MNEMONIC *dummy)
 {
     INCFILE *inc = pIncfile;
     STRLIST *args, *an;
@@ -1189,13 +1211,13 @@ v_endm(char *str, MNEMONIC *dummy)
 }
 
 void
-v_mexit(char *str, MNEMONIC *dummy)
+v_mexit(const char *str, MNEMONIC *dummy)
 {
     v_endm(NULL, NULL);
 }
 
 void
-v_ifconst(char *str, MNEMONIC *dummy)
+v_ifconst(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     assert(str != NULL);
@@ -1208,7 +1230,7 @@ v_ifconst(char *str, MNEMONIC *dummy)
 }
 
 void
-v_ifnconst(char *str, MNEMONIC *dummy)
+v_ifnconst(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     assert(str != NULL);
@@ -1221,7 +1243,7 @@ v_ifnconst(char *str, MNEMONIC *dummy)
 }
 
 void
-v_if(char *str, MNEMONIC *dummy)
+v_if(const char *str, MNEMONIC *dummy)
 {
     SYMBOL *sym;
     assert(str != NULL);
@@ -1248,7 +1270,7 @@ v_if(char *str, MNEMONIC *dummy)
     FreeSymbolList(sym);
 }
 
-void v_else(char *str, MNEMONIC *dummy)
+void v_else(const char *str, MNEMONIC *dummy)
 {
     if (Ifstack->acctrue && (Ifstack->flags & IFF_BASE) == 0) {
         programlabel();
@@ -1257,7 +1279,7 @@ void v_else(char *str, MNEMONIC *dummy)
 }
 
 void
-v_endif(char *str, MNEMONIC *dummy)
+v_endif(const char *str, MNEMONIC *dummy)
 {
     IFSTACK *ifs = Ifstack;
     assert(ifs != NULL);
@@ -1276,7 +1298,7 @@ v_endif(char *str, MNEMONIC *dummy)
     }
 }
 
-void v_repeat(char *str, MNEMONIC *dummy)
+void v_repeat(const char *str, MNEMONIC *dummy)
 {
     REPLOOP *rp;
     SYMBOL *sym;
@@ -1331,7 +1353,7 @@ void v_repeat(char *str, MNEMONIC *dummy)
 }
 
 void
-v_repend(char *str, MNEMONIC *dummy)
+v_repend(const char *str, MNEMONIC *dummy)
 {
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         v_endif(NULL,NULL);
@@ -1360,7 +1382,7 @@ v_repend(char *str, MNEMONIC *dummy)
 static STRLIST *incdirlist;
 
 void
-v_incdir(char *str, MNEMONIC *dummy)
+v_incdir(const char *str, MNEMONIC *dummy)
 {
     STRLIST **tail;
     char *buf;
@@ -1383,9 +1405,7 @@ v_incdir(char *str, MNEMONIC *dummy)
         *tail = newdir;
     }
     
-    if (buf != str) {
-        free(buf);
-    }
+    free(buf);
 }
 
 static void
