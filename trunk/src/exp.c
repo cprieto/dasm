@@ -928,11 +928,11 @@ static const char *pushsymbol(const char *str)
 
     /*
         make sure we pass non-negative here, maybe we can change
-        findsymbol() signature [phf]
+        find_symbol() signature [phf]
     */
     assert((ptr-str) >= 0);
 
-    if ((sym = findsymbol(str, ptr - str)) != NULL)
+    if ((sym = find_symbol(str, ptr - str)) != NULL)
     {
         if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo_eval;
@@ -959,7 +959,7 @@ static const char *pushsymbol(const char *str)
     }
     else {
         stackarg(0L, SYM_UNKNOWN, NULL);
-        sym = CreateSymbol(str, ptr - str);
+        sym = create_symbol(str, ptr - str);
         assert(sym != NULL);
         sym->flags = SYM_REF|SYM_MASREF|SYM_UNKNOWN;
         ++Redo_eval;
