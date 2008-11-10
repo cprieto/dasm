@@ -169,7 +169,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         }
     }
     addrmode = sym->addrmode;
-    if ((sym->flags & SYM_UNKNOWN) != 0 || sym->value >= 0x100) {
+    if ((sym->flags & SYM_UNKNOWN) != 0 || sym->value < -0x80 || sym->value >= 0x100) {
         opsize = 2;
     }
     else {
@@ -226,7 +226,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             sprintf( sBuffer, "%s %s", mne->name, str );
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, sBuffer );
             */
-            error_fmt(ERROR_ADDRESS_RANGE_DETAIL, str, mne->name, 0, 255);
+            error_fmt(ERROR_ADDRESS_RANGE_DETAIL, str, mne->name, -128, 255);
             break;
         }
         addrmode = convert_address_mode(addrmode);
@@ -245,11 +245,11 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
     {
     case AM_BITMOD:
         sym = symbase->next;
-        if ((sym->flags & SYM_UNKNOWN) == 0 && sym->value >= 0x100) {
+        if ((sym->flags & SYM_UNKNOWN) == 0 && (sym->value < -0x80 || sym->value >= 0x100)) {
             /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
             */
-            error_fmt(ERROR_ADDRESS_RANGE, 0, 255);
+            error_fmt(ERROR_ADDRESS_RANGE, -128, 255);
             /* TODO: why no detail in original? */
         }
         Gen[opidx++] = sym->value;
@@ -282,11 +282,11 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         
         sym = symbase->next;
         
-        if ((sym->flags & SYM_UNKNOWN) == 0 && sym->value >= 0x100) {
+        if ((sym->flags & SYM_UNKNOWN) == 0 && (sym->value < -0x80 || sym->value >= 0x100)) {
             /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
             */
-            error_fmt(ERROR_ADDRESS_RANGE, 0, 255);
+            error_fmt(ERROR_ADDRESS_RANGE, -128, 255);
             /* TODO: why no detail in original? */
         }
         
@@ -317,11 +317,11 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
     if ((mne->flags & MF_MASK) != 0)
     {
         if (sym != NULL) {
-            if ((sym->flags & SYM_UNKNOWN) == 0 && sym->value >= 0x100) {
+            if ((sym->flags & SYM_UNKNOWN) == 0 && (sym->value < -0x80 || sym->value >= 0x100)) {
                 /* [phf] removed
                 asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
                 */
-                error_fmt(ERROR_ADDRESS_RANGE, 0, 255);
+                error_fmt(ERROR_ADDRESS_RANGE, -128, 255);
                 /* TODO: why no detail in original? */
             }
             
@@ -507,6 +507,11 @@ v_seg(const char *str, MNEMONIC *dummy)
     SEGMENT *seg;
 
     assert(str != NULL);
+
+    /* temporary warning to see how many are affected by this [phf] */
+    if (strlen(str) == 0) {
+        warning_fmt("Segments must have a name!");
+    }
     
     for (seg = Seglist; seg != NULL; seg = seg->next) {
         if (strcmp(str, seg->name) == 0) {
