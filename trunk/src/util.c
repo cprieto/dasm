@@ -209,7 +209,8 @@ unsigned int hash_string(const char *string, size_t length)
 char *checked_strdup(const char *s)
 {
   assert(s != NULL);
-  assert(strlen(s) > 0);
+  /* v_seg() doesn't enforce this so we can't either for now [phf] */
+  /*assert(strlen(s) > 0);*/
   return strcpy(checked_malloc(strlen(s)+1), s);
 }
 
