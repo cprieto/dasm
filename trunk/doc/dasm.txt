@@ -78,7 +78,7 @@ FEATURES:
     -expressions, as in C but [] is used instead of () for parenthesis.
      (all expressions are computed with 32 bit integers)
     -no real limitation on label size, label values are 32 bits.
-    -complex pseudo ops, repeat loops, macros, etc....
+    -complex pseudo-ops, repeat loops, macros, etc....
 
 
 PREFACE FROM ANDREW (APRIL/2003)
@@ -340,10 +340,10 @@ PSEUDOPS:
 
 [label] ORG	    exp[,DefaultFillVal]
 
-	    This pseudop sets the current origin.  You can also set the
+	    This pseudo-op sets the current origin.  You can also set the
 	    global default fill character (a byte value) with this
-	    pseudoop.  NOTE that no filler is generated until the first
-	    data-generating opcode/psueoop is encountered after this one.
+	    pseudo-op.  NOTE that no filler is generated until the first
+	    data-generating opcode/pseudo-op is encountered after this one.
 	    Sequences like:
 
 		org  0,255
@@ -712,7 +712,7 @@ EXPRESSIONS:
     Symbols:
 
 	...	-holds CHECKSUM so far (of actual-generated stuff)
-	..	-holds evaluated value in DV pseudo op
+	..	-holds evaluated value in DV pseudo-op
 	.name	-represents a temporary symbol name.  Temporary symbols
 		 may be reused inside MACROS and between SUBROUTINES, but
 		 may not be referenced across macros or across SUBROUTINEs.
