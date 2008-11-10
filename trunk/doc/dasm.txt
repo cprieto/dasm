@@ -223,7 +223,7 @@ PROCESSOR MODEL:
 SEGMENTS:
     The SEG pseudo-op creates/sets the current segment.  Each segment has
     it's own origin and is optionally an 'uninitialized' segment.
-    Unitialized segments produce no output and have no restrictions.  This
+    Uninitialized segments produce no output and have no restrictions.  This
     is useful for determining the size of a certain assembly sequence
     without generating code, and for assigning RAM to labels.
 
@@ -329,7 +329,7 @@ PSEUDOPS:
 	    This sets down raw HEX data.  Spaces are optional between bytes.
 	    NO EXPRESSIONS are allowed.  Note that you do NOT place a $
 	    in front of the digits.  This is a short form for creating
-	    tables compactly.  Data is always layed down on a byte-by-byte
+	    tables compactly.  Data is always laid down on a byte-by-byte
 	    basis.
 
 	    Example:	    HEX 1A45 45 13254F 3E12
@@ -354,7 +354,7 @@ PSEUDOPS:
 	    will result in 200 zero's and a 23. This allows you to specify
 	    some ORG, then change your mind and specify some other (lower
 	    address) ORG without causing an error (assuming nothing is
-	    generated inbetween).
+	    generated in-between).
 
 	    Normally, DS and ALIGN are used to generate specific filler
 	    values.
@@ -392,13 +392,13 @@ PSEUDOPS:
 
 [label] ALIGN	    N[,fill]
 
-	    Align the current PC to an N byte boundry.	The default
+	    Align the current PC to an N byte boundary.	The default
 	    fill character is always 0, and has nothing to do with
 	    the default fill character specifiable in an ORG.
 
 [label] SUBROUTINE  name
 
-	    This isn't really a subroutine, but a boundry between sets of
+	    This isn't really a subroutine, but a boundary between sets of
 	    temporary labels (which begin with a dot).	Temporary label
 	    names are unique within segments of code bounded by SUBROUTINE:
 
@@ -411,7 +411,7 @@ PSEUDOPS:
 		.qq	dex
 			bne .qq
 
-	    Automatic temporary label boundries occur for each macro level.
+	    Automatic temporary label boundaries occur for each macro level.
 	    Usually temporary labels are used in macros and within actual
 	    subroutines (so you don't have to think up a thousand different
 	    names)
@@ -452,7 +452,7 @@ symbol	SET	    exp
 
 	MAC	    name
 
-	    Declare a macro.  lines between MAC and ENDM are the macro.
+	    Declare a macro.  Lines between MAC and ENDM are the macro.
 	    You cannot recursively declare a macro.  You CAN recursively
 	    use a macro (reference a macro in a macro).  No label is
 	    allowed to the left of MAC or ENDM.
