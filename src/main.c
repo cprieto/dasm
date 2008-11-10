@@ -61,8 +61,9 @@ static void clearsegs(void);
 static unsigned int hash_mnemonic(const char *str);
 static void outlistfile(const char *);
 
-static const char     *Extstr;
-static int     pass;
+static const char *Extstr;
+static int pass;
+static int Inclevel;
 
 static bool F_ListAllPasses = false;
 static bool bDoAllPasses = false;
@@ -92,27 +93,31 @@ static int nMaxPasses = 10;
       Collisions for MNEMONICS: 1
       Collisions for SYMBOLS: 4
 */
-static void debug_hash_collisions(void)
+static void debug_mnemonic_hash_collisions(void)
 {
     MNEMONIC *mne;
-    int mne_collisions = 0;
+    int collisions = 0;
     int i;
     bool first;
 
-    for (i = 0; i < MHASHSIZE; i++)
-    {
-      first = true;
-      for (mne = MHash[i]; mne != NULL; mne = mne->next)
-      {
-        if (!first) {
-          mne_collisions += 1;
+    for (i = 0; i < MHASHSIZE; i++) {
+        first = true;
+        for (mne = MHash[i]; mne != NULL; mne = mne->next) {
+            if (!first) {
+                collisions += 1;
+            }
+            else {
+                first = false;
+            }
         }
-        first = false;
-      }
     }
 
-    printf("Collisions for MNEMONICS: %d\n", mne_collisions);
+    printf("Collisions for MNEMONICS: %d\n", collisions);
+}
 
+static void debug_hash_collisions(void)
+{
+    debug_mnemonic_hash_collisions();
     debug_symbol_hash_collisions();
 }
 
@@ -907,10 +912,10 @@ void findext(char *str)
         return;
     }
 
-    while (*str && *str != '.')
+    while (*str != '\0' && *str != '.')
         ++str;
-    if (*str) {
-        *str = 0;
+    if (*str != '\0') {
+        *str = '\0';
         ++str;
         Extstr = str;
         switch(tolower(str[0])) {

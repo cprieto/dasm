@@ -46,7 +46,6 @@ char	*Av[256];	    /*	up to 256 arguments */
 char	Avbuf[512];
 bool MsbOrder = true;
 int	Mnext;
-char	Inclevel;
 unsigned int	Mlevel;
 unsigned long	Localindex;	   /*  to generate local variables */
 unsigned long	Lastlocalindex;
