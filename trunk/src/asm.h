@@ -377,7 +377,6 @@ extern FILE    *FI_temp;
 extern bool Fisclear;
 extern unsigned long Plab;
 extern dasm_flag_t Pflags;
-extern char    Inclevel;
 extern bool    ListMode;
 
 extern unsigned long  CheckSum;
