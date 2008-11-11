@@ -510,12 +510,12 @@ void DumpSymbolTable(void)
         if (fi != NULL) {
             ShowSymbols(fi);
             if (fclose(fi) != 0) {
-                warning_fmt("Problem closing symbol file '%s'.\n",
+                warning_fmt("Problem closing symbol file '%s'.",
                             symbol_file_name);
             }
         }
         else {
-            warning_fmt("Unable to open symbol dump file '%s'.\n",
+            warning_fmt("Unable to open symbol dump file '%s'.",
                         symbol_file_name);
         }
     }
