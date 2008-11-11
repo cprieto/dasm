@@ -125,7 +125,7 @@ char *checked_strdup(const char *s);
  *   dst != NULL && src != NULL && size > 0
  */
 
-size_t strlower(char *dst, const char *src, size_t size);
+size_t strlower(/*@out@*/ char *dst, const char *src, size_t size);
 
 /**
  * @brief
@@ -135,7 +135,7 @@ size_t strlower(char *dst, const char *src, size_t size);
  *   dst != NULL && src != NULL && size > 0
  */
 
-size_t strupper(char *dst, const char *src, size_t size);
+size_t strupper(/*@out@*/ char *dst, const char *src, size_t size);
 
 /**
  * @brief
@@ -145,7 +145,7 @@ size_t strupper(char *dst, const char *src, size_t size);
  *   dst != NULL && src != NULL && size > 0
  */
 
-size_t strip_whitespace(char *dst, const char *src, size_t size);
+size_t strip_whitespace(/*@out@*/ char *dst, const char *src, size_t size);
 
 /**
  * @brief
