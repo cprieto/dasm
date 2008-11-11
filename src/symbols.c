@@ -205,9 +205,7 @@ void programlabel(void)
     SYMBOL *sym;
     SEGMENT *cseg = Csegment;
     const char *str;
-    /* was "unsigned char rorg = cseg->flags & SF_RORG;" and it
-       might just be used as a bool, not really flags... [phf] */
-    dasm_flag_t rorg = cseg->flags & SF_RORG;
+    bool rorg = (cseg->flags & SF_RORG) != 0;
     dasm_flag_t cflags = (rorg) ? cseg->rflags : cseg->flags;
     unsigned long pc = (rorg) ? cseg->rorg : cseg->org;
     
