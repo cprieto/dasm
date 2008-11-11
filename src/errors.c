@@ -23,28 +23,6 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
-    TODO: I may have made a big mistake in trying to cram everything
-    DASM has to say into one single interface called notify(). There
-    *is* a difference between DASM errors (like out of memory, can't
-    open file, etc.) and ASSEMBLY errors (like wrong opcodes, can't
-    open INCLUDE file, etc.) which comes down to whether there is a
-    current file or not. Right now I have to "fake" things when we
-    don't have a current file, but I am not sure that's good. Maybe
-    there should be *one* function to deal with DASM errors, and
-    *another* to deal with ASSEMBLY erros... DASM errors don't need
-    (for the most part) codes either, they can just take printf()
-    form (e.g. eprintf/dprintf/iprintf whatnot in TPOP sense).
-
-    TODO: Instead of using stderr here and stdout there and then the
-    FILE* for the list file somewhere else, we should have *one* way
-    of tracking all the FILE* we write error messages to. Maybe it's
-    enough to have a short array of them, configurable on demand? We
-    could then just loop through them and write the message repeatedly.
-    Dillon's format is the only trouble since it's slightly different
-    when going to the listing file...
-*/
-
 #include "errors.h"
 
 #include "asm.h"
@@ -55,10 +33,25 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+/*
+    TODO: I simply replaced "error" with the current level in
+    all messages, not sure that works on Windows? GNU is fine,
+    it doesn't require "error" in the message...
+*/
+
+/*
+    TODO: the original asmerr() would set bStopAtEnd (what is
+    now nof_fatals>0) if the error had the "fatal" flag set in
+    the struct that described it; if would *abort* on a true
+    argument; in my previous reading of the code, I had assumed
+    that a true argument meant simply "fatal" and not abort. To
+    be verified again and addressed, maybe there are a few fatals
+    that should really be panics...
+*/
+
 /*@unused@*/
 SVNTAG("$Id$");
 
-/* TODO: globals that ended up here, need to be refactored eventually */
 static error_format_t F_error_format = ERRORFORMAT_DEFAULT;
 static error_level_t F_error_level = ERRORLEVEL_DEFAULT;
 static size_t nof_fatals = 0;
@@ -66,8 +59,7 @@ static size_t nof_errors = 0;
 static size_t nof_warnings = 0;
 char source_location_buffer[SOURCE_LOCATION_LENGTH];
 
-/* TODO: another X macro hack? or just leave it? */
-static const char *levels[] =
+static const char *level_names[] =
 {
     [ERRORLEVEL_DEBUG] = "debug",
     [ERRORLEVEL_INFO] = "info",
@@ -135,147 +127,221 @@ static void internal_panic(const char *message)
   exit(EXIT_FAILURE);
 }
 
-/* helper to print the first part of an error message */
-static void print_part_one(FILE *out, const INCFILE *file, const char *level)
+/**
+ * @brief Print final error message to all relevant streams.
+ * @note We always print to stderr; we print to the listing
+ * file if we have one. Messages to the listing file get a
+ * leading "*" just like Matt's version did years ago; at
+ * one point I thought that the "*" starts a comment, but I
+ * can't confirm that in the code (only ";" seems to be a
+ * comment), so the motivation must have been different.
+ * We only get here after all the other filters checked that
+ * we should really print, so we don't check anything else
+ * about the error message.
+ */
+static void print_error_message(const char *message)
 {
-    /*
-        New error format selection for 2.20.11 since some
-        people *don't* use MS products. [phf]
-    */
+    assert(message != NULL);
+    assert(strlen(message) > 0);
 
-    /*
-        TODO: I simply replaced "error" with the current level,
-        not sure that works for WOE? Let's check... GNU is fine
-        btw, doesn't requite "error" in the message... [phf]
-    */
+    fprintf(stderr, "%s\n", message);
 
-    /*
-        TODO: What if we're to produce an error message before
-        there's even one file open, so we have no INCFILE? We
-        need a different format for that, even if just in case!
-        Error handling should not depend purely on source code
-        analysis, right? Command line options come to mind... [phf]
-    */
+    if (FI_listfile != NULL) {
+        fprintf(FI_listfile, "*%s\n", message);
+    }
+    else {
+        /* sanity check: if there was no FILE* there should be no name */
+        assert(F_listfile == NULL);
+    }
+}
 
-    /*
-        DARN: the original asmerr() would set bStopAtEnd if the
-        error had the "fatal" flag set in the record that described
-        it; if would *abort* on a true argument; in my previous
-        reading of the code, I had assumed that a true argument
-        meant simply "fatal" and not abort. To be verified again
-        and addressed, maybe there are a few more panics around... [phf]
-    */
+/**
+ * @brief Sane wrapper for vsnprintf().
+ * @note See sane_snprintf() for details.
+ */
+static size_t
+sane_vsnprintf(/*@out@*/ char *restrict str, size_t size, const char *restrict fmt, va_list ap)
+{
+    int res;
+    assert(str != NULL);
+    assert(size > 0);
+    assert(fmt != NULL);
 
-    switch (F_error_format)
-    {
+    res = vsnprintf(str, size, fmt, ap);
+    if (res < 0) {
+        internal_panic("sane_vsnprintf() failed!");
+    }
+    /* res >= 0 here so cast to size_t is okay */
+    return (size_t) res;
+}
+
+static size_t
+sane_snprintf(/*@out@*/ char *restrict str, size_t size, const char *restrict fmt, ...)
+__attribute__((format(printf, 3, 4)));
+
+/**
+ * @brief Sane wrapper for snprintf().
+ * @note The interface for snprintf() is a little retarded since
+ * the return type is int instead of size_t. Due to it's stdio.h
+ * heritage, returning something negative on error is expected.
+ * But we're using it to format strings, so we don't care about
+ * those errors in detail (if there ever are any, not even sure).
+ * We handle potential errors here and return a size_t suitable
+ * for overflow checking.
+ */
+static size_t
+sane_snprintf(/*@out@*/ char *restrict str, size_t size, const char *restrict fmt, ...)
+{
+    size_t res;
+    va_list ap;
+
+    va_start(ap, fmt);
+
+    res = sane_vsnprintf(str, size, fmt, ap);
+
+    va_end(ap);
+    return res;
+}
+
+/**
+ * @brief Format the level part of the error message.
+ * @note Follows strlcat() conventions.
+ */
+static size_t append_level(char *buffer, error_level_t level, size_t size)
+{
+    char name[1024];
+    size_t res = 0;
+    assert(valid_error_level(level));
+    res = sane_snprintf(name, sizeof(name), "%s: ", level_names[level]);
+    if (res >= sizeof(name)) {
+        internal_panic("Buffer overflow in append_level()!");
+    }
+    return strlcat(buffer, name, size);
+}
+
+/**
+ * @brief Format the location part of the error message.
+ * @note Follows strlcat() conventions.
+ */
+static size_t append_location(char *buffer, /*@null@*/ const INCFILE *file, size_t size)
+{
+    char location[1024];
+    size_t res = 0;
+
+    /* clear buffer */
+    location[0] = '\0';
+
+    switch (F_error_format) {
         case ERRORFORMAT_WOE:
             /*
                 Error format for MS VisualStudio and relatives:
                 "file (line): error: string"
             */
-            if (file != NULL)
-            {
-                fprintf(out, "%s (%lu): %s: ", file->name, file->lineno, level);
-            }
-            else
-            {
-                fprintf(out, "%s: ", level);
+            if (file != NULL) {
+                res = sane_snprintf(
+                    location, sizeof(location), "%s (%lu): ",
+                    file->name, file->lineno
+                );
             }
             break;
-
         case ERRORFORMAT_DILLON:
             /*
-                Matthew Dillon's original format, except that
-                we don't distinguish writing to the terminal
-                from writing to the list file for now. Matt's
-                2.16 uses these:
-
-                  "*line %4ld %-10s %s\n" (list file)
+                Matthew Dillon's original format. Note that
+                Matt's 2.16 uses this instead:
                   "line %4ld %-10s %s\n" (terminal)
             */
-            if (file != NULL)
-            {
-                fprintf(out, "line %7lu %-10s ", file->lineno, file->name);
-            }
-            else
-            {
-                /* nothing to print in this case... */
+            if (file != NULL) {
+                res = sane_snprintf(
+                    location, sizeof(location), "line %7lu %-10s ",
+                    file->lineno, file->name
+                );
             }
             break;
-
         case ERRORFORMAT_GNU:
             /*
                 GNU format error messages, from their coding
                 standards: "source-file-name:lineno: message"
             */
-            if (file != NULL)
-            {
-                fprintf(out, "%s:%lu: %s: ", file->name, file->lineno, level);
+            if (file != NULL) {
+                res = sane_snprintf(
+                    location, sizeof(location), "%s:%lu: ",
+                    file->name, file->lineno
+                );
             }
-            else
-            {
-                fprintf(out, "%s: %s: ", getprogname(), level);
+            else {
+                res = sane_snprintf(
+                    location, sizeof(location), "%s: ",
+                    getprogname()
+                );
             }
             break;
-
         default:
-            internal_panic("Invalid error format in print_part_one()!");
+            internal_panic("Invalid error format in append_location()!"); 
             break;
     }
+    if (res >= sizeof(location)) {
+        internal_panic("Buffer overflow in append_location()!");
+    }
+    return strlcat(buffer, location, size);
 }
 
-#define NOTIFY_BUFFER_SIZE 1024
+/**
+ * @brief Format the information part of the error message.
+ * @note Follows strlcat() conventions.
+ */
+static size_t
+append_information(char *buffer, const char *fmt, va_list ap, size_t size)
+{
+    char information[1024];
+    size_t res = 0;
+    res = sane_vsnprintf(information, sizeof(information), fmt, ap);
+    if (res >= sizeof(information)) {
+        internal_panic("Buffer overflow in append_information()!");
+    }
+    return strlcat(buffer, information, size);
+}
 
 static void vanotify(error_level_t level, const char *fmt, va_list ap)
 {
-    /* buffer for formatting output in */
-    static char notify_buffer[NOTIFY_BUFFER_SIZE];
-    /* file pointer we write the message to */
-    FILE *out = (FI_listfile != NULL) ? FI_listfile : stderr;
+    /* buffer for formatting error message into  */
+    char buffer[1024];
     /* include file we're in right now (if any) */
     INCFILE *file = pIncfile;
-    /* level of severity description, grab from "levels" table later */
-    const char *lev = NULL;
+    /* holds the return value from strlcat */
+    size_t res;
 
     assert(valid_error_level(level));
 
-    if (!visible_error_level(level))
-    {
+    if (!visible_error_level(level)) {
         /* condition not severe enough */
         return;
     }
 
-    lev = levels[level];
-
-    /* find the file we're in */
-    /* TODO: how does this work? why no NULL ptr check in original? */
-    /* TODO: theory: find first non-macro, one is guaranteed to exist? */
-    while (file != NULL && (file->flags & INF_MACRO) != 0)
-    {
+    /* find the file we're in (if any) */
+    /* TODO: how does this work exactly? */
+    while (file != NULL && (file->flags & INF_MACRO) != 0) {
         file = file->next;
     }
-    /*
-        took this out to accomodate the fact that there might not be
-        a file yet... [phf]
-    */
-    /*assert(file != NULL);*/
 
-    /* print first part of message, different formats offered */
-    print_part_one(out, file, lev);
+    /* clear buffer */
+    buffer[0] = '\0';
 
-    /* print second part of message, always the same for now */
-    /*
-        used to call vasprintf()/free() but we switched to a
-        global buffer with less overhead for this frequently
-        called function [phf]
-    */
-    if (vsnprintf(notify_buffer, NOTIFY_BUFFER_SIZE, fmt, ap) >=
-        NOTIFY_BUFFER_SIZE)
-    {
-        internal_panic("Buffer overflow in vnotify()!");
+    /* append the various pieces of the message */
+    res = append_location(buffer, file, sizeof(buffer));
+    if (res > sizeof(buffer)) {
+        internal_panic("Buffer overflow in vanotify()!");
     }
-    (void) fputs(notify_buffer, out);
-    (void) fputs("\n", out);
+    res = append_level(buffer, level, sizeof(buffer));
+    if (res > sizeof(buffer)) {
+        internal_panic("Buffer overflow in vanotify()!");
+    }
+    res = append_information(buffer, fmt, ap, sizeof(buffer));
+    if (res > sizeof(buffer)) {
+        internal_panic("Buffer overflow in vanotify()!");
+    }
+
+    /* print the message */
+    print_error_message(buffer);
 
     /* maintain statistics about warnings and errors */
     /* TODO: count everything < PANIC? */
