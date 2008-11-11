@@ -155,6 +155,7 @@ extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
  * because __func__ is not expanded into a string literal
  * by the preprocessor! :-/
  * @todo the example tag above doesn't work as I thought it would...
+ * also, should this use sane_snprintf()?
  */
 #define SOURCE_LOCATION \
     (snprintf(source_location_buffer, SOURCE_LOCATION_LENGTH, \
