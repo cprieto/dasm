@@ -214,7 +214,7 @@ char *checked_strdup(const char *s)
   return strcpy(checked_malloc(strlen(s)+1), s);
 }
 
-size_t strlower(char *dst, const char *src, size_t size)
+size_t strlower(/*@out@*/ char *dst, const char *src, size_t size)
 {
     /* strlcpy checks the assertions anyway */
     size_t result = strlcpy(dst, src, size);
@@ -226,7 +226,7 @@ size_t strlower(char *dst, const char *src, size_t size)
     return result;
 }
 
-size_t strupper(char *dst, const char *src, size_t size)
+size_t strupper(/*@out@*/ char *dst, const char *src, size_t size)
 {
     /* strlcpy checks the assertions anyway */
     size_t result = strlcpy(dst, src, size);
@@ -238,7 +238,7 @@ size_t strupper(char *dst, const char *src, size_t size)
     return result;
 }
 
-size_t strip_whitespace(char *dst, const char *src, size_t size)
+size_t strip_whitespace(/*@out@*/ char *dst, const char *src, size_t size)
 {
     /* TODO: there must be a simpler way to write this... */
     size_t n = size;
@@ -251,14 +251,14 @@ size_t strip_whitespace(char *dst, const char *src, size_t size)
 
     /* pre-count how many non-space characters we have */
     for (t = src; *t != '\0'; t++) {
-        if (!isspace(*t)) {
+        if (isspace((int)*t) == 0) {
             needed++;
         }
     }
 
     /* copy while still room and src not over */
     while (n > 1 && *src != '\0') {
-        if (isspace(*src)) {
+        if (isspace((int)*src) != 0) {
             src++;
         }
         else {
