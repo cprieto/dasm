@@ -40,8 +40,12 @@
 /*@unused@*/
 SVNTAG("$Id$");
 
-#define SHASHSIZE 1024
-#define SHASHAND (SHASHSIZE-1) /* 0x03FF */
+/*
+  Size of SYMBOL hash table. Must be a power of two
+  for the AND trick to work!
+*/
+#define SHASHSIZE (1<<10)
+#define SHASHAND (SHASHSIZE-1)
 
 /* Hash table for symbols. */
 static SYMBOL *SHash[SHASHSIZE];

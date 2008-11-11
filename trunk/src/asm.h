@@ -104,9 +104,14 @@ typedef int dasm_flag_t;
 
 
 #define DEFORGFILL  255
-#define MHASHSIZE   1024
-#define MHASHAND    (MHASHSIZE-1) /*0x03FF*/
 #define MAXMACLEVEL 32
+
+/*
+  Size of MNEMONIC hash table. Must be a power of two
+  for the AND trick to work!
+*/
+#define MHASHSIZE (1<<10)
+#define MHASHAND (MHASHSIZE-1)
 
 	enum ADDRESS_MODES {
 		AM_IMP,					/*    implied         */
