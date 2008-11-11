@@ -488,11 +488,11 @@ v_incbin(const char *str, MNEMONIC *dummy)
             }
         }
         if (fclose(binfile) != 0) {
-            warning_fmt("Problem closing binary include file '%s'.\n", buf);
+            warning_fmt("Problem closing binary include file '%s'.", buf);
         }
     }
     else {
-        warning_fmt("Unable to open binary include file '%s'.\n", buf);
+        warning_fmt("Unable to open binary include file '%s'.", buf);
     }
     
     free(buf);

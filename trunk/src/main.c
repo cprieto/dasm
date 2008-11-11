@@ -517,7 +517,7 @@ nextpass:
             rmnode((void **)&Ifstack, sizeof(IFSTACK));
         
         if (fclose(pIncfile->fi) != 0) {
-            warning_fmt("Problem closing include file '%s'.\n", pIncfile->name);
+            warning_fmt("Problem closing include file '%s'.", pIncfile->name);
         }
         free(pIncfile->name); /* can't do anything about this warning :-( [phf] */
         --Inclevel;
@@ -548,11 +548,11 @@ nextpass:
     closegenerate();
     assert(FI_temp != NULL); /* fclose() undefined for NULL [phf] */
     if (fclose(FI_temp) != 0) {
-        warning_fmt("Problem closing temporary file '%s'.\n", F_outfile);
+        warning_fmt("Problem closing temporary file '%s'.", F_outfile);
     }
     if (FI_listfile != NULL) {
         if (fclose(FI_listfile) != 0) {
-            warning_fmt("Problem closing list file '%s'.\n", F_listfile);
+            warning_fmt("Problem closing list file '%s'.", F_listfile);
         }
     }
     
@@ -1250,7 +1250,7 @@ void pushinclude(const char *str)
         pIncfile = inf;
     }
     else {
-        warning_fmt("Unable to open include file '%s'.\n", str);
+        warning_fmt("Unable to open include file '%s'.", str);
     }
 }
 
