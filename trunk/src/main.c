@@ -607,9 +607,10 @@ nextpass:
 }
 
 
-static int tabit(char *buf1, char *buf2)
+static int tabit(const char *buf1, char *buf2)
 {
-    char *bp, *ptr;
+    char *bp;
+    const char *ptr;
     int j, k;
     
     bp = buf2;

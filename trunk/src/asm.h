@@ -103,7 +103,7 @@ typedef int dasm_flag_t;
     };
 
 
-#define DEFORGFILL  255
+#define DEFORGFILL  '\xff' /* was 255 */
 #define MAXMACLEVEL 32
 
 /*
