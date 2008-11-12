@@ -44,7 +44,7 @@ SVNTAG("$Id$");
   Size of SYMBOL hash table. Must be a power of two
   for the AND trick to work!
 */
-#define SHASHSIZE (1<<10)
+#define SHASHSIZE ((size_t)(1<<10))
 #define SHASHAND (SHASHSIZE-1)
 
 /* Hash table for symbols. */
@@ -337,22 +337,22 @@ void clear_all_symbol_refs(void)
     }
 }
 
-static size_t CountUnresolvedSymbols(void)
+static size_t nof_unresolved_symbols(void)
 {
     SYMBOL *sym;
-    size_t nUnresolved = 0;
+    size_t unresolved = 0;
     size_t i;
     
     /* Pre-count unresolved symbols */
     for (i = 0; i < SHASHSIZE; i++) {
         for (sym = SHash[i]; sym != NULL; sym = sym->next) {
             if ((sym->flags & SYM_UNKNOWN) != 0) {
-                nUnresolved++;
+                unresolved++;
             }
         }
     }
             
-	return nUnresolved;
+	return unresolved;
 }
 
 size_t ShowUnresolvedSymbols(void)
@@ -360,7 +360,7 @@ size_t ShowUnresolvedSymbols(void)
     SYMBOL *sym;
     size_t i;
     
-    size_t nUnresolved = CountUnresolvedSymbols();
+    size_t nUnresolved = nof_unresolved_symbols();
     if (nUnresolved > 0)
     {
         printf("--- Unresolved Symbol List\n");
@@ -525,7 +525,7 @@ void debug_symbol_hash_collisions(void)
 {
     const SYMBOL *sym;
     int collisions = 0;
-    int i;
+    size_t i;
     bool first;
 
     for (i = 0; i < SHASHSIZE; i++) {
