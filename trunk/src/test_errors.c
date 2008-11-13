@@ -23,6 +23,13 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ * @brief Unit tests for errors module.
+ * @todo how do we keep panic* from aborting while unit test
+ * runs? or maybe it doesn't matter if we switch to Check?
+ */
+
 #include "errors.h"
 
 #include "asm.h"
@@ -30,13 +37,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-/**
- * @file test_errors.c
- * @brief Unit tests for errors module.
- * @todo how do we keep panic* from aborting while unit test
- * runs? or maybe it doesn't matter if we switch to Check?
- */
 
 /* fakes for unit test */
 FILE *FI_listfile = NULL;

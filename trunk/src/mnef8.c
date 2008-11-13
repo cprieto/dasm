@@ -23,9 +23,11 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ */
+
 /*
- *  MNEF8.C
- *
  *  Fairchild F8 support code for DASM
  *  Copyright (c) 2004 by Thomas Mathys.
  */

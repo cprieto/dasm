@@ -26,17 +26,15 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ *
+ * @brief Dealing with symbols.
+ */
+
 #include "asm.h"
 
 #include <stdbool.h>
-
-/**
- * @file
- *   symbols.h
- *
- * @brief
- *   Dealing with symbols.
- */
 
 void programlabel(void);
 void ShowSymbols(FILE *file);

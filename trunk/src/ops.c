@@ -23,10 +23,9 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  OPS.C
- *
- *  Handle mnemonics and pseudo ops
+/**
+ * @file
+ * @brief Handle mnemonics and pseudo-ops.
  */
 
 #include "asm.h"

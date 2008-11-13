@@ -28,10 +28,8 @@
 
 /**
  * @file
- *   util.h
  *
- * @brief
- *   Utility functions for string manipulation and memory allocation.
+ * @brief Utility functions for string manipulation and memory allocation.
  */
 
 #include <stdbool.h>

@@ -23,6 +23,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ */
+
 /*
     The functions strlcat() and strlcpy() are not distributed under the GNU
     General Public License but a custom license reproduced below. Although
@@ -46,10 +50,6 @@
     Bernstein to comp.lang.c on 1990/12/04. As far as we know, the code is
     in the public domain.
 */
-
-/**
- * @file util.c
- */
 
 #include "util.h"
 

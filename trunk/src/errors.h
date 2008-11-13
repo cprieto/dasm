@@ -26,6 +26,19 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ *
+ * @brief Error handling for DASM.
+ *
+ * The idea for separate error levels came from syslog(3)
+ * and vague memories of Ralf Michl's Java version of same.
+ * The idea for printf-style interfaces came from Thomas Mathys
+ * as well as from Brian W. Kernighan's and Rob Pike's great
+ * little book The Practice of Programming. None of them are
+ * to blame for this implementation of course...
+ */
+
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -34,18 +47,6 @@
 #ifndef __GNUC__
 #define __attribute__(x)  /* GNU C __attribute__ removed */
 #endif
-
-/**
- * @file errors.h
- *
- * @brief Error handling for DASM.
- *
- * @note The idea for separate error levels came from syslog(3)
- * and vague memories of Ralf Michl's Java version of same.
- * The idea for printf-style interfaces came from Thomas Mathys
- * as well as from Brian W. Kernighan's and Rob Pike's great
- * little book The Practice of Programming.
- */
 
 /**
  * @brief Format of error messages for -E option.
@@ -96,19 +97,19 @@ typedef enum
 {
     /* actual error levels */
 
-    /* displayed in debug mode, -d option */
+    /** displayed in debug mode, -d option */
     ERRORLEVEL_DEBUG,
-    /* displayed in high verbose mode, -v option */
+    /** displayed in high verbose mode, -v option */
     ERRORLEVEL_INFO,
-    /* displayed in low verbose mode, -v option */
+    /** displayed in low verbose mode, -v option */
     ERRORLEVEL_NOTICE,
-    /* displayed if warnings enabled, -w option */
+    /** displayed if warnings enabled, -w option */
     ERRORLEVEL_WARNING,
-    /* regular error, always displayed, assembly continues */
+    /** regular error, always displayed, assembly continues */
     ERRORLEVEL_ERROR,
-    /* fatal error, always displayed, assembly stops after current pass */
+    /** fatal error, always displayed, assembly stops after current pass */
     ERRORLEVEL_FATAL,
-    /* panic insanity, always displayed, breaks out right away */
+    /** panic insanity, always displayed, breaks out right away */
     ERRORLEVEL_PANIC,
 
     /* meta data */
@@ -163,7 +164,7 @@ extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
 /**
  * @brief Generic interface for printf(3)-style error handling
  * framework.
- * @see http://ocliteracy.com/techtips/gnu-c-attributes.html
+ * @see http://www.unixwiz.net/techtips/gnu-c-attributes.html
  */
 
 void notify_fmt(error_level_t level, const char *fmt, ...)
