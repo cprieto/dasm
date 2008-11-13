@@ -127,8 +127,7 @@ bool valid_error_level(int level);
  * @brief Set error level, messages down to and including
  * this level are printed.
  * @todo Currently command line options don't affect this
- * thing yet, need to adapt main.c and then all the code
- * of course... :-/
+ * thing yet.
  */
 void set_error_level(error_level_t level);
 
@@ -144,8 +143,7 @@ extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
 
 /**
  * @brief Macro to capture current location in the C source
- * into a string buffer, useful for some internal conditions
- * like panic() and debug().
+ * into a string buffer, sometimes useful for certain errors.
  * @example SOURCE_LOCATION printf("You're at %s\n", SOURCE_LOCATION);
  * @warning Since there is only one global buffer, our
  * SOURCE_LOCATION macro is not "reentrant"; never use
