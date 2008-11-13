@@ -23,6 +23,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ */
+
 #include "symbols.h"
 
 #include "asm.h"
@@ -32,10 +36,6 @@
 
 #include <assert.h>
 #include <limits.h>
-
-/**
- * @file symbols.c
- */
 
 /*@unused@*/
 SVNTAG("$Id$");

@@ -26,10 +26,11 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  ASM65.H
- *
- *  Structures and definitions
+/**
+ * @file
+ * @brief Structures and definitions.
+ * @note Originally, the name of this file was asm65.h; presumably
+ * Matt first wrote DASM for 6502 code.
  */
 
 #include <stdio.h>

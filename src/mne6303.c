@@ -23,8 +23,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  MNE6303.C
+/**
+ * @file
  */
 
 #include "asm.h"

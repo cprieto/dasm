@@ -23,9 +23,11 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ */
+
 /*
- *  MNE6811.C
- *
  *  68HC11 processor
  *
  *  addressing modes:

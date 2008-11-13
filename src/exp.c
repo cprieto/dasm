@@ -23,14 +23,12 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  EXP.C
- *
- *  Handle expression evaluation and addressing mode decode.
- *
- *  NOTE! If you use the string field in an expression you must clear
- *  the SYM_MACRO and SYM_STRING bits in the flags before calling
- *  FreeSymbolList()!
+/**
+ * @file
+ * @brief Handle expression evaluation and addressing mode decode.
+ * @note If you use the string field in an expression you must clear
+ * the SYM_MACRO and SYM_STRING bits in the flags before calling
+ * FreeSymbolList()!
  */
 
 #include "asm.h"

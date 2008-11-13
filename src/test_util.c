@@ -23,6 +23,13 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ * @brief Unit tests for util module.
+ * @todo how do we keep panic* from aborting while unit test
+ * runs? or maybe it doesn't matter if we switch to Check?
+ */
+
 #include "util.h"
 
 #include "asm.h"
@@ -31,13 +38,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-/**
- * @file test_errors.c
- * @brief Unit tests for errors module.
- * @todo how do we keep panic* from aborting while unit test
- * runs? or maybe it doesn't matter if we switch to Check?
- */
 
 #if 0
 #if defined(TEST)
