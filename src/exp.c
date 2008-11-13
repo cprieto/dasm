@@ -106,8 +106,6 @@ static const char *pushdec(const char *str);
 static const char *pushhex(const char *str);
 static const char *pushchar(const char *str);
 
-static int IsAlphaNum( int c );
-
 /*
 *  evaluate an expression.  Figure out the addressing mode:
 *
@@ -144,6 +142,11 @@ static opfunc_t Opdis[MAXOPS];
 static int	Argi, Opi;
 static bool Lastwasop;
 static int	Argibase, Opibase;
+
+static bool is_alpha_num(char c)
+{
+    return isalnum((int)c) != 0;
+}
 
 SYMBOL *eval(const char *str, bool wantmode)
 {
@@ -416,17 +419,17 @@ SYMBOL *eval(const char *str, bool wantmode)
             Lastwasop = true;
             scr = tolower(str[1]);
             
-            if (cur->addrmode == AM_INDWORD && scr == 'x' && !IsAlphaNum( str[2] ))
+            if (cur->addrmode == AM_INDWORD && scr == 'x' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_INDBYTEX;
                 ++str;
             }
-            else if (scr == 'x' && !IsAlphaNum(str[2]))
+            else if (scr == 'x' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_0X;
                 ++str;
             }
-            else if (scr == 'y' && !IsAlphaNum(str[2]))
+            else if (scr == 'y' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_0Y;
                 ++str;
@@ -535,11 +538,6 @@ SYMBOL *eval(const char *str, bool wantmode)
     return base;
 }
 
-
-static int IsAlphaNum( int c )
-{
-    return isalnum(c);
-}
 
 static void evaltop(void)
 {
@@ -901,14 +899,8 @@ static const char *pushsymbol(const char *str)
     const char *ptr;
     bool macro = false;
     
-    for (ptr = str;
-    *ptr == '_' ||
-        *ptr == '.' ||
-        (*ptr >= 'a' && *ptr <= 'z') || /* TODO: IsAlphaNum? */
-        (*ptr >= 'A' && *ptr <= 'Z') ||
-        (*ptr >= '0' && *ptr <= '9');
-    ++ptr
-        );
+    for (ptr = str; *ptr == '_' || *ptr == '.' || is_alpha_num(*ptr); ++ptr);
+
     if (ptr == str)
     {
         /* [phf] removed
