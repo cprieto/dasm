@@ -433,12 +433,11 @@ static char *getfilename(const char *str)
         str++;
     }
 
-    buf = checked_malloc(strlen(str)+1);
-    strcpy(buf, str);
-        
+    buf = checked_strdup(str);
+
     /* Find trailing quote and kill it. */
     for (end = buf; *end != '\0' && *end != '\"'; ++end);
-    *end = 0;
+    *end = '\0';
         
     return buf;
 }
