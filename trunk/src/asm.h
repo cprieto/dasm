@@ -65,6 +65,22 @@
 #error This cannot be!
 #endif
 
+/*
+    Martin Pool's cool little macro to "portably" use various
+    "unused" annotations. Good for GCC and splint so far. See
+    http://sourcefrog.net/weblog/software/languages/C/unused.html
+    for the original.
+*/
+
+#ifdef UNUSED 
+#elif defined(__GNUC__) 
+# define UNUSED(x) x ## _UNUSED __attribute__((unused)) 
+#elif defined(__LCLINT__) || defined(S_SPLINT_S) 
+# define UNUSED(x) /*@unused@*/ x 
+#else 
+# define UNUSED(x) x 
+#endif
+
 enum FORMAT
 {
     FORMAT_DEFAULT = 1,

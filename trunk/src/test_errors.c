@@ -35,6 +35,7 @@
 #include "asm.h"
 #include "util.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -45,6 +46,7 @@ INCFILE *pIncfile = NULL;
 
 int main(int argc, char *argv[])
 {
+    assert(argc == 1);
     setprogname(argv[0]);
     /* fake a current file */
     pIncfile = malloc(sizeof(INCFILE));

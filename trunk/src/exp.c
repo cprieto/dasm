@@ -593,9 +593,9 @@ static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
         */
         const unsigned char *ptr = (const unsigned char *)ptr1;
         char *new;
-        int len;
-        val = len = 0;
-        while (*ptr && *ptr != '\"')
+        size_t len = 0;
+        val = 0;
+        while (*ptr != '\0' && *ptr != '\"')
         {
             val = (val << 8) | *ptr;
             ++ptr;
@@ -603,7 +603,7 @@ static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
         }
         new = checked_malloc(len + 1);
         memcpy(new, ptr1, len);
-        new[len] = 0;
+        new[len] = '\0';
         flags &= ~SYM_STRING;
         str = new;
     }
@@ -653,27 +653,27 @@ static void doop(opfunc_t func, int pri)
 }
 
 /* unary [phf] */
-static void op_takelsb(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
+static void op_takelsb(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(v1 & 0xFFL, f1, NULL);
 }
 
-static void op_takemsb(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
+static void op_takemsb(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg((v1 >> 8) & 0xFF, f1, NULL);
 }
 
-static void op_negate(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
+static void op_negate(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(-v1, f1, NULL);
 }
 
-static void op_invert(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
+static void op_invert(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(~v1, f1, NULL);
 }
 
-static void op_not(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
+static void op_not(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(!v1, f1, NULL);
 }

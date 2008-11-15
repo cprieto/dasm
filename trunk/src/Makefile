@@ -35,7 +35,7 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
        -Wcast-align -Wpointer-arith -Wbad-function-cast \
        -Wformat-y2k -Wformat-nonliteral -Wformat-security \
        -Wfloat-equal -Wundef -Winline \
-       -Wextra -Wno-unused-parameter # no-unused tames extra a little
+       -Wextra \
        # -Wunused # definition is weird in man gcc, effect is weird too
        # Warnings that only make sense for me once OS X has better gcc
        # -Wtraditional-conversion # prototype conversions gcc 4.3+
