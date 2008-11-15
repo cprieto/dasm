@@ -116,7 +116,7 @@ static void debug_mnemonic_hash_collisions(void)
         }
     }
 
-    printf("Collisions for MNEMONICS: %d\n", collisions);
+    debug_fmt("Collisions for MNEMONICS: %d", collisions);
 }
 
 static void debug_hash_collisions(void)
@@ -269,9 +269,18 @@ static void parse_sort_mode(char *str)
 
 static void parse_debug_trace(char *str)
 {
-    /* TODO: change like -T to allow 0 or 1 only (for now) [phf] */
-    Xdebug = atoi(str) != 0;
-    printf("Debug trace %s\n", Xdebug ? "ON" : "OFF");
+    int debug = atoi(str);
+    if (debug == 0) {
+        /* nothing to do, already at default error level? */
+    }
+    else if (debug == 1) {
+        set_error_level(ERRORLEVEL_DEBUG);
+    }
+    else {
+        panic_fmt("Invalid debug mode for -d option, must be 0 or 1");
+    }
+    /* TODO: get rid of this message? */
+    printf("Debug trace %s\n", debug != 0 ? "ON" : "OFF");
 }
 
 static void parse_define(char kind, char *str)
@@ -477,8 +486,7 @@ nextpass:
                     break;
             }
             
-            if (Xdebug)
-                printf("%08lx %s\n", (unsigned long) pIncfile, buf);
+            debug_fmt("%08lx %s", (unsigned long) pIncfile, buf);
             
             comment = cleanup(buf, false);
             ++pIncfile->lineno;
@@ -603,8 +611,7 @@ nextpass:
             }
     }
 
-    if (Xdebug)
-        debug_hash_collisions();
+    debug_hash_collisions();
 
 /*    return nError;*/
     return EXIT_SUCCESS;
@@ -821,8 +828,7 @@ static const char *cleanup(char *buf, bool bDisable)
             if ( bDisable )
                 break;
             
-            if (Xdebug)
-                printf("macro tail: '%s'\n", str);
+            debug_fmt("macro tail: '%s'", str);
             
             arg = atoi(str+1);
             for (add = 0; *str != '\0' && *str != '}'; ++str)
@@ -837,8 +843,7 @@ static const char *cleanup(char *buf, bool bDisable)
             ++str;
             
             
-            if (Xdebug)
-                printf("add/str: %d '%s'\n", add, str);
+            debug_fmt("add/str: %d '%s'", add, str);
             
             for (strlist = pIncfile->args; arg != 0 && strlist != NULL;)
             {
@@ -850,14 +855,12 @@ static const char *cleanup(char *buf, bool bDisable)
             {
                 add += strlen(strlist->buf);
                 
-                if (Xdebug)
-                    printf("strlist: '%s' %zu\n", strlist->buf, strlen(strlist->buf));
+                debug_fmt("strlist: '%s' %zu", strlist->buf, strlen(strlist->buf));
                 
                 if (str + add + strlen(str) + 1 > buf + MAXLINE)
                 {
-                    if (Xdebug)
-                        printf("str %8ld buf %8ld (add/strlen(str)): %d %ld\n",
-                        (unsigned long)str, (unsigned long)buf, add, (long)strlen(str));
+                    debug_fmt("str %8ld buf %8ld (add/strlen(str)): %d %ld",
+                              (unsigned long)str, (unsigned long)buf, add, (long)strlen(str));
                     panic_fmt("failure1");
                 }
                 
@@ -1175,8 +1178,7 @@ void v_macro(const char *str, MNEMONIC *dummy)
     while (fgets(buf, MAXLINE, pIncfile->fi)) {
         const char *comment;
         
-        if (Xdebug)
-            printf("%08lx %s\n", (unsigned long) pIncfile, buf);
+        debug_fmt("%08lx %s", (unsigned long) pIncfile, buf);
         
         ++pIncfile->lineno;
         

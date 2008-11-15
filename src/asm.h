@@ -364,7 +364,6 @@ extern int    Mnext;          /*    mnemonic extension    */
 extern unsigned int    Mlevel;
 
 extern bool bTrace;
-extern bool Xdebug;
 extern bool MsbOrder;
 extern unsigned long    Redo_why;
 
