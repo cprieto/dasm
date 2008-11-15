@@ -53,7 +53,7 @@ extern MNEMONIC    MneF8[];
 
 static void genfill(int32_t fill, long bytes, int size);
 static void pushif(bool xbool);
-static int gethexdig(int c);
+static int get_hex_digit(char c);
 
 /*
 *  An opcode modifies the SEGMENT flags in the following ways:
@@ -538,56 +538,51 @@ void
 v_hex(const char *str, MNEMONIC UNUSED(*dummy))
 {
     int i;
-    int result;
-
     assert(str != NULL);
 
     programlabel();
     Glen = 0;
+
     for (i = 0; str[i] != '\0'; ++i) {
-        if (str[i] == ' ')
+        int result;
+
+        if (str[i] == ' ') {
             continue;
-        result = (gethexdig(str[i]) << 4) + gethexdig(str[i+1]);
-        if (str[++i] == 0)
+        }
+
+        result = (get_hex_digit(str[i]) << 4) + get_hex_digit(str[i+1]);
+
+        if (str[++i] == '\0') {
             break;
+        }
+
         Gen[Glen++] = result;
     }
+
     generate();
 }
 
-static int gethexdig(int c)
+static int get_hex_digit(char c)
 {
-    /* [phf] removed
-    char sBuffer[64];
-    */
-    c = toupper(c);
+    int value = 0;
+    c = (char) toupper((int)c);
     
     if ('0' <= c && c <= '9') {
-        return c - '0';
+        value = (int) (c - '0');
     }
-
-    /* [phf] removed
-    if ('a' <= c && c <= 'f')
-        return c - 'a' + 10;
-    */
-    
-    if ('A' <= c && c <= 'F') {
-        return c - 'A' + 10;
+    else if ('A' <= c && c <= 'F') {
+        value = ((int) (c - 'A')) + 10;
     }
-    
-    /* [phf] removed
-    sprintf( sBuffer, "Bad Hex Digit %c", c );
-    asmerr( ERROR_SYNTAX_ERROR, false, sBuffer );
-    */
-    error_fmt("Bad hex digit '%c'!", c);
-    
-    /* TODO: refactor into error handling code */
-    (void) puts("(Must be a valid hex digit)");
-    if (FI_listfile != NULL) {
-        fputs("(Must be a valid hex digit)\n", FI_listfile);
+    else {
+        error_fmt("Bad hex digit '%c'!", c);
+        /* TODO: refactor into error handling code? */
+        (void) puts("(Must be a valid hex digit)");
+        if (FI_listfile != NULL) {
+            fputs("(Must be a valid hex digit)\n", FI_listfile);
+        }
     }
-    
-    return 0;
+    assert(0 <= value && value <= 15);
+    return value;
 }
 
 void
