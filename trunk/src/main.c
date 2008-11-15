@@ -1204,10 +1204,7 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
             slp = &sl->next;
         }
     }
-    /* [phf] removed
-    asmerr( ERROR_PREMATURE_EOF, true, NULL );
-    */
-    fatal_fmt("Premature end of file!");
+    panic_fmt("Premature end of file!");
 }
 
 
@@ -1222,6 +1219,9 @@ void addhashtable(MNEMONIC *mne)
             mne->opcode[i] = 0;     /* not really needed */
             if (mne->okmask & (1L << i))
                 mne->opcode[i] = opcode[j++];
+        }
+        if (findmne(mne->name) != NULL) {
+            notice_fmt("Mnemonic '%s' was overridden!", mne->name);
         }
         i = hash_mnemonic(mne->name);
         mne->next = MHash[i];

@@ -98,3 +98,9 @@ are hiding the file all the way down here for a reason...
 
 - fseeko/ftello instead of fseek/ftell could be useful to some
   extent
+
+- integrating Michael Marvin Morrison's 65c02 stuff is hard since
+  there are not just new/changed opcodes but also new addressing
+  modes; those, however, are hardcoded into the rest of DASM; I
+  guess that's why Thomas had to rewrite so much of DASM for F8,
+  and why he said his Z80 work died off...
