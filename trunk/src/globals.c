@@ -54,7 +54,6 @@ unsigned long	Localdollarindex;
 unsigned long	Lastlocaldollarindex;
 
 bool bTrace = false;
-bool Xdebug;
 
 unsigned long   Redo_why = 0;
 int	Redo_eval = 0;	   /*  infinite loop detection only    */

@@ -383,6 +383,12 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
     free_symbol_list(symbase);
 }
 
+/*
+  TODO: this instruction is not documented; it results
+  in some debugging output regarding addressing modes,
+  but it seems that could be handled by the existing
+  debug mode already; not sure why we should keep this? [phf]
+*/
 void v_trace(const char *str, MNEMONIC *dummy)
 {
     assert(str != NULL);

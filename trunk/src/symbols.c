@@ -238,9 +238,7 @@ void programlabel(void)
         {
             ++Redo;
             Redo_why |= REASON_FORWARD_REFERENCE;
-            if (Xdebug) {
-                printf("redo 13: '%s' %04x %04x\n", sym->name, sym->flags, cflags);
-            }
+            debug_fmt("redo 13: '%s' %04x %04x", sym->name, sym->flags, cflags);
         }
         else if ((cflags & SYM_UNKNOWN) != 0 && (sym->flags & SYM_REF) != 0)
         {
@@ -540,7 +538,7 @@ void debug_symbol_hash_collisions(void)
         }
     }
 
-    printf("Collisions for SYMBOLS: %d\n", collisions);
+    debug_fmt("Collisions for SYMBOLS: %d", collisions);
 }
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
