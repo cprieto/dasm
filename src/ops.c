@@ -59,7 +59,7 @@ static int gethexdig(int c);
 *  An opcode modifies the SEGMENT flags in the following ways:
 */
 
-void v_processor(const char *str, MNEMONIC *dummy)
+void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
 {
     static bool bCalled = false;
     static unsigned long Processor = 0;
@@ -389,13 +389,13 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
   but it seems that could be handled by the existing
   debug mode already; not sure why we should keep this? [phf]
 */
-void v_trace(const char *str, MNEMONIC *dummy)
+void v_trace(const char *str, MNEMONIC UNUSED(*dummy))
 {
     assert(str != NULL);
     bTrace = (str[1] == 'n');
 }
 
-void v_list(const char *str, MNEMONIC *dummy)
+void v_list(const char *str, MNEMONIC UNUSED(*dummy))
 {
     programlabel();
     assert(str != NULL);
@@ -449,7 +449,7 @@ static char *getfilename(const char *str)
 }
 
 void
-v_include(const char *str, MNEMONIC *dummy)
+v_include(const char *str, MNEMONIC UNUSED(*dummy))
 {
     char *buf;
 
@@ -464,7 +464,7 @@ v_include(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_incbin(const char *str, MNEMONIC *dummy)
+v_incbin(const char *str, MNEMONIC UNUSED(*dummy))
 {
     char *buf;
     FILE *binfile;
@@ -506,7 +506,7 @@ v_incbin(const char *str, MNEMONIC *dummy)
 
 
 void
-v_seg(const char *str, MNEMONIC *dummy)
+v_seg(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SEGMENT *seg;
 
@@ -535,7 +535,7 @@ v_seg(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_hex(const char *str, MNEMONIC *dummy)
+v_hex(const char *str, MNEMONIC UNUSED(*dummy))
 {
     int i;
     int result;
@@ -591,15 +591,13 @@ static int gethexdig(int c)
 }
 
 void
-v_err(const char *str, MNEMONIC *dummy)
+v_err(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     programlabel();
     /* [phf] removed
     asmerr( ERROR_ERR_PSEUDO_OP_ENCOUNTERED, true, NULL );
     */
-    fatal_fmt("ERR pseudo-op encountered, aborting assembly!");
-    /* TODO: really exit() here? that's almost like panic? */
-    exit(EXIT_FAILURE);
+    panic_fmt("ERR pseudo-op encountered, aborting assembly!");
 }
 
 void
@@ -771,7 +769,7 @@ v_dc(const char *str, MNEMONIC *mne)
 
 
 void
-v_ds(const char *str, MNEMONIC *dummy)
+v_ds(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     int mult = 1;
@@ -808,7 +806,7 @@ v_ds(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_org(const char *str, MNEMONIC *dummy)
+v_org(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
 
@@ -849,7 +847,7 @@ v_org(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_rorg(const char *str, MNEMONIC *dummy)
+v_rorg(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym = eval(str, false);
 
@@ -875,14 +873,14 @@ v_rorg(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_rend(const char *str, MNEMONIC *dummy)
+v_rend(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     programlabel();
     Csegment->flags &= ~SF_RORG;
 }
 
 void
-v_align(const char *str, MNEMONIC *dummy)
+v_align(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym = eval(str, false);
     unsigned char fill = 0;
@@ -938,7 +936,7 @@ v_align(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_subroutine(const char *str, MNEMONIC *dummy)
+v_subroutine(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     ++Lastlocalindex;
     Localindex = Lastlocalindex;
@@ -1045,7 +1043,7 @@ v_equ(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_eqm(const char *str, MNEMONIC *dummy)
+v_eqm(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *lab;
     size_t len = strlen(Av[0]);
@@ -1067,7 +1065,7 @@ v_eqm(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_echo(const char *str, MNEMONIC *dummy)
+v_echo(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *s;
@@ -1099,7 +1097,7 @@ v_echo(const char *str, MNEMONIC *dummy)
     }
 }
 
-void v_set(const char *str, MNEMONIC *dummy)
+void v_set(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym = eval(str, false);
     SYMBOL *lab;
@@ -1178,7 +1176,7 @@ v_execmac(const char *str, MACRO *mac)
     
 }
 
-void v_end(const char *str, MNEMONIC *dummy)
+void v_end(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     /* Only ENDs current file and any macro calls within it */
     
@@ -1190,7 +1188,7 @@ void v_end(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_endm(const char *str, MNEMONIC *dummy)
+v_endm(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     INCFILE *inc = pIncfile;
     STRLIST *args, *an;
@@ -1216,13 +1214,13 @@ v_endm(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_mexit(const char *str, MNEMONIC *dummy)
+v_mexit(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     v_endm(NULL, NULL);
 }
 
 void
-v_ifconst(const char *str, MNEMONIC *dummy)
+v_ifconst(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     assert(str != NULL);
@@ -1235,7 +1233,7 @@ v_ifconst(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_ifnconst(const char *str, MNEMONIC *dummy)
+v_ifnconst(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     assert(str != NULL);
@@ -1248,7 +1246,7 @@ v_ifnconst(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_if(const char *str, MNEMONIC *dummy)
+v_if(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     assert(str != NULL);
@@ -1275,7 +1273,7 @@ v_if(const char *str, MNEMONIC *dummy)
     free_symbol_list(sym);
 }
 
-void v_else(const char *str, MNEMONIC *dummy)
+void v_else(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     if (Ifstack->acctrue && (Ifstack->flags & IFF_BASE) == 0) {
         programlabel();
@@ -1284,7 +1282,7 @@ void v_else(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_endif(const char *str, MNEMONIC *dummy)
+v_endif(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     IFSTACK *ifs = Ifstack;
     assert(ifs != NULL);
@@ -1303,7 +1301,7 @@ v_endif(const char *str, MNEMONIC *dummy)
     }
 }
 
-void v_repeat(const char *str, MNEMONIC *dummy)
+void v_repeat(const char *str, MNEMONIC UNUSED(*dummy))
 {
     REPLOOP *rp;
     SYMBOL *sym;
@@ -1358,7 +1356,7 @@ void v_repeat(const char *str, MNEMONIC *dummy)
 }
 
 void
-v_repend(const char *str, MNEMONIC *dummy)
+v_repend(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         v_endif(NULL,NULL);
@@ -1387,7 +1385,7 @@ v_repend(const char *str, MNEMONIC *dummy)
 static STRLIST *incdirlist;
 
 void
-v_incdir(const char *str, MNEMONIC *dummy)
+v_incdir(const char *str, MNEMONIC UNUSED(*dummy))
 {
     STRLIST **tail;
     char *buf;

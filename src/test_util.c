@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
     char poop[5] = {'a', 'b', 'c', 'd', 'X'};
     size_t res;
     char* excellent = NULL;
+    assert(argc == 1);
     setprogname(argv[0]);
 
     /* test some string functions */

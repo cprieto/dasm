@@ -998,7 +998,7 @@ void findext(char *str)
 *  member.
 */
 
-void rmnode(void **base,  /*@unused@*/ size_t bytes)
+void rmnode(void **base,  size_t UNUSED(bytes))
 {
     /* [phf] base is a pointer to a pointer to a struct,
        the address of a pointer; node is the pointer
@@ -1138,7 +1138,7 @@ static MNEMONIC *findmne(const char *str)
     return mne;
 }
 
-void v_macro(const char *str, MNEMONIC *dummy)
+void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
 {
     STRLIST *base;
     bool defined = false;
