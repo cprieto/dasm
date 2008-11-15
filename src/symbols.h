@@ -61,7 +61,7 @@ void set_special_dv_symbol(int value, dasm_flag_t flags);
  * @note Generates custom names for local symbols (those starting
  * with '.' or ending with '$'). Uses alloc_symbol() internally.
  * Uses small_alloc() internally for the name of the symbol. The
- * create symbol is SYM_UNKNOWN.
+ * created symbol is SYM_UNKNOWN.
  * @pre str != NULL && len > 0
  */
 SYMBOL *create_symbol(const char *str, size_t len);
