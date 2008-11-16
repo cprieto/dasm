@@ -792,7 +792,12 @@ v_ds(const char *str, MNEMONIC UNUSED(*dummy))
                 ++Redo;
                 Redo_why |= REASON_DS_NOT_RESOLVED;
             }
-            genfill(filler, sym->value, mult);
+            if (sym->value < 0) {
+                error_fmt("Length for DS-like pseudo-op was %ld but must be >= 0!", sym->value);
+            }
+            else {
+                genfill(filler, sym->value, mult);
+            }
         }
         free_symbol_list(sym);
     }
@@ -809,6 +814,11 @@ v_org(const char *str, MNEMONIC UNUSED(*dummy))
     
     sym = eval(str, false);
     assert(sym != NULL);
+
+    if (sym->value < 0) {
+        error_fmt("Address for ORG was %ld but must be >= 0!", sym->value);
+        /* TODO: not do the rest of this maybe? */
+    }
 
     Csegment->org = sym->value;
     
@@ -849,6 +859,11 @@ v_rorg(const char *str, MNEMONIC UNUSED(*dummy))
     assert(str != NULL);
     assert(sym != NULL);
     
+    if (sym->value < 0) {
+        error_fmt("Address for RORG was %ld but must be >= 0!", sym->value);
+        /* TODO: not do the rest of this maybe? */
+    }
+
     Csegment->flags |= SF_RORG;
     if (sym->addrmode != AM_IMP) {
         Csegment->rorg = sym->value;
@@ -879,12 +894,12 @@ v_align(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym = eval(str, false);
     unsigned char fill = 0;
-    /* was "unsigned char rorg = Csegment->flags & SF_RORG;" and it
-       might just be used as a bool, not really flags... [phf] */
-    dasm_flag_t rorg = Csegment->flags & SF_RORG;
+    bool rorg = (Csegment->flags & SF_RORG) != 0;
 
     assert(str != NULL);
     assert(sym != NULL);
+
+    /* TODO: add some kind of check for ALIGN parameter? */
     
     if (rorg) {
         Csegment->rflags |= SF_REF;
