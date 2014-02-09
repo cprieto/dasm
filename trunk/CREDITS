@@ -37,9 +37,6 @@ with DASM (alphabetical by first name):
     * Rob Kudla <webmaster at kudla dot org>
       - Boing! demo for Atari 2600 (2008)
 
-    * Sean Riddle <seanriddle at cox dot net>
-      - Lights Out game for Channel-F (2008)
-
 Note that inclusion of example code in the DASM distribution does
 not put that code under the GNU General Public License by default.
 If you want to modify and redistribute example code from people

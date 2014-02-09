@@ -23,18 +23,16 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/**
- * @file
+/*
+ *  GLOBALS.C
  */
 
 #include "asm.h"
-#include "errors.h"
-#include "version.h"
 
-#include <assert.h>
-
-/*@unused@*/
 SVNTAG("$Id$");
+
+SYMBOL *SHash[SHASHSIZE];   /*	symbol hash table   */
+
 
 MNEMONIC    *MHash[MHASHSIZE];   /*	mnemonic hash table */
 INCFILE *pIncfile;	    /*	include file stack  */
@@ -44,8 +42,9 @@ SEGMENT *Csegment;	    /*	current segment     */
 IFSTACK *Ifstack;	    /*	IF/ELSE/ENDIF stack */
 char	*Av[256];	    /*	up to 256 arguments */
 char	Avbuf[512];
-bool MsbOrder = true;
+unsigned char	MsbOrder = 1;
 int	Mnext;
+char	Inclevel;
 unsigned int	Mlevel;
 unsigned long	Localindex;	   /*  to generate local variables */
 unsigned long	Lastlocalindex;
@@ -53,7 +52,11 @@ unsigned long	Lastlocalindex;
 unsigned long	Localdollarindex;
 unsigned long	Lastlocaldollarindex;
 
+unsigned long Processor = 0;
 bool bTrace = false;
+bool Xdebug;
+
+unsigned char	Outputformat;
 
 unsigned long   Redo_why = 0;
 int	Redo_eval = 0;	   /*  infinite loop detection only    */
@@ -62,37 +65,28 @@ int Redo = 0;
 
 unsigned long	Redo_if = 0;
 
-bool	ListMode = true;
+char	ListMode = 1;
 unsigned long	CheckSum;	    /*	output data checksum		*/
 
 int F_format = FORMAT_DEFAULT;
 
-int F_verbose;
+/* -T option [phf] */
+sortmode_t F_sortmode = SORTMODE_DEFAULT;
+/* -E option [phf] */
+errorformat_t F_errorformat = ERRORFORMAT_DEFAULT;
+
+unsigned char	 F_verbose;
 const char	*F_outfile = "a.out";
-/*@null@*/ char	*F_listfile;
-/*@null@*/ FILE	*FI_listfile;
+char	*F_listfile;
+char	*F_symfile;
+FILE	*FI_listfile;
 FILE	*FI_temp;
-bool Fisclear;
-unsigned long Plab;
-dasm_flag_t Pflags;
+unsigned char	 Fisclear;
+unsigned long	 Plab, Pflags;
 
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
-static address_mode_t Cvt[]	    = { 0, 2, 0, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0 };
-static size_t Opsize[]    = { 0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1 };
-
-address_mode_t convert_address_mode(address_mode_t am)
-{
-  /*assert(am >= 0); // TODO: what if enum is not unsigned? [phf] */
-  assert(am < 17);
-  return Cvt[am];
-}
-
-size_t operand_size(address_mode_t am)
-{
-  /*assert(am >= 0); // TODO: what if enum is not unsigned? [phf] */
-  assert(am < 17);
-  return Opsize[am];
-}
+unsigned int	Cvt[]	    = { 0, 2, 0, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0 };
+unsigned int	Opsize[]    = { 0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1 };
 
 MNEMONIC Ops[] = {
     { NULL, v_list    , "list",           0,      0, {0,} },
@@ -135,4 +129,3 @@ MNEMONIC Ops[] = {
     MNEMONIC_NULL
 };
 
-/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

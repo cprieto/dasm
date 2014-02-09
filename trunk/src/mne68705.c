@@ -23,14 +23,12 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/**
- * @file
+/*
+ *  MNE68705.C
  */
 
 #include "asm.h"
-#include "version.h"
 
-/*@unused@*/
 SVNTAG("$Id$");
 
 #define AFSTD	AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX|AF_0X
@@ -127,4 +125,3 @@ MNEMONIC Mne68705[] = {
     MNEMONIC_NULL
 };
 
-/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
