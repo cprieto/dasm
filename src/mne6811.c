@@ -23,11 +23,9 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/**
- * @file
- */
-
 /*
+ *  MNE6811.C
+ *
  *  68HC11 processor
  *
  *  addressing modes:
@@ -46,9 +44,7 @@
  */
 
 #include "asm.h"
-#include "version.h"
 
-/*@unused@*/
 SVNTAG("$Id$");
 
 #define AF_STD	 (AF_BYTEADR|AF_BYTEADRX|AF_BYTEADRY|AF_WORDADR)
@@ -207,4 +203,3 @@ MNEMONIC Mne68HC11[] = {
     MNEMONIC_NULL
 };
 
-/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

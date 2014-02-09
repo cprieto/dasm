@@ -23,14 +23,12 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/**
- * @file
+/*
+ *  MNE6502.C
  */
 
 #include "asm.h"
-#include "version.h"
 
-/*@unused@*/
 SVNTAG("$Id$");
 
 #define ASTD	AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX|\
@@ -73,8 +71,6 @@ MNEMONIC Mne6502[] = {
     { NULL, v_mnemonic, "jmp", 0, AF_WORDADR|AF_INDWORD, { 0x4C, 0x6C } },
     { NULL, v_mnemonic, "jsr", 0, AF_WORDADR, { 0x20 } },
     { NULL, v_mnemonic, "las", 0, AF_WORDADRY, { 0xbb } },
-    /* lax is undocumented and was added by Andrew [phf] */
-    /* TODO: should undocumented stuff be in a seperate processor directive? */
     { NULL, v_mnemonic, "lax", 0, AF_BYTEADR|AF_BYTEADRY|AF_WORDADR|AF_WORDADRY|AF_INDBYTEX|AF_INDBYTEY, { 0xa7, 0xb7, 0xaf, 0xbf, 0xa3, 0xb3 } },
     { NULL, v_mnemonic, "lda", 0, AF_IMM8|ASTD, { 0xA9, 0xA5, 0xB5, 0xAD, 0xBD, 0xB9, 0xA1, 0xB1 } },
     { NULL, v_mnemonic, "ldx", 0, AF_IMM8|AF_BYTEADR|AF_BYTEADRY|AF_WORDADR|AF_WORDADRY, { 0xA2, 0xA6, 0xB6, 0xAE, 0xBE } },
@@ -117,34 +113,3 @@ MNEMONIC Mne6502[] = {
     MNEMONIC_NULL
 };
 
-/*
-    65c02 opcodes submitted to Matt Dillon by Michael Marvin Morrison,
-    apparently a long time ago since Mike gives mmm@reaper.chi.il.us
-    and reaper!mmm@miroc.chi.il.us (!) as email addresses. :-) [phf]
-
-    TODO: integrate 65c02 into DASM; trouble: new addressing modes
-    are hard to integrate, below we only have the subset of 65c02
-    that uses 6502 addressing modes
-*/
-MNEMONIC Mne65c02[] = {
-    /* Additional addressing modes available */
-    { NULL, v_mnemonic, "bit", 0,
-      AF_IMM8|AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX,
-      { 0x89, 0x24, 0x34, 0x2C, 0x3C } },
-    /* New instructions */
-    { NULL, v_mnemonic, "bra", 0, AF_REL, { 0x80 } },
-    { NULL, v_mnemonic, "dea", 0, AF_IMP, { 0x3a } },
-    { NULL, v_mnemonic, "ina", 0, AF_IMP, { 0x1a } },
-    { NULL, v_mnemonic, "phx", 0, AF_IMP, { 0xda } },
-    { NULL, v_mnemonic, "phy", 0, AF_IMP, { 0x5a } },
-    { NULL, v_mnemonic, "plx", 0, AF_IMP, { 0xfa } },
-    { NULL, v_mnemonic, "ply", 0, AF_IMP, { 0x7a } },
-    { NULL, v_mnemonic, "stz", 0,
-      AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX,
-      { 0x64, 0x74, 0x9C, 0x9E } },
-    { NULL, v_mnemonic, "trb", 0, AF_BYTEADR|AF_WORDADR, { 0x14, 0x1C } },
-    { NULL, v_mnemonic, "tsb", 0, AF_BYTEADR|AF_WORDADR, { 0x04, 0x0C } },
-    MNEMONIC_NULL
-};
-
-/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

@@ -28,5 +28,3 @@ do
     echo "------------------------error"
   fi
 done
-
-../bin/dasm define_echo.asm -DEXTERNAL_D_DEFAULT -DEXTERNAL_D_VALUE=127 -MEXTERNAL_M_DEFAULT -MEXTERNAL_M_VALUE=127
