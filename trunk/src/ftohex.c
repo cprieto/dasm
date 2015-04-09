@@ -23,6 +23,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+/**
+ * @file
+ */
+
 /*
  *  FTOHEX.C
  *
@@ -30,87 +34,137 @@
  *
  *  format: format used when assembling (asm705/asm65)
  *	    1,2,3	    -generate straight hex file
- *
- *  Note that int and char are not used as Lattice C on IBM PCs uses
- *  16 bit ints and unsigned chars.
  */
 
+/*
+    NOTE: Applying ">>" to a signed left operand is not portable as
+    it is undefined whether sign-extension is used or not [1]. We
+    apply ">>" only to unsigned operands here, but since severe
+    signed/unsigned confusion is part of DASM history, we also take
+    precautions by doing some masking that may seem crazy to the
+    casual reader. (Also, splint is *wrong* about "<<" causing
+    similar trouble, it does not [1].) [phf]
+
+    [1] Harbison, Steele: C: A Reference Manual, 4th edition,
+        Prentice Hall, 1995; page 205+. (As far as I know, C99
+        didn't mess with ">>" at all.)
+*/
+
+#include "version.h"
+
+#include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
-static const char svnid[] = "$Id$";
+/*@unused@*/
+SVNTAG("$Id$");
 
 #define PERLINE 16
 
-void exiterr(const char *str);
-void convert(int format, FILE *in, FILE *out);
-unsigned int getwlh(FILE *in);
-void puth(unsigned char c, FILE *out);
+static void convert(int format, FILE *in, FILE *out);
+static uint16_t get_word(FILE *in);
+static void put_hex(uint8_t c, FILE *out);
+/* TODO: maybe the warning flags *are* a bit too strong... */
+static void exit_error(const char *str);
+static void usage_exit(void);
 
 int
-main(int ac, char **av)
+main(int argc, char **argv)
 {
     int format;
     FILE *infile;
     FILE *outfile;
 
-    if (ac < 3) {
-	puts("FTOHEX format infile [outfile]");
-	puts("format 1,2, or 3.  3=raw");
-	puts("Copyright (c) 1988-2008 by various authors (see file AUTHORS).");
-	exit(1);
+    /* ensure at least 2 but at most 3 arguments! */
+    if (argc < 3 || argc > 4)
+    {
+        usage_exit();
     }
-    format = atoi(av[1]);
+    format = (int) strtol(argv[1], (char **)NULL, 10);
+    /* TODO: error check strtol? doesn't matter much as 0 is not valid... */
     if (format < 1 || format > 3)
-	exiterr("specify infile format 1, 2, or 3");
-    infile = fopen(av[2], "r");
+	exit_error("specify infile format 1, 2, or 3");
+    infile = fopen(argv[2], "r");
     if (infile == NULL)
-	exiterr("unable to open input file");
-    outfile = (av[3]) ? fopen(av[3], "w") : stdout;
+	exit_error("unable to open input file");
+    /* Matt had (argv[3]) as condition, but that's ISO only [phf] */
+    outfile = (argc == 4) ? fopen(argv[3], "w") : stdout;
     if (outfile == NULL)
-	exiterr("unable to open output file");
+	exit_error("unable to open output file");
     convert(format, infile, outfile);
+    /* TODO: make configurable for sanity */
+    putc('z'&0x1F, outfile); /* needed for old EPROM programmers! */
     fclose(infile);
-    fclose(outfile);
+    fclose(outfile); /* TODO: could close stdout, is that a problem? */
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
+/**
+ * @brief Abort with error message.
+ */
+static
 void
-exiterr(const char *str)
+exit_error(const char *str)
 {
-    fputs(str, stderr);
-    fputs("\n", stderr);
-    exit(1);
+    assert(str != NULL);
+    fprintf(stderr, "error: %s\n", str);
+    exit(EXIT_FAILURE);
+}
+
+/**
+ * @brief Abort with usage message.
+ */
+static
+void
+usage_exit(void)
+{
+    (void) puts(DASM_ID);
+    DASM_PRINT_LEGAL
+    (void) puts("");
+    (void) puts("Usage: ftohex format infile [outfile]");
+    (void) puts("              format 1, 2, or 3 (raw).");
+    (void) puts("");
+    DASM_PRINT_BUGS
+    exit(EXIT_FAILURE);
 }
 
 /*
  *  Formats:
  *
- *  1:	  origin (word:lsb,msb) + data
- *  2:	  origin (word:lsb,msb) + length (word:lsb,msb) + data	(repeat)
- *  3:	  data
+ *  1:  origin (word:lsb,msb) + data
+ *  2:  origin (word:lsb,msb) + length (word:lsb,msb) + data  (repeat)
+ *  3:  data
  *
  *  Hex output:
  *
- *  :lloooo00(ll bytes hex code)cc	  ll=# of bytes
- *		      oooo=origin
- *			cc=invert of checksum all codes
+ *  :lloooo00(ll bytes hex code)cc      ll=# of bytes
+ *                                      oooo=origin
+ *                                      cc=invert of checksum all codes
  */
 
+static
 void
 convert(int format, FILE *in, FILE *out)
 {
-    unsigned int org = 0;
+    /* TODO: rewrite this to new understanding of code and process! */
+    uint16_t org = 0;
     unsigned int idx;
-    long len;
+    uint16_t len;
     unsigned char buf[256];
 
     if (format < 3)
-    org = getwlh(in);
-    if (format == 2) {
-	len = getwlh(in);
-    } else {
+    {
+        org = get_word(in);
+    }
+    if (format == 2)
+    {
+        len = get_word(in);
+    }
+    else
+    {
+        /* TODO: refactor! */
 	long begin = ftell(in);
 	fseek(in, 0, SEEK_END);
 	len = ftell(in) - begin;
@@ -124,27 +178,28 @@ convert(int format, FILE *in, FILE *out)
 	    idx = (len > PERLINE) ? PERLINE : len;
 	    fread(buf, idx, 1, in);
 	    putc(':', out);
-	    puth(idx, out);
-	    puth(org >> 8, out);
-	    puth(org & 0xFF, out);
+	    put_hex(idx, out);
+	    put_hex(org >> 8, out);
+	    put_hex(org & 0xFF, out);
 	    putc('0', out);
 	    putc('0', out);
 	    chk = idx + (org >> 8) + (org & 0xFF);
 	    for (i = 0; i < idx; ++i) {
 		chk += buf[i];
-		puth(buf[i], out);
+		put_hex(buf[i], out);
 	    }
-	    puth((unsigned char)-chk, out);
+	    put_hex((unsigned char)-chk, out);
+            /* TODO: make configurable according to spec */
 	    putc('\r', out);
 	    putc('\n', out);
 	    len -= idx;
 	    org += idx;
 	}
 	if (format == 2) {
-	    org = getwlh(in);
+	    org = get_word(in);
 	    if (feof(in))
 		break;
-	    len = getwlh(in);
+	    len = get_word(in);
 	} else {
 	    break;
 	}
@@ -152,20 +207,53 @@ convert(int format, FILE *in, FILE *out)
     fprintf(out, ":00000001FF\r\n");
 }
 
-unsigned int getwlh(FILE *in)
+/**
+ * @brief Read 16-bit word (in format "lsb, msb") from (binary)
+ * stream "in".
+ */
+static
+uint16_t
+get_word(FILE *in)
 {
-    unsigned int result;
+    uint16_t result = 0;
+    int buffer = EOF;
 
-    result = getc(in);
-    result += getc(in) << 8;
+    if ((buffer = getc(in)) == EOF)
+    {
+        exit_error("Unexcepted end of input file!");
+    }
+    result |= (buffer & 0xFF); /* mask out high bits, just in case */
+
+    if ((buffer = getc(in)) == EOF)
+    {
+        exit_error("Unexcepted end of input file!");
+    }
+    result |= (buffer & 0xFF) << 8; /* mask out high bits, shift to high */
+
     return result;
 }
 
+/**
+ * @brief Write 8-bit byte "c" to (text) stream "out" as two
+ * ASCII hex digits (high nibble, low nibble of course).
+ */
+static
 void
-puth(unsigned char c, FILE *out)
+put_hex(uint8_t c, FILE *out)
 {
-    static char dig[] = { "0123456789ABCDEF" };
-    putc(dig[c>>4], out);
-    putc(dig[c&15], out);
+    static const char digits[] = {"0123456789ABCDEF"};
+
+    /* shift high to low, mask (>> portability, see above), write high digit */
+    if (putc(digits[(c >> 4) & 0x0F], out) == EOF)
+    {
+        exit_error("Couldn't write to output file!");
+    }
+
+    /* mask out high, write low digit */
+    if (putc(digits[c & 0x0F], out) == EOF)
+    {
+        exit_error("Couldn't write to output file!");
+    }
 }
 
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

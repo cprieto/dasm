@@ -1,3 +1,6 @@
+#ifndef _DASM_ASM_H
+#define _DASM_ASM_H
+
 /*
     $Id$
 
@@ -23,19 +26,37 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  ASM65.H
- *
- *  Structures and definitions
+/**
+ * @file
+ * @brief Structures and definitions.
+ * @note Originally, the name of this file was asm65.h; presumably
+ * Matt first wrote DASM for 6502 code.
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-/* tag object files going into dasm executable */
-#define SVNTAG(id) static const char _svnid[] = id
+/*
+    Hack for Windows compatibilty (or at least Visual Studio
+    compatibility I guess?). Note that I have no idea if the
+    __WINDOWS__ symbol is really the right one to check for,
+    please let me know if it's not. [phf]
+*/
+#if defined(__WINDOWS__)
+/* no stdbool.h so fake it */
+#define bool int
+#define false (0==1)
+#define true (!false)
+/* no strcasecmp so fake it using stricmp */
+#define strcasecmp stricmp
+/* strange paths :-) */
+#define DASM_PATH_SEPARATOR '\\'
+#else
+#include <stdbool.h>
+#include <strings.h>
+#define DASM_PATH_SEPARATOR '/'
+#endif /* defined(__WINDOWS__) */
 
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
 #define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */
@@ -44,28 +65,21 @@
 #error This cannot be!
 #endif
 
-/* for -T option [phf] */
-typedef enum
-{
-  SORTMODE_DEFAULT,
-  SORTMODE_ALPHA = SORTMODE_DEFAULT,
-  SORTMODE_ADDRESS,
-  SORTMODE_MAX
-} sortmode_t;
+/*
+    Martin Pool's cool little macro to "portably" use various
+    "unused" annotations. Good for GCC and splint so far. See
+    http://sourcefrog.net/weblog/software/languages/C/unused.html
+    for the original.
+*/
 
-/* for -E option [phf] */
-typedef enum
-{
-  ERRORFORMAT_DEFAULT,
-  ERRORFORMAT_WOE = ERRORFORMAT_DEFAULT,
-  ERRORFORMAT_DILLON,
-  ERRORFORMAT_GNU,
-  ERRORFORMAT_MAX
-} errorformat_t;
-
-#define DAD
-
-#ifdef DAD
+#ifdef UNUSED 
+#elif defined(__GNUC__) 
+# define UNUSED(x) x ## _UNUSED __attribute__((unused)) 
+#elif defined(__LCLINT__) || defined(S_SPLINT_S) 
+# define UNUSED(x) /*@unused@*/ x 
+#else 
+# define UNUSED(x) x 
+#endif
 
 enum FORMAT
 {
@@ -75,63 +89,16 @@ enum FORMAT
     FORMAT_MAX
 };
 
+/* to get a handle on the type used for flags; originally
+   DASM used "unsigned char" for all of these, leading to
+   load of warnings when integer arithmetic/assignments
+   were done [phf] */
+typedef int dasm_flag_t;
 
+/* ??? [phf] */
 #define MAX_SYM_LEN 1024
-
-    enum ASM_ERROR_EQUATES
-    {
-        ERROR_NONE = 0,
-        ERROR_COMMAND_LINE,                             /* Check format of command-line */
-        ERROR_FILE_ERROR,                               /* Unable to open file */
-        ERROR_NOT_RESOLVABLE,                           /* Source is not resolvable */
-        ERROR_TOO_MANY_PASSES,                          /* Too many passes - something wrong */
-
-        ERROR_SYNTAX_ERROR,                             /*  0 */
-        ERROR_EXPRESSION_TABLE_OVERFLOW,                /*  1 */
-        ERROR_UNBALANCED_BRACES,                        /*  2 */
-        ERROR_DIVISION_BY_0,                            /*  3 */
-        ERROR_UNKNOWN_MNEMONIC,                         /*  4 */
-        ERROR_ILLEGAL_ADDRESSING_MODE,                  /*  5 */
-        ERROR_ILLEGAL_FORCED_ADDRESSING_MODE,           /*  6 */
-        ERROR_NOT_ENOUGH_ARGUMENTS_PASSED_TO_MACRO,     /*  7 */
-        ERROR_PREMATURE_EOF,                            /*  8 */
-        ERROR_ILLEGAL_CHARACTER,                        /*  9 */
-        ERROR_BRANCH_OUT_OF_RANGE,                      /* 10 */
-        ERROR_ERR_PSEUDO_OP_ENCOUNTERED,                /* 11 */
-        ERROR_ORIGIN_REVERSE_INDEXED,                   /* 12 */
-        ERROR_EQU_VALUE_MISMATCH,                       /* 13 */
-        ERROR_ADDRESS_MUST_BE_LT_100,                   /* 14 */
-        ERROR_ILLEGAL_BIT_SPECIFICATION,                /* 15 */
-        ERROR_NOT_ENOUGH_ARGS,                          /* 16 */
-        ERROR_LABEL_MISMATCH,                           /* 17 */
-        ERROR_VALUE_UNDEFINED,                          /* 18 */
-        ERROR_PROCESSOR_NOT_SUPPORTED,                  /* 20 */
-        ERROR_REPEAT_NEGATIVE,                          /* 21 */
-        ERROR_BADERROR,                                 /* 22 */
-        ERROR_ONLY_ONE_PROCESSOR_SUPPORTED,             /* Only allow one type of processor */
-        ERROR_BAD_FORMAT,                               /* Bad format specifier */
-
-		/* F8 support... */
-
-        ERROR_VALUE_MUST_BE_1_OR_4,                     /* 25 */
-        ERROR_VALUE_MUST_BE_LT_10,                      /* 26 */
-        ERROR_VALUE_MUST_BE_LT_8,                       /* 27 */
-        ERROR_VALUE_MUST_BE_LT_F,                       /* 28 */
-        ERROR_VALUE_MUST_BE_LT_10000,                   /* 29 */
-        ERROR_ILLEGAL_OPERAND_COMBINATION,              /* 30 */
-	
-	
-	
-	};
-
-    typedef struct ERRORSTRUCT
-    {
-        int nErrorType;                                 /* ASM_ERROR_EQUATES value */
-        bool bFatal;                                    /* 0 = OK, non-zero = cannot continue compilation */
-        const char *sDescription;                             /* Error message */
-
-    } ERROR_DEFINITION;
-
+/* maximum length genfill() will generate */
+#define MAX_FILL_LEN 64*1024
 
     enum REASON_CODES
     {
@@ -149,31 +116,19 @@ enum FORMAT
         REASON_IF_NOT_RESOLVED = 1 << 11,
         REASON_REPEAT_NOT_RESOLVED = 1 << 12,
         REASON_FORWARD_REFERENCE = 1 << 13,
-        REASON_PHASE_ERROR = 1 << 14,
-        REASON_BRANCH_OUT_OF_RANGE = 1 << 15
+        REASON_PHASE_ERROR = 1 << 14
     };
 
 
-#endif
-
-#define MNEMONIC    struct _MNE
-#define MACRO       struct _MACRO
-#define INCFILE     struct _INCFILE
-#define REPLOOP     struct _REPLOOP
-#define IFSTACK     struct _IFSTACK
-#define SEGMENT     struct _SEGMENT
-#define SYMBOL        struct _SYMBOL
-#define STRLIST     struct _STRLIST
-
-#define DEFORGFILL  255
-#define SHASHSIZE   1024
-#define MHASHSIZE   1024
-#define SHASHAND    0x03FF
-#define MHASHAND    0x03FF
-#define ALLOCSIZE   16384
+#define DEFORGFILL  '\xff' /* was 255 */
 #define MAXMACLEVEL 32
-#define TAB        9
 
+/*
+  Size of MNEMONIC hash table. Must be a power of two
+  for the AND trick to work!
+*/
+#define MHASHSIZE (1<<10)
+#define MHASHAND (MHASHSIZE-1)
 
 	enum ADDRESS_MODES {
 		AM_IMP,					/*    implied         */
@@ -201,6 +156,10 @@ enum FORMAT
 
 		NUMOC
 	};
+typedef enum ADDRESS_MODES address_mode_t;
+address_mode_t convert_address_mode(address_mode_t am);
+size_t operand_size(address_mode_t am);
+/* TODO: is it really OPERAND size or maybe OPCODE size? [phf] */
 
 #define AF_IMP					( 1L << AM_IMP )
 #define AF_IMM8					( 1L << AM_IMM8 )
@@ -224,15 +183,23 @@ enum FORMAT
 #define AM_WORD					AM_WORDADR
 
 
-
-STRLIST {
+typedef struct _STRLIST STRLIST;
+struct _STRLIST
+{
+    /* next string in list? [phf] */
     STRLIST *next;
-    char    buf[4];
+    /* the actual string? [phf] */
+    char buf[4];
+    /*
+        TODO: actual code in main.c and ops.c where STRLIST gets
+        malloc()ed indicates that buf[4] is a hack that basically
+        emulates a "flexible array member" of C99 fame; should be
+        replaced with a properly allocated buffer! the main.c use
+        is probably wrong btw... [phf]
+    */
 };
 
-//#define STRLISTSIZE    4
-//FIX: the above is only true on 32-bit. Thanks to Olaf 'Rhialto' Seibert. 
-#define STRLISTSIZE    (sizeof(STRLIST)-4)
+#define STRLISTSIZE    4
 
 #define MF_IF					0x04
 #define MF_MACRO				0x08
@@ -241,83 +208,133 @@ STRLIST {
 #define MF_IMOD					0x40    /*  instruction byte mod.    */
 #define MF_ENDM					0x80    /*  is v_endm            */
 
-MNEMONIC {
-    MNEMONIC     *next;        /*    hash        */
-    void    (*vect)(char *, MNEMONIC *);    /*  dispatch        */
-    const char    *name;        /*    actual name    */
-    unsigned char   flags;        /*    special flags    */
-    unsigned long   okmask;
-    unsigned int opcode[NUMOC];  /*    hex codes, byte or word (>xFF) opcodes    */
+/*
+  [phf] It is *very* important that MNEMONIC and MACRO share
+  the same layout of the first few fields, see v_macro() for
+  the reason (they share the same hashtable!).
+*/
+
+typedef struct _MNEMONIC MNEMONIC;
+struct _MNEMONIC
+{
+    /* next mnemonic in hash list */
+    MNEMONIC *next;
+    /* dispatch */
+    void (*vect)(const char *, MNEMONIC *);
+    /* actual name */
+    const char *name;
+    /* special flags */
+    dasm_flag_t flags;
+    /* addressing modes ok for this mnemonic? see badcode() macro [phf] */
+    unsigned long okmask;
+    /* hex codes, byte or word (>xFF) opcodes */
+    unsigned int opcode[NUMOC];
 };
 
 /* MNEMONIC with all fields 0, used as end-of-table marker. */
 #define MNEMONIC_NULL {NULL, NULL, NULL, 0, 0, {0,}}
 
-MACRO {
-    MACRO   *next;
-    void    (*vect)(char *, MACRO *);
-    char    *name;
-    unsigned char   flags;
+typedef struct _MACRO MACRO;
+struct _MACRO
+{
+    MACRO *next;
+    void (*vect)(const char *, MACRO *);
+    const char *name;
+    dasm_flag_t flags;
     STRLIST *strlist;
 };
 
 #define INF_MACRO   0x01
 #define INF_NOLIST  0x02
 
-INCFILE {
-    INCFILE *next;  /*      previously pushed context */
-    char    *name;  /*      file name            */
-    FILE    *fi;    /*      file handle            */
-    unsigned long   lineno; /*      line number in file        */
-    unsigned char   flags;  /*      flags (macro)         */
+typedef struct _INCFILE INCFILE;
+struct _INCFILE
+{
+    /* previously pushed context */
+    INCFILE *next;
+    /* file name */
+    const char *name;
+    /* file handle */
+    FILE *fi;
+    /* line number in file */
+    unsigned long lineno;
+    /* flags (macro) */
+    dasm_flag_t flags;
 
-    /*    Only if Macro    */
+    /* Only if Macro */
 
-    STRLIST *args;    /*  arguments to macro        */
-    STRLIST *strlist;    /*  current string list     */
-    unsigned long   saveidx;    /*  save localindex        */
-    unsigned long   savedolidx; /*  save localdollarindex   */
-
+    /* arguments to macro */
+    STRLIST *args;
+    /* current string list */
+    STRLIST *strlist;
+    /* save localindex */
+    unsigned long saveidx;
+    /* save localdollarindex */
+    unsigned long savedolidx;
 };
 
 #define RPF_UNKNOWN 0x01    /*      value unknown     */
 
-REPLOOP {
-    REPLOOP *next;  /*      previously pushed context */
-    unsigned long   count;  /*      repeat count            */
-    unsigned long   seek;   /*      seek to top of repeat     */
-    unsigned long   lineno; /*      line number of line before  */
-    INCFILE *file;  /*      which include file are we in*/
-    unsigned char   flags;
+typedef struct _REPLOOP REPLOOP;
+struct _REPLOOP
+{
+    /* previously pushed context */
+    REPLOOP *next;
+    /* repeat count */
+    unsigned long count;
+    /* seek to top of repeat */
+    unsigned long seek;
+    /* line number of line before */
+    unsigned long lineno;
+    /* which include file are we in */
+    INCFILE *file;
+    /* TODO: ??? [phf] */
+    dasm_flag_t flags;
 };
 
 #define IFF_UNKNOWN 0x01    /*      value unknown        */
 #define IFF_BASE    0x04
 
-IFSTACK {
-    IFSTACK *next;  /*      previous IF            */
-    INCFILE *file;  /*      which include file are we in*/
-    unsigned char   flags;
-    unsigned char   xtrue;   /*      1 if true, 0 if false     */
-    unsigned char   acctrue;/*      accumulatively true (not incl this one) */
+typedef struct _IFSTACK IFSTACK;
+struct _IFSTACK
+{
+    /* previous IF */
+    IFSTACK *next;
+    /* which include file are we in */
+    INCFILE *file;
+    /* TODO: ??? [phf] */
+    dasm_flag_t flags;
+    /* 1 if true, 0 if false */
+    bool xtrue;
+    /* accumulatively true (not incl this one) */
+    bool acctrue;
 };
 
-#define SF_UNKNOWN  0x01    /*      ORG unknown            */
-#define SF_REF        0x04    /*      ORG referenced        */
-#define SF_BSS        0x10    /*      uninitialized area (U flag)    */
-#define SF_RORG     0x20    /*      relocatable origin active    */
+#define SF_UNKNOWN  0x01    /* ORG unknown */
+#define SF_REF      0x04    /* ORG referenced */
+#define SF_BSS      0x10    /* uninitialized area (U flag) */
+#define SF_RORG     0x20    /* relocatable origin active */
 
-SEGMENT {
-    SEGMENT *next;  /*      next segment in segment list    */
-    char    *name;  /*      name of segment        */
-    unsigned char   flags;  /*      for ORG            */
-    unsigned char   rflags; /*      for RORG            */
-    unsigned long   org;    /*      current org            */
-    unsigned long   rorg;   /*      current rorg            */
-    unsigned long   initorg;
-    unsigned long   initrorg;
-    unsigned char   initflags;
-    unsigned char   initrflags;
+typedef struct _SEGMENT SEGMENT;
+struct _SEGMENT
+{
+    /* next segment in segment list */
+    SEGMENT *next;
+    /* name of segment */
+    char *name;
+    /* for ORG */
+    dasm_flag_t flags;
+    /* for RORG */
+    dasm_flag_t rflags;
+    /* current org */
+    unsigned long org;
+    /* current rorg */
+    unsigned long rorg;
+    /* TODO: ??? all these ??? [phf] */
+    unsigned long initorg;
+    unsigned long initrorg;
+    dasm_flag_t initflags;
+    dasm_flag_t initrflags;
 };
 
 #define SYM_UNKNOWN 0x01    /*      value unknown     */
@@ -327,17 +344,25 @@ SEGMENT {
 #define SYM_MACRO   0x20    /*      symbol is a macro    */
 #define SYM_MASREF  0x40    /*      master reference    */
 
-SYMBOL {
-    SYMBOL  *next;    /*  next symbol in hash list        */
-    char    *name;    /*  symbol name or string if expr.  */
-    char    *string;    /*  if symbol is actually a string  */
-    unsigned char   flags;    /*  flags                */
-    unsigned char   addrmode;    /*  addressing mode (expressions)   */
-    long value; /* current value, never EVER change this to unsigned! */
-    unsigned int namelen;    /*  name length             */
+typedef struct _SYMBOL SYMBOL;
+struct _SYMBOL
+{
+    /* next symbol in hash list */
+    SYMBOL *next;
+    /* symbol name or string if expr. */
+    char *name;
+    /* if symbol is actually a string */
+    char *string;
+    /* flags */
+    dasm_flag_t flags;
+    /* addressing mode (expressions) */
+    address_mode_t addrmode;
+    /* current value, never EVER change this to unsigned! [phf] */
+    long value;
+    /* name length */
+    size_t namelen;
 };
 
-extern SYMBOL    *SHash[];
 extern MNEMONIC    *MHash[];
 extern INCFILE    *pIncfile;
 extern REPLOOP    *Reploop;
@@ -347,17 +372,15 @@ extern IFSTACK    *Ifstack;
 extern SEGMENT    *Csegment;  /*      current segment */
 extern char    *Av[];
 extern char    Avbuf[];
-/*extern unsigned int Adrbytes[];*/
-extern unsigned int Cvt[];
+/*extern unsigned int Adrbytes[];*/ /* unused for years, see 2.12 [phf] */
+/*extern unsigned int Cvt[];*/ /* replaced with function [phf] */
 extern MNEMONIC    Ops[];
-extern unsigned int    Opsize[];
+/*extern unsigned int    Opsize[];*/ /* replaced with function [phf] */
 extern int    Mnext;          /*    mnemonic extension    */
 extern unsigned int    Mlevel;
 
 extern bool bTrace;
-extern bool     Xdebug;
-extern unsigned char    MsbOrder;
-extern unsigned char    Outputformat;
+extern bool MsbOrder;
 extern unsigned long    Redo_why;
 
 extern int Redo;
@@ -367,94 +390,72 @@ extern unsigned long    Redo_if;
 extern unsigned long    Localindex, Lastlocalindex;
 extern unsigned long    Localdollarindex, Lastlocaldollarindex;
 extern int   F_format;
-extern sortmode_t F_sortmode; /* -T option [phf] */
-extern errorformat_t F_errorformat; /* -E option [phf] */
-extern unsigned char    F_verbose;
+extern int F_verbose;
 extern const char    *F_outfile;
-extern char    *F_listfile;
-extern char    *F_symfile;
-extern FILE    *FI_listfile;
+/*@null@*/ extern char    *F_listfile;
+/*@null@*/ extern FILE    *FI_listfile;
 extern FILE    *FI_temp;
-extern unsigned char    Fisclear;
-extern unsigned long    Plab, Pflags;
-extern char    Inclevel;
-extern char    ListMode;
-extern unsigned long    Processor;
+extern bool Fisclear;
+extern unsigned long Plab;
+extern dasm_flag_t Pflags;
+extern bool    ListMode;
 
-/*extern unsigned int _fmode;*/
 extern unsigned long  CheckSum;
 
 /* main.c */
-/*extern unsigned char Listing;*/
 void    findext(char *str);
-int    asmerr(int err, bool bAbort, const char *sText);
-char   *sftos(long val, int flags);
-void    rmnode(void **base, int bytes);
+char   *sftos(long val, dasm_flag_t flags);
+void    rmnode(void **base, size_t bytes);
 void    addhashtable(MNEMONIC *mne);
-void    pushinclude(char *str);
-char   *permalloc(int bytes);
-char   *zmalloc(int bytes);
-char   *ckmalloc(int bytes);
-char   *strlower(char *str);
-
-/* symbols.c */
-void    setspecial(int value, int flags);
-SYMBOL *allocsymbol(void);
-SYMBOL *findsymbol(const char *str, int len);
-SYMBOL *CreateSymbol( const char *str, int len );
-void    FreeSymbolList(SYMBOL *sym);
-void    programlabel(void);
+void    pushinclude(const char *str);
 
 /* ops.c */
 extern    unsigned char Gen[];
 extern    int Glen;
-void    v_set(char *str, MNEMONIC *);
-void    v_mexit(char *str, MNEMONIC *);
+void    v_mexit(const char *str, MNEMONIC *);
 void    closegenerate(void);
 void    generate(void);
 
-void v_list(char *, MNEMONIC *);
-void v_include(char *, MNEMONIC *);
-void v_seg(char *, MNEMONIC *);
-void v_dc(char *, MNEMONIC *);
-void v_ds(char *, MNEMONIC *);
-void v_org(char *, MNEMONIC *);
-void v_rorg(char *, MNEMONIC *);
-void v_rend(char *, MNEMONIC *);
-void v_align(char *, MNEMONIC *);
-void v_subroutine(char *, MNEMONIC *);
-void v_equ(char *, MNEMONIC *);
-void v_eqm(char *, MNEMONIC *);
-void v_set(char *, MNEMONIC *);
-void v_macro(char *, MNEMONIC *);
-void v_endm(char *, MNEMONIC *);
-void v_mexit(char *, MNEMONIC *);
-void v_ifconst(char *, MNEMONIC *);
-void v_ifnconst(char *, MNEMONIC *);
-void v_if(char *, MNEMONIC *);
-void v_else(char *, MNEMONIC *);
-void v_endif(char *, MNEMONIC *);
-void v_repeat(char *, MNEMONIC *);
-void v_repend(char *, MNEMONIC *);
-void v_err(char *, MNEMONIC *);
-void v_hex(char *, MNEMONIC *);
-void v_trace(char *, MNEMONIC *);
-void v_end(char *, MNEMONIC *);
-void v_echo(char *, MNEMONIC *);
-void v_processor(char *, MNEMONIC *);
-void v_incbin(char *, MNEMONIC *);
-void v_incdir(char *, MNEMONIC *);
-void v_execmac(char *str, MACRO *mac);
-void v_mnemonic(char *str, MNEMONIC *mne);
+void v_list(const char *, MNEMONIC *);
+void v_include(const char *, MNEMONIC *);
+void v_seg(const char *, MNEMONIC *);
+void v_dc(const char *, MNEMONIC *);
+void v_ds(const char *, MNEMONIC *);
+void v_org(const char *, MNEMONIC *);
+void v_rorg(const char *, MNEMONIC *);
+void v_rend(const char *, MNEMONIC *);
+void v_align(const char *, MNEMONIC *);
+void v_subroutine(const char *, MNEMONIC *);
+void v_equ(const char *, MNEMONIC *);
+void v_eqm(const char *, MNEMONIC *);
+void v_set(const char *, MNEMONIC *);
+void v_macro(const char *, MNEMONIC *);
+void v_endm(const char *, MNEMONIC *);
+void v_mexit(const char *, MNEMONIC *);
+void v_ifconst(const char *, MNEMONIC *);
+void v_ifnconst(const char *, MNEMONIC *);
+void v_if(const char *, MNEMONIC *);
+void v_else(const char *, MNEMONIC *);
+void v_endif(const char *, MNEMONIC *);
+void v_repeat(const char *, MNEMONIC *);
+void v_repend(const char *, MNEMONIC *);
+void v_err(const char *, MNEMONIC *);
+void v_hex(const char *, MNEMONIC *);
+void v_trace(const char *, MNEMONIC *);
+void v_end(const char *, MNEMONIC *);
+void v_echo(const char *, MNEMONIC *);
+void v_processor(const char *, MNEMONIC *);
+void v_incbin(const char *, MNEMONIC *);
+void v_incdir(const char *, MNEMONIC *);
+void v_execmac(const char *str, MACRO *mac);
+void v_mnemonic(const char *str, MNEMONIC *mne);
 
 FILE *pfopen(const char *, const char *);
 
 
 /* exp.c */
-SYMBOL *eval(const char *str, int wantmode);
+SYMBOL *eval(const char *str, bool wantmode);
 
+#endif /* _DASM_ASM_H */
 
-
-
-
-/* end of asm.h */
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
