@@ -23,82 +23,81 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-/*
- *  EXP.C
- *
- *  Handle expression evaluation and addressing mode decode.
- *
- *  NOTE! If you use the string field in an expression you must clear
- *  the SYM_MACRO and SYM_STRING bits in the flags before calling
- *  FreeSymbolList()!
+/**
+ * @file
+ * @brief Handle expression evaluation and addressing mode decode.
+ * @note If you use the string field in an expression you must clear
+ * the SYM_MACRO and SYM_STRING bits in the flags before calling
+ * FreeSymbolList()!
  */
 
 #include "asm.h"
+#include "errors.h"
+#include "symbols.h"
+#include "util.h"
+#include "version.h"
 
+#include <assert.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+/*@unused@*/
 SVNTAG("$Id$");
 
-#define UNION	0
+/*
+    There used to be big hack here to allow unary functions
+    to take only v1 and f1 while binary functions also took
+    v2 and f2; this lead to all kinds of problems, casting
+    excesses for example; early on in DASM's history unions
+    were used, but ANSI C didn't allow this anymore, so we
+    used the old () hack to allow arbitrary parameter lists.
+    No more. We now simply use the binary signature, which
+    means unary functions just ignore v2 and f2. Maybe not
+    as accurate as Matt's original, but less of a hack than
+    what we had before. [phf]
+*/
+typedef void (*opfunc_t)(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
 
-#if UNION		/* warning: ANSI disallows cast to union type */
-typedef void (unop)(long v1, int f1);
-typedef void (binop)(long v1, long v2, int f1, int f2);
+static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1);
 
-union unibin {
-    unop *unary;
-    binop *binary;
-};
+static void doop(opfunc_t, int pri);
+static void evaltop(void);
 
-typedef union unibin opfunc_t;
-#define _unary	.unary
-#define _binary .binary
-#else			/* warning: Calling functions without prototype */
+/* these are really binary [phf] */
+static void op_mult(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_div(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_mod(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_add(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_sub(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_shiftleft(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_shiftright(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_greater(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_greatereq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_smaller(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_smallereq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_eqeq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_noteq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_andand(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_oror(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_xor(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_and(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_or(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_question(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
 
-typedef void (*opfunc_t)();
-#define _unary
-#define _binary
+/* these are really unary but pretend to be binary [phf] */
+static void op_takelsb(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_takemsb(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_negate(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_invert(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
+static void op_not(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2);
 
-#endif
-
-static void stackarg(long val, int flags, const char *ptr1);
-
-void doop(opfunc_t, int pri);
-void evaltop(void);
-void	op_mult(long v1, long v2, int f1, int f2),
-op_div(long v1, long v2, int f1, int f2),
-op_mod(long v1, long v2, int f1, int f2),
-op_add(long v1, long v2, int f1, int f2),
-op_sub(long v1, long v2, int f1, int f2),
-op_shiftleft(long v1, long v2, int f1, int f2),
-op_shiftright(long v1, long v2, int f1, int f2),
-op_greater(long v1, long v2, int f1, int f2),
-op_greatereq(long v1, long v2, int f1, int f2),
-op_smaller(long v1, long v2, int f1, int f2),
-op_smallereq(long v1, long v2, int f1, int f2),
-op_eqeq(long v1, long v2, int f1, int f2),
-op_noteq(long v1, long v2, int f1, int f2),
-op_andand(long v1, long v2, int f1, int f2),
-op_oror(long v1, long v2, int f1, int f2),
-op_xor(long v1, long v2, int f1, int f2),
-op_and(long v1, long v2, int f1, int f2),
-op_or(long v1, long v2, int f1, int f2),
-op_question(long v1, long v2, int f1, int f2);
-
-void	op_takelsb(long v1, int f1),
-op_takemsb(long v1, int f1),
-op_negate(long v1, int f1),
-op_invert(long v1, int f1),
-op_not(long v1, int f1);
-
-
-const char *pushsymbol(const char *str);
-const char *pushstr(const char *str);
-const char *pushbin(const char *str);
-const char *pushoct(const char *str);
-const char *pushdec(const char *str);
-const char *pushhex(const char *str);
-const char *pushchar(const char *str);
-
-int IsAlphaNum( int c );
+static const char *pushsymbol(const char *str);
+static const char *pushstr(const char *str);
+static const char *pushbin(const char *str);
+static const char *pushoct(const char *str);
+static const char *pushdec(const char *str);
+static const char *pushhex(const char *str);
+static const char *pushchar(const char *str);
 
 /*
 *  evaluate an expression.  Figure out the addressing mode:
@@ -127,16 +126,22 @@ int IsAlphaNum( int c );
 #define MAXOPS	    32
 #define MAXARGS     64
 
-unsigned char Argflags[MAXARGS];
-long  Argstack[MAXARGS];
-char *Argstring[MAXARGS];
-int Oppri[MAXOPS];
-opfunc_t Opdis[MAXOPS];
+static dasm_flag_t Argflags[MAXARGS];
+static long  Argstack[MAXARGS];
+static char *Argstring[MAXARGS];
+static int Oppri[MAXOPS];
+static opfunc_t Opdis[MAXOPS];
 
-int	Argi, Opi, Lastwasop;
-int	Argibase, Opibase;
+static int	Argi, Opi;
+static bool Lastwasop;
+static int	Argibase, Opibase;
 
-SYMBOL *eval(const char *str, int wantmode)
+static bool is_alpha_num(char c)
+{
+    return isalnum((int)c) != 0;
+}
+
+SYMBOL *eval(const char *str, bool wantmode)
 {
     SYMBOL *base, *cur;
     int oldargibase = Argibase;
@@ -147,14 +152,13 @@ SYMBOL *eval(const char *str, int wantmode)
 
     Argibase = Argi;
     Opibase = Opi;
-    Lastwasop = 1;
-    base = cur = allocsymbol();
+    Lastwasop = true;
+    base = cur = alloc_symbol();
     
 
-    while (*str)
+    while (*str != '\0')
     {
-        if (Xdebug)
-            printf("char '%c'\n", *str);
+        debug_fmt("char '%c'", *str);
         
         switch(*str)
         {
@@ -165,9 +169,14 @@ SYMBOL *eval(const char *str, int wantmode)
 
         case '~':
             if (Lastwasop)
-                doop((opfunc_t)op_invert, 128);
+                doop(op_invert, 128);
             else
+            {
+                /* [phf] removed
                 asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+                */
+                error_fmt(ERROR_SYNTAX_ONE, pLine);
+            }
             ++str;
             break;
 
@@ -175,12 +184,12 @@ SYMBOL *eval(const char *str, int wantmode)
             if (Lastwasop) {
                 pushsymbol(".");
             } else
-                doop((opfunc_t)op_mult, 20);
+                doop(op_mult, 20);
             ++str;
             break;
 
         case '/':
-            doop((opfunc_t)op_div, 20);
+            doop(op_div, 20);
             ++str;
             break;
 
@@ -188,26 +197,26 @@ SYMBOL *eval(const char *str, int wantmode)
             if (Lastwasop) {
                 str = pushbin(str+1);
             } else {
-                doop((opfunc_t)op_mod, 20);
+                doop(op_mod, 20);
                 ++str;
             }
             break;
 
         case '?':   /*  10      */
-            doop((opfunc_t)op_question, 10);
+            doop(op_question, 10);
             ++str;
             break;
 
         case '+':   /*  19      */
-            doop((opfunc_t)op_add, 19);
+            doop(op_add, 19);
             ++str;
             break;
 
         case '-':   /*  19: -   (or - unary)        */
             if (Lastwasop) {
-                doop((opfunc_t)op_negate, 128);
+                doop(op_negate, 128);
             } else {
-                doop((opfunc_t)op_sub, 19);
+                doop(op_sub, 19);
             }
             ++str;
             break;
@@ -216,25 +225,25 @@ SYMBOL *eval(const char *str, int wantmode)
             
             if (Lastwasop)
             {
-                doop((opfunc_t)op_takemsb, 128);
+                doop(op_takemsb, 128);
                 ++str;
                 break;
             }
 
             if (str[1] == '>')
             {
-                doop((opfunc_t)op_shiftright, 18);
+                doop(op_shiftright, 18);
                 ++str;
             }
 
             else if (str[1] == '=')
             {
-                doop((opfunc_t)op_greatereq, 17);
+                doop(op_greatereq, 17);
                 ++str;
             }
             else
             {
-                doop((opfunc_t)op_greater, 17);
+                doop(op_greater, 17);
             }
             ++str;
             break;
@@ -243,24 +252,24 @@ SYMBOL *eval(const char *str, int wantmode)
             
             if (Lastwasop)
             {
-                doop((opfunc_t)op_takelsb, 128);
+                doop(op_takelsb, 128);
                 ++str;
                 break;
             }
 
             if (str[1] == '<')
             {
-                doop((opfunc_t)op_shiftleft, 18);
+                doop(op_shiftleft, 18);
                 ++str;
             }
             else if (str[1] == '=')
             {
-                doop((opfunc_t)op_smallereq, 17);
+                doop(op_smallereq, 17);
                 ++str;
             }
             else
             {
-                doop((opfunc_t)op_smaller, 17);
+                doop(op_smaller, 17);
             }
             ++str;
             break;
@@ -269,7 +278,7 @@ SYMBOL *eval(const char *str, int wantmode)
             
             if (str[1] == '=')
                 ++str;
-            doop((opfunc_t)op_eqeq, 16);
+            doop(op_eqeq, 16);
             ++str;
             break;
 
@@ -277,11 +286,11 @@ SYMBOL *eval(const char *str, int wantmode)
             
             if (Lastwasop)
             {
-                doop((opfunc_t)op_not, 128);
+                doop(op_not, 128);
             }
             else
             {
-                doop((opfunc_t)op_noteq, 16);
+                doop(op_noteq, 16);
                 ++str;
             }
             ++str;
@@ -291,19 +300,19 @@ SYMBOL *eval(const char *str, int wantmode)
             
             if (str[1] == '&')
             {
-                doop((opfunc_t)op_andand, 12);
+                doop(op_andand, 12);
                 ++str;
             }
             else
             {
-                doop((opfunc_t)op_and, 15);
+                doop(op_and, 15);
             }
             ++str;
             break;
 
         case '^':   /*  14: ^                       */
             
-            doop((opfunc_t)op_xor, 14);
+            doop(op_xor, 14);
             ++str;
             break;
 
@@ -311,12 +320,12 @@ SYMBOL *eval(const char *str, int wantmode)
             
             if (str[1] == '|')
             {
-                doop((opfunc_t)op_oror, 11);
+                doop(op_oror, 11);
                 ++str;
             }
             else
             {
-                doop((opfunc_t)op_or, 13);
+                doop(op_or, 13);
             }
             ++str;
             break;
@@ -336,7 +345,8 @@ SYMBOL *eval(const char *str, int wantmode)
         case '[':   /*  eventually an argument      */
             
             if (Opi == MAXOPS)
-                puts("too many ops");
+                /* TODO: should be an error message? [phf] */
+                (void) puts("too many ops");
             else
                 Oppri[Opi++] = 0;
             ++str;
@@ -347,23 +357,10 @@ SYMBOL *eval(const char *str, int wantmode)
             if (wantmode)
             {
                 if (cur->addrmode == AM_INDWORD &&
-                    str[1] == ',' && (str[2]|0x20) == 'y')
+                    str[1] == ',' && tolower(str[2]) == 'y')
                 {
                     cur->addrmode = AM_INDBYTEY;
                     str += 2;
-                }
-		//FIX: detect illegal opc (zp),x syntax...
-                if (cur->addrmode == AM_INDWORD && str[1] == ',' && (str[2]|0x20) == 'x')
-                {
-                   char sBuffer[128];
-                   sprintf( sBuffer, "%s", str );
-                   asmerr( ERROR_ILLEGAL_ADDRESSING_MODE,false, pLine );
-                   ++Redo;
-                   Redo_why |= REASON_MNEMONIC_NOT_RESOLVED;
-
-                   //we treat the opcode as valid to allow passes to continue, which should
-                   //allow other errors (like phase errros) to resolve before our "++Redo"
-                   //ultimately forces a failure.
                 }
                 ++str;
                 break;
@@ -380,7 +377,8 @@ SYMBOL *eval(const char *str, int wantmode)
             ++str;
             if (Argi == Argibase)
             {
-                puts("']' error, no arg on stack");
+                /* TODO: should be an error message? [phf] */
+                (void) puts("']' error, no arg on stack");
                 break;
             }
             
@@ -390,8 +388,9 @@ SYMBOL *eval(const char *str, int wantmode)
                 ++str;
                 if (Argflags[Argi-1] == 0)
                 {
-                    sprintf(buf,"%ld",Argstack[Argi-1]);
-                    Argstring[Argi-1] = strcpy(ckmalloc(strlen(buf)+1),buf);
+                    int len = snprintf(buf,sizeof(buf),"%ld",Argstack[Argi-1]);
+                    assert(len < (int)sizeof(buf));
+                    Argstring[Argi-1] = checked_strdup(buf);
                 }
             }
             break;
@@ -404,80 +403,57 @@ SYMBOL *eval(const char *str, int wantmode)
             * No other addressing mode is possible from now on
             * so we might as well allow () instead of [].
             */
-            wantmode = 0;
+            wantmode = false;
             break;
             
         case ',':
             
             while(Opi != Opibase)
                 evaltop();
-            Lastwasop = 1;
-            scr = str[1]|0x20;	  /* to lower case */
+            Lastwasop = true;
+            scr = tolower(str[1]);
             
-            if (cur->addrmode == AM_INDWORD && scr == 'x' && !IsAlphaNum( str[2] ))
+            if (cur->addrmode == AM_INDWORD && scr == 'x' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_INDBYTEX;
                 ++str;
             }
-            //FIX: detect illegal opc (zp,y) syntax...
-            else if ((cur->addrmode == AM_INDWORD && scr == 'y' && str[2]==')')&&(wantmode))
-            {
-                   char sBuffer[128];
-                   sprintf( sBuffer, "%s", str );
-                   asmerr( ERROR_ILLEGAL_ADDRESSING_MODE,false, pLine );
-                   ++Redo;
-                   Redo_why |= REASON_MNEMONIC_NOT_RESOLVED;
-
-                   //we treat the opcode as valid to allow passes to continue, which should
-                   //allow other errors (like phase errros) to resolve before our "++Redo"
-                   //ultimately forces a failure.
-                   cur->addrmode = AM_0Y; 
-                   ++str;
-
-            }
-            else if (scr == 'x' && !IsAlphaNum(str[2]))
+            else if (scr == 'x' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_0X;
                 ++str;
-
-                //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                if(Mnext==AM_WORDADR)
-                     Mnext=AM_WORDADRX;
-                if(Mnext==AM_BYTEADR)
-                     Mnext=AM_BYTEADRX;
-                if(Mnext==AM_INDWORD)
-                     Mnext=AM_0X;
             }
-            else if (scr == 'y' && !IsAlphaNum(str[2]))
+            else if (scr == 'y' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_0Y;
                 ++str;
-
-                //FIX: OPCODE.FORCE needs to be adjusted for x indexing...
-                if(Mnext==AM_WORDADR)
-                     Mnext=AM_WORDADRY;
-                if(Mnext==AM_BYTEADR)
-                     Mnext=AM_BYTEADRY;
-                if(Mnext==AM_INDWORD)
-                     Mnext=AM_0Y;
             }
             else
             {
-                SYMBOL *pNewSymbol = allocsymbol();
+                SYMBOL *pNewSymbol = alloc_symbol();
                 cur->next = pNewSymbol;
                 --Argi;
                 if (Argi < Argibase)
+                {
+                    /* [phf] removed
                     asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+                    */
+                    error_fmt(ERROR_SYNTAX_ONE, pLine);
+                }
                 if (Argi > Argibase)
+                {
+                    /* [phf] removed
                     asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+                    */
+                    error_fmt(ERROR_SYNTAX_ONE, pLine);
+                }
                 cur->value = Argstack[Argi];
                 cur->flags = Argflags[Argi];
                 
-                if ((cur->string = (void *)Argstring[Argi]) != NULL)
+                if ((cur->string = Argstring[Argi]) != NULL)
                 {
                     cur->flags |= SYM_STRING;
-                    if (Xdebug)
-                        printf("STRING: %s\n", cur->string);
+                    debug_fmt("STRING: %s", cur->string);
                 }
                 cur = pNewSymbol;
             }
@@ -529,18 +505,22 @@ SYMBOL *eval(const char *str, int wantmode)
         --Argi;
         cur->value = Argstack[Argi];
         cur->flags = Argflags[Argi];
-        if ((cur->string = (void *)Argstring[Argi]) != NULL)
+        if ((cur->string = Argstring[Argi]) != NULL)
         {
             cur->flags |= SYM_STRING;
-            if (Xdebug)
-                printf("STRING: %s\n", cur->string);
+            debug_fmt("STRING: %s", cur->string);
         }
         if (base->addrmode == 0)
             base->addrmode = AM_BYTEADR;
     }
 
     if (Argi != Argibase || Opi != Opibase)
+    {
+        /* [phf] removed
         asmerr( ERROR_SYNTAX_ERROR, false, pLine );
+        */
+        error_fmt(ERROR_SYNTAX_ONE, pLine);
+    }
 
 
     Argi = Argibase;
@@ -551,57 +531,61 @@ SYMBOL *eval(const char *str, int wantmode)
 }
 
 
-int IsAlphaNum( int c )
+static void evaltop(void)
 {
-    return ((c >= 'a' && c <= 'z')
-        || (c >= 'A' && c <= 'Z')
-        || (c >= '0' && c <= '9'));
-}
-
-void evaltop(void)
-{
-    if (Xdebug)
-        printf("evaltop @(A,O) %d %d\n", Argi, Opi);
+    debug_fmt("evaltop @(A,O) %d %d", Argi, Opi);
     
-    if (Opi <= Opibase) {
+    if (Opi <= Opibase)
+    {
+        /* [phf] removed
         asmerr( ERROR_SYNTAX_ERROR, false, NULL );
+        */
+        error_fmt(ERROR_SYNTAX_NONE);
         Opi = Opibase;
         return;
     }
     --Opi;
     if (Oppri[Opi] == 128) {
-        if (Argi < Argibase + 1) {
+        if (Argi < Argibase + 1)
+        {
+            /* [phf] removed
             asmerr( ERROR_SYNTAX_ERROR, false, NULL );
+            */
+            error_fmt(ERROR_SYNTAX_NONE);
             Argi = Argibase;
             return;
         }
         --Argi;
-        (*Opdis[Opi]_unary)(Argstack[Argi], Argflags[Argi]);
+        /* call unary function through binary signature [phf] */
+        (*Opdis[Opi])(Argstack[Argi], 0, Argflags[Argi], 0);
     }
     else
     {
         if (Argi < Argibase + 2)
         {
+            /* [phf] removed
             asmerr( ERROR_SYNTAX_ERROR, false, NULL );
+            */
+            error_fmt(ERROR_SYNTAX_NONE);
             Argi = Argibase;
             return;
         }
 
         Argi -= 2;
-        (*Opdis[Opi]_binary)(Argstack[Argi], Argstack[Argi+1],
+        /* call binary function, for real [phf] */
+        (*Opdis[Opi])(Argstack[Argi], Argstack[Argi+1],
             Argflags[Argi], Argflags[Argi+1]);
     }
 }
 
-static void stackarg(long val, int flags, const char *ptr1)
+static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
 {
     char *str = NULL;
     
-    if (Xdebug)
-        printf("stackarg %ld (@%d)\n", val, Argi);
+    debug_fmt("stackarg %ld (@%d)", val, Argi);
     
-    Lastwasop = 0;
-    if (flags & SYM_STRING)
+    Lastwasop = false;
+    if ((flags & SYM_STRING) != 0)
     {
         /*
            Why unsigned char? Looks like we're converting to
@@ -609,17 +593,17 @@ static void stackarg(long val, int flags, const char *ptr1)
         */
         const unsigned char *ptr = (const unsigned char *)ptr1;
         char *new;
-        int len;
-        val = len = 0;
-        while (*ptr && *ptr != '\"')
+        size_t len = 0;
+        val = 0;
+        while (*ptr != '\0' && *ptr != '\"')
         {
             val = (val << 8) | *ptr;
             ++ptr;
             ++len;
         }
-        new = ckmalloc(len + 1);
+        new = checked_malloc(len + 1);
         memcpy(new, ptr1, len);
-        new[len] = 0;
+        new[len] = '\0';
         flags &= ~SYM_STRING;
         str = new;
     }
@@ -627,24 +611,23 @@ static void stackarg(long val, int flags, const char *ptr1)
     Argstring[Argi] = str;
     Argflags[Argi] = flags;
     if (++Argi == MAXARGS) {
-        puts("stackarg: maxargs stacked");
+        /* TODO: should be an error message? [phf] */
+        (void) puts("stackarg: maxargs stacked");
         Argi = Argibase;
     }
     while (Opi != Opibase && Oppri[Opi-1] == 128)
         evaltop();
 }
 
-void doop(opfunc_t func, int pri)
+static void doop(opfunc_t func, int pri)
 {
-    if (Xdebug)
-        puts("doop");
+    debug_fmt("doop");
     
-    Lastwasop = 1;
+    Lastwasop = true;
     
     if (Opi == Opibase || pri == 128)
     {
-        if (Xdebug)
-            printf("doop @ %d unary\n", Opi);
+        debug_fmt("doop @ %d unary", Opi);
         Opdis[Opi] = func;
         Oppri[Opi] = pri;
         ++Opi;
@@ -654,8 +637,7 @@ void doop(opfunc_t func, int pri)
     while (Opi != Opibase && Oppri[Opi-1] && pri <= Oppri[Opi-1])
         evaltop();
     
-    if (Xdebug)
-        printf("doop @ %d\n", Opi);
+    debug_fmt("doop @ %d", Opi);
     
     Opdis[Opi] = func;
     Oppri[Opi] = pri;
@@ -663,43 +645,46 @@ void doop(opfunc_t func, int pri)
     
     if (Opi == MAXOPS)
     {
-        puts("doop: too many operators");
+        /* TODO: should be an error message? [phf] */
+        (void) puts("doop: too many operators");
         Opi = Opibase;
     }
     return;
 }
 
-void op_takelsb(long v1, int f1)
+/* unary [phf] */
+static void op_takelsb(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(v1 & 0xFFL, f1, NULL);
 }
 
-void op_takemsb(long v1, int f1)
+static void op_takemsb(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg((v1 >> 8) & 0xFF, f1, NULL);
 }
 
-void op_negate(long v1, int f1)
+static void op_negate(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(-v1, f1, NULL);
 }
 
-void op_invert(long v1, int f1)
+static void op_invert(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(~v1, f1, NULL);
 }
 
-void op_not(long v1, int f1)
+static void op_not(long v1, long UNUSED(v2), dasm_flag_t f1, dasm_flag_t UNUSED(f2))
 {
     stackarg(!v1, f1, NULL);
 }
 
-void op_mult(long v1, long v2, int f1, int f2)
+/* binary [phf] */
+static void op_mult(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg(v1 * v2, f1|f2, NULL);
 }
 
-void op_div(long v1, long v2, int f1, int f2)
+static void op_div(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if (f1|f2) {
         stackarg(0L, f1|f2, NULL);
@@ -707,7 +692,11 @@ void op_div(long v1, long v2, int f1, int f2)
     }
     if (v2 == 0)
     {
+        /* [phf] removed
         asmerr( ERROR_DIVISION_BY_0, true, NULL );
+        */
+        fatal_fmt("Division by zero!");
+        /* TODO: not fatal in Matt's DASM, Andrew made it fatal in 2.20.04 [phf] */
         stackarg(0L, 0, NULL);
     }
     else
@@ -716,7 +705,7 @@ void op_div(long v1, long v2, int f1, int f2)
     }
 }
 
-void op_mod(long v1, long v2, int f1, int f2)
+static void op_mod(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if (f1|f2) {
         stackarg(0L, f1|f2, NULL);
@@ -728,7 +717,7 @@ void op_mod(long v1, long v2, int f1, int f2)
         stackarg(v1 % v2, 0, NULL);
 }
 
-void op_question(long v1, long v2, int f1, int f2)
+static void op_question(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if (f1)
         stackarg(0L, f1, NULL);
@@ -736,17 +725,17 @@ void op_question(long v1, long v2, int f1, int f2)
         stackarg((long)((v1) ? v2 : 0), ((v1) ? f2 : 0), NULL);
 }
 
-void op_add(long v1, long v2, int f1, int f2)
+static void op_add(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg(v1 + v2, f1|f2, NULL);
 }
 
-void op_sub(long v1, long v2, int f1, int f2)
+static void op_sub(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg(v1 - v2, f1|f2, NULL);
 }
 
-void op_shiftright(long v1, long v2, int f1, int f2)
+static void op_shiftright(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if (f1|f2)
         stackarg(0L, f1|f2, NULL);
@@ -754,7 +743,7 @@ void op_shiftright(long v1, long v2, int f1, int f2)
         stackarg((long)(v1 >> v2), 0, NULL);
 }
 
-void op_shiftleft(long v1, long v2, int f1, int f2)
+static void op_shiftleft(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if (f1|f2)
         stackarg(0L, f1|f2, NULL);
@@ -762,37 +751,37 @@ void op_shiftleft(long v1, long v2, int f1, int f2)
         stackarg((long)(v1 << v2), 0, NULL);
 }
 
-void op_greater(long v1, long v2, int f1, int f2)
+static void op_greater(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg((long)(v1 > v2), f1|f2, NULL);
 }
 
-void op_greatereq(long v1, long v2, int f1, int f2)
+static void op_greatereq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg((long)(v1 >= v2), f1|f2, NULL);
 }
 
-void op_smaller(long v1, long v2, int f1, int f2)
+static void op_smaller(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg((long)(v1 < v2), f1|f2, NULL);
 }
 
-void op_smallereq(long v1, long v2, int f1, int f2)
+static void op_smallereq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg((long)(v1 <= v2), f1|f2, NULL);
 }
 
-void op_eqeq(long v1, long v2, int f1, int f2)
+static void op_eqeq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg((long)(v1 == v2), f1|f2, NULL);
 }
 
-void op_noteq(long v1, long v2, int f1, int f2)
+static void op_noteq(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg((long)(v1 != v2), f1|f2, NULL);
 }
 
-void op_andand(long v1, long v2, int f1, int f2)
+static void op_andand(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if ((!f1 && !v1) || (!f2 && !v2)) {
         stackarg(0L, 0, NULL);
@@ -801,7 +790,7 @@ void op_andand(long v1, long v2, int f1, int f2)
     stackarg(1L, f1|f2, NULL);
 }
 
-void op_oror(long v1, long v2, int f1, int f2)
+static void op_oror(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     if ((!f1 && v1) || (!f2 && v2)) {
         stackarg(1L, 0, NULL);
@@ -810,24 +799,24 @@ void op_oror(long v1, long v2, int f1, int f2)
     stackarg(0L, f1|f2, NULL);
 }
 
-void op_xor(long v1, long v2, int f1, int f2)
+static void op_xor(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg(v1^v2, f1|f2, NULL);
 }
 
-void op_and(long v1, long v2, int f1, int f2)
+static void op_and(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg(v1&v2, f1|f2, NULL);
 }
 
-void op_or(long v1, long v2, int f1, int f2)
+static void op_or(long v1, long v2, dasm_flag_t f1, dasm_flag_t f2)
 {
     stackarg(v1|v2, f1|f2, NULL);
 }
 
-const char *pushchar(const char *str)
+static const char *pushchar(const char *str)
 {
-    if (*str) {
+    if (*str != '\0') {
         stackarg((long)*str, 0, NULL);
         ++str;
     } else {
@@ -836,7 +825,7 @@ const char *pushchar(const char *str)
     return str;
 }
 
-const char *pushhex(const char *str)
+static const char *pushhex(const char *str)
 {
     long val = 0;
     for (;; ++str) {
@@ -865,7 +854,7 @@ const char *pushoct(const char *str)
     return str;
 }
 
-const char *pushdec(const char *str)
+static const char *pushdec(const char *str)
 {
     long val = 0;
     while (*str >= '0' && *str <= '9') {
@@ -876,7 +865,7 @@ const char *pushdec(const char *str)
     return str;
 }
 
-const char *pushbin(const char *str)
+static const char *pushbin(const char *str)
 {
     long val = 0;
     while (*str == '0' || *str == '1') {
@@ -887,71 +876,80 @@ const char *pushbin(const char *str)
     return str;
 }
 
-const char *pushstr(const char *str)
+static const char *pushstr(const char *str)
 {
     stackarg(0, SYM_STRING, str);
-    while (*str && *str != '\"')
+    while (*str != '\0' && *str != '\"')
         ++str;
     if (*str == '\"')
         ++str;
     return str;
 }
 
-const char *pushsymbol(const char *str)
+static const char *pushsymbol(const char *str)
 {
     SYMBOL *sym;
     const char *ptr;
-    unsigned char macro = 0;
+    bool macro = false;
     
-    for (ptr = str;
-    *ptr == '_' ||
-        *ptr == '.' ||
-        (*ptr >= 'a' && *ptr <= 'z') ||
-        (*ptr >= 'A' && *ptr <= 'Z') ||
-        (*ptr >= '0' && *ptr <= '9');
-    ++ptr
-        );
-    if (ptr == str) {
+    for (ptr = str; *ptr == '_' || *ptr == '.' || is_alpha_num(*ptr); ++ptr);
+
+    if (ptr == str)
+    {
+        /* [phf] removed
         asmerr( ERROR_ILLEGAL_CHARACTER, false, str );
+        */
+        error_fmt("Invalid character '%s'!", str); /* TODO: (*str) instead? */
+        /* TODO: should go in error handling code, not here! [phf] */
         printf("char = '%c' %d (-1: %d)\n", *str, *str, *(str-1));
-        if (F_listfile)
+        if (FI_listfile != NULL) {
             fprintf(FI_listfile, "char = '%c' code %d\n", *str, *str);
+        }
         return str+1;
     }
 
     if (*ptr == '$')
         ptr++;
 
-    if ((sym = findsymbol(str, ptr - str)) != NULL)
+    /*
+        make sure we pass non-negative here, maybe we can change
+        find_symbol() signature [phf]
+    */
+    assert((ptr-str) >= 0);
+
+    if ((sym = find_symbol(str, ptr - str)) != NULL)
     {
-        if (sym->flags & SYM_UNKNOWN)
+        if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo_eval;
-        
-        if (sym->flags & SYM_MACRO)
-        {
-            macro = 1;
-            sym = eval(sym->string, 0);
         }
         
-        if (sym->flags & SYM_STRING)
-            stackarg(0, SYM_STRING, sym->string);
+        if ((sym->flags & SYM_MACRO) != 0) {
+            macro = true;
+            sym = eval(sym->string, false);
+            assert(sym != NULL);
+        }
         
-        else
+        if ((sym->flags & SYM_STRING) != 0) {
+            stackarg(0, SYM_STRING, sym->string);
+        } 
+        else {
             stackarg(sym->value, sym->flags & SYM_UNKNOWN, NULL);
+        }
         
         sym->flags |= SYM_REF|SYM_MASREF;
         
-        if (macro)
-            FreeSymbolList(sym);
+        if (macro) {
+            free_symbol_list(sym);
+        }
     }
-    else
-    {
+    else {
         stackarg(0L, SYM_UNKNOWN, NULL);
-        sym = CreateSymbol( str, ptr - str );
+        sym = create_symbol(str, ptr - str);
+        assert(sym != NULL);
         sym->flags = SYM_REF|SYM_MASREF|SYM_UNKNOWN;
         ++Redo_eval;
     }
     return ptr;
 }
 
-
+/* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
