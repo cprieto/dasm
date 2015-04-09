@@ -25,7 +25,7 @@ static const char * all_tests(void) {
     return 0;
 }
  
-int main(int argc, char **argv) {
+int main(void) {
     const char *result = all_tests();
     if (result != 0) {
         printf("%s\n", result);

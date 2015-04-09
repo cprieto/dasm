@@ -14,7 +14,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define S(type) printf("sizeof(" #type ") == %d\n", sizeof(type))
+#define S(type) printf("sizeof(" #type ") == %zu\n", sizeof(type))
+
+struct STRLIST {
+  struct STRLIST *next;
+  char data[];
+};
 
 int main(void)
 {
@@ -30,6 +35,10 @@ int main(void)
   S(int64_t);
   S(float);
   S(double);
+  S(void*);
+  S(char*);
+  S(int*);
+  S(struct STRLIST);
   return EXIT_SUCCESS;
 }
 
@@ -78,4 +87,44 @@ sizeof(long long) == 8
 sizeof(int64_t) == 8
 sizeof(float) == 4
 sizeof(double) == 8
+
+Linux eggbert 3.18.9-gentoo #1 SMP Thu Apr 2 19:53:32 EDT 2015 x86_64 AMD Athlon(tm) 64 X2 Dual Core Processor 6000+ AuthenticAMD GNU/Linux
+ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, not stripped
+
+sizeof(char) == 1
+sizeof(int8_t) == 1
+sizeof(short) == 2
+sizeof(int16_t) == 2
+sizeof(int) == 4
+sizeof(bool) == 1
+sizeof(long) == 4
+sizeof(int32_t) == 4
+sizeof(long long) == 8
+sizeof(int64_t) == 8
+sizeof(float) == 4
+sizeof(double) == 8
+sizeof(void*) == 4
+sizeof(char*) == 4
+sizeof(int*) == 4
+sizeof(struct STRLIST) == 4
+
+Linux eggbert 3.18.9-gentoo #1 SMP Thu Apr 2 19:53:32 EDT 2015 x86_64 AMD Athlon(tm) 64 X2 Dual Core Processor 6000+ AuthenticAMD GNU/Linux
+ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, not stripped
+
+sizeof(char) == 1
+sizeof(int8_t) == 1
+sizeof(short) == 2
+sizeof(int16_t) == 2
+sizeof(int) == 4
+sizeof(bool) == 1
+sizeof(long) == 8
+sizeof(int32_t) == 4
+sizeof(long long) == 8
+sizeof(int64_t) == 8
+sizeof(float) == 4
+sizeof(double) == 8
+sizeof(void*) == 8
+sizeof(char*) == 8
+sizeof(int*) == 8
+sizeof(struct STRLIST) == 8
 */
