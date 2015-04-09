@@ -63,19 +63,4 @@ sizeof(long long) == 8
 sizeof(int64_t) == 8
 sizeof(float) == 4
 sizeof(double) == 8
-
-SunOS peregrine 5.10 Generic_118822-11 sun4u sparc
-
-sizeof(char) == 1
-sizeof(int8_t) == 1
-sizeof(short) == 2
-sizeof(int16_t) == 2
-sizeof(int) == 4
-sizeof(bool) == 1
-sizeof(long) == 4
-sizeof(int32_t) == 4
-sizeof(long long) == 8
-sizeof(int64_t) == 8
-sizeof(float) == 4
-sizeof(double) == 8
 */
