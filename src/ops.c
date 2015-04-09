@@ -36,6 +36,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stdint.h>
 
 /*@unused@*/
 SVNTAG("$Id$");
@@ -1144,7 +1145,7 @@ v_execmac(const char *str, MACRO *mac)
         return;
     }
     ++Mlevel;
-    base = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+strlen(str)+1);
+    base = checked_malloc(STRLISTSIZE + strlen(str) + 1);
     base->next = NULL;
     strcpy(base->buf, str);
     psl = &base->next;
@@ -1152,7 +1153,7 @@ v_execmac(const char *str, MACRO *mac)
         sone = str;
         while (*str != '\0' && *str != '\n' && *str != ',')
             ++str;
-        sl = checked_malloc(sizeof(STRLIST)-STRLISTSIZE+1+(str-sone));
+        sl = checked_malloc(STRLISTSIZE + (str-sone) + 1);
         sl->next = NULL;
         *psl = sl;
         psl = &sl->next;
@@ -1412,8 +1413,7 @@ v_incdir(const char *str, MNEMONIC UNUSED(*dummy))
     
     if (!found) {
         STRLIST *newdir;
-        /* TODO: I think size is calculated wrong here, too big... [phf] */
-        newdir = small_alloc(STRLISTSIZE + 1 + strlen(buf));
+        newdir = small_alloc(STRLISTSIZE + strlen(buf) + 1);
         strcpy(newdir->buf, buf);
         *tail = newdir;
     }

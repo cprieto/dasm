@@ -26,9 +26,12 @@
 # you want to move them somewhere, trunk/bin/ say, do so in the
 # trunk/ Makefile!
 
-GOPTI= -O # -O for more warnings; use -O0 for debugging, use -O3 for speed
+GOPTI= -O2 # -O2 for more warnings; use -O0 for debugging
 
-GWARN= -ansi -std=c99 -pedantic -Wall \
+GWARN= -std=c99 -Wall -Wextra -Wpedantic
+# [phf] we need to review warnings again at a later date, for
+# now I've gone back to a relatively basic set
+#GWARN= -ansi -std=c99 -pedantic -Wall \
        -Wstrict-prototypes -Wdeclaration-after-statement \
        -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes \
        -Wshadow -Wwrite-strings -Wcast-qual -Wnested-externs \
@@ -47,7 +50,7 @@ GWARN= -ansi -std=c99 -pedantic -Wall \
 
 GDEBG= -g # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
 
-CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
+CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) # -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
 CC= gcc
 
 OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \

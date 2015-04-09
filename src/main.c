@@ -1198,7 +1198,7 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
             outlistfile(comment);
         }
         if (!defined) {
-            sl = small_alloc(STRLISTSIZE+1+strlen(buf));
+            sl = small_alloc(STRLISTSIZE + strlen(buf) + 1);
             strcpy(sl->buf, buf);
             *slp = sl;
             slp = &sl->next;

@@ -182,24 +182,24 @@ size_t operand_size(address_mode_t am);
 #define AM_BYTE					AM_BYTEADR
 #define AM_WORD					AM_WORDADR
 
-
+/*
+    STRLIST is used in various places to store lists of strings.
+    It uses the "flexible array member" feature of C99 to avoid
+    having to allocate memory for the string and the list node
+    separately. Eventually this should be hidden behind a sane
+    API. To find STRLIST allocation sites (in main.c and ops.c)
+    grep for STRLISTSIZE. [phf]
+*/
 typedef struct _STRLIST STRLIST;
 struct _STRLIST
 {
-    /* next string in list? [phf] */
+    /* next string in list [phf] */
     STRLIST *next;
-    /* the actual string? [phf] */
-    char buf[4];
-    /*
-        TODO: actual code in main.c and ops.c where STRLIST gets
-        malloc()ed indicates that buf[4] is a hack that basically
-        emulates a "flexible array member" of C99 fame; should be
-        replaced with a properly allocated buffer! the main.c use
-        is probably wrong btw... [phf]
-    */
+    /* the actual string [phf] */
+    char buf[];
 };
 
-#define STRLISTSIZE    4
+#define STRLISTSIZE (sizeof(STRLIST))
 
 #define MF_IF					0x04
 #define MF_MACRO				0x08
