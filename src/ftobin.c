@@ -44,6 +44,7 @@
  *  Restrictions:   Lowest address must be referenced first.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -136,13 +137,15 @@ convert(short format, FILE *in, FILE *out)
     for (;;) {
 	if (len > 0) {
 	    while (len >= ((long) sizeof(buf))) {
-		fread(buf, sizeof(buf), 1, in);
+		int result = fread(buf, sizeof(buf), 1, in);
+		assert(result == 1);
 		fwrite(buf, sizeof(buf), 1, out);
 		len -= sizeof(buf);
 		org += sizeof(buf);
 	    }
 	    if (len) {
-		fread(buf, (short)len, 1, in);
+		int result = fread(buf, (short)len, 1, in);
+		assert(result == 1);
 		fwrite(buf, (short)len, 1, out);
 		org += len;
 	    }
