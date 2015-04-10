@@ -176,7 +176,8 @@ convert(int format, FILE *in, FILE *out)
 	    register unsigned int i;
 
 	    idx = (len > PERLINE) ? PERLINE : len;
-	    fread(buf, idx, 1, in);
+	    int result = fread(buf, idx, 1, in);
+	    assert(result == 1);
 	    putc(':', out);
 	    put_hex(idx, out);
 	    put_hex(org >> 8, out);
