@@ -8,24 +8,25 @@
 for i in *.asm
 do
   NAME=`basename $i .asm`
-  echo "----- $NAME -----"
+  echo
+  echo "----- Testing $NAME -----"
   ../bin/dasm $i -f1 -o$NAME.bin -DINEEPROM
   # echo "dasm returned $?"
   cmp -s $NAME.bin $NAME.bin.ref
   if [ $? == 0 ]
   then
-    echo "------------------------good"
+    echo "----- good"
   else
-    echo "------------------------error"
+    echo "---------- error"
   fi
   ../bin/ftohex 1 $NAME.bin $NAME.hex
   # echo "ftohex returned $?"
   cmp -s $NAME.hex $NAME.hex.ref
   if [ $? == 0 ]
   then
-    echo "------------------------good"
+    echo "----- good"
   else
-    echo "------------------------error"
+    echo "---------- error"
   fi
 done
 
