@@ -883,6 +883,9 @@ static const char *cleanup(char *buf, bool bDisable)
                 goto br2;
             }
             break;
+        default: /* [phf] missing default */
+            /* [phf] apparently we mean to ignore all other characters here */
+            break;
         }
     }
     
@@ -940,6 +943,9 @@ void findext(char *str)
             case 'n':
                 Mnext = AM_INDWORD;
                 break;
+            default: /* [phf] missing default */
+                assert(false);
+                break;
             }
             return;
             case 'd':
@@ -987,6 +993,9 @@ void findext(char *str)
                     case 'u':
                         Mnext = AM_BSS;
                         return;
+        default: /* [phf] missing default */
+            assert(false);
+            break;
         }
     }
 }

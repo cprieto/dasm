@@ -174,9 +174,10 @@ convert(int format, FILE *in, FILE *out)
 	while (len > 0) {
 	    register unsigned char chk;
 	    register unsigned int i;
+	    int result;
 
 	    idx = (len > PERLINE) ? PERLINE : len;
-	    int result = fread(buf, idx, 1, in);
+	    result = fread(buf, idx, 1, in);
 	    assert(result == 1);
 	    putc(':', out);
 	    put_hex(idx, out);
