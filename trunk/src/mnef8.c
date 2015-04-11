@@ -526,6 +526,9 @@ static void v_lr(const char *str, MNEMONIC *mne) {
             switch (reg_src) {
                 case REG_H: opcode = 0x10; break;
                 case REG_Q: opcode = 0x0f; break;
+                default: /* [phf] missing default */
+                    assert(false);
+                    break;
             }
             break;
         case REG_H:
