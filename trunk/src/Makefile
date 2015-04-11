@@ -28,27 +28,45 @@
 
 GOPTI= -O2 # -O2 for more warnings; use -O0 for debugging
 
-GWARN= -std=c99 -Wall -Wextra -Wpedantic
-# [phf] we need to review warnings again at a later date, for
-# now I've gone back to a relatively basic set
-#GWARN= -ansi -std=c99 -pedantic -Wall \
-       -Wstrict-prototypes -Wdeclaration-after-statement \
-       -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes \
-       -Wshadow -Wwrite-strings -Wcast-qual -Wnested-externs \
-       -Wcast-align -Wpointer-arith -Wbad-function-cast \
-       -Wformat-y2k -Wformat-nonliteral -Wformat-security \
-       -Wfloat-equal -Wundef -Winline \
-       -Wextra \
-       # -Wunused # definition is weird in man gcc, effect is weird too
-       # Warnings that only make sense for me once OS X has better gcc
-       # -Wtraditional-conversion # prototype conversions gcc 4.3+
-       # -Wconversion # sign conversions gcc 4.3+
-       # Warnings we turned down after some consideration:
-       # -Wunreachable-code # seems to create too many spurious warnings
-       # -Wfour-char-constants # Apple OS X only option, not needed anyway?
-       # -Wtraditional # we want to be C99 darn it, so we don't care
+# Warnings are our first line of defense against many things,
+# here are some of our reasons for using so many...
+#
+# Our baseline is C99 with a set of fairly standard warnings.
+GWARN = -std=c99 -Wall -Wextra -Wpedantic
+#
+# Sadly splint is a bit dated so we have to avoid some features.
+GWARN+= -Wdeclaration-after-statement
+#
+# We do a ton of string formatting so let's be safe about it.
+GWARN+= -Wformat-nonliteral -Wformat-security -Wformat-y2k
+#
+# Although -Wall does some of this already, let's be doubly sure.
+GWARN+= -Wuninitialized -Winit-self
+#
+# We don't like switch/case in the first place, but the explicit
+# range is the ONE THING they have going for themselves. So we
+# enforce it.
+GWARN+= -Wswitch-default -Wswitch-enum
+#
+# Several minor issues that it's nice to have assurances about.
+GWARN+= -Wshadow -Wundef \
+	-Wbad-function-cast -Wcast-qual -Wcast-align \
+	-Wwrite-strings -Wlogical-op \
+	-Wstrict-prototypes -Wold-style-definition \
+	-Wmissing-declarations -Wmissing-prototypes \
+	-Wnested-externs
+#
+# We really want this eventually because the chaos of signed
+# and unsigned types in DASM is horrifyingly bad. However, as
+# of right now, it's just too much. :-/
+#GWARN+=-Wconversion
+#
+# Seem like a good idea at first (to notice where old code and
+# new code collide) but produces too many warnings and we want
+# to be C99 anyway, darn it.
+#GWARN+= -Wtraditional -Wtraditional-conversion
 
-GDEBG= -g # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
+GDEBG= -g -fsanitize=address # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
 
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) # -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
 CC= gcc
