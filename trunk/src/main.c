@@ -835,6 +835,7 @@ static const char *cleanup(char *buf, bool bDisable)
                 --add;
             if (*str != '}')
             {
+                /* TODO: should be an error message? [phf] */
                 (void) puts("end brace required");
                 --str;
                 break;
@@ -861,17 +862,17 @@ static const char *cleanup(char *buf, bool bDisable)
                 {
                     debug_fmt("str %8ld buf %8ld (add/strlen(str)): %d %ld",
                               (unsigned long)str, (unsigned long)buf, add, (long)strlen(str));
-                    panic_fmt("failure1");
+                    panic_fmt("failure1"); /* TODO: more descriptive message? [phf] */
                 }
                 
                 memmove(str + add, str, strlen(str)+1);
                 str += add;
                 if (str - strlen(strlist->buf) < buf)
-                    panic_fmt("failure2");
+                    panic_fmt("failure2"); /* TODO: more descriptive message? [phf] */
                 memmove(str - strlen(strlist->buf), strlist->buf, strlen(strlist->buf));
                 str -= strlen(strlist->buf);
                 if (str < buf || str >= buf + MAXLINE)
-                    panic_fmt("failure 3");
+                    panic_fmt("failure3"); /* TODO: more descriptive message? [phf] */
                 --str;      /*  for loop increments string    */
             }
             else
