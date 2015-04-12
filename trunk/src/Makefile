@@ -66,10 +66,10 @@ GWARN+= -Wshadow -Wundef \
 # to be C99 anyway, darn it.
 #GWARN+= -Wtraditional -Wtraditional-conversion
 
-GDEBG= -g -fsanitize=address # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
+GDEBG= -g # -fsanitize=address # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
 
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) # -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
-CC= gcc
+CC= gcc # clang
 
 OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
       mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
