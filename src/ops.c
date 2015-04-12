@@ -430,6 +430,16 @@ void v_list(const char *str, MNEMONIC UNUSED(*dummy))
 */
 static char *getfilename(const char *str)
 {
+    /* [phf] The old version of this only allocated a new
+     * string if it had to, otherwise it returned the old
+     * string. That required an extra check in v_include
+     * and v_incbin and v_incdir as to whether to free the
+     * buffer again. What I am wondering is why we need to
+     * allocate a string on the heap in the first place,
+     * I think all we care about is the filename without
+     * quotes so maybe a static buffer would work just as
+     * well?
+     */
     char *buf;
     char *end;
 
@@ -914,6 +924,7 @@ v_align(const char *str, MNEMONIC UNUSED(*dummy))
             Redo_why |= REASON_ALIGN_NOT_RESOLVED;
         }
         else {
+            /* [phf] this used to be sym->value, incorrectly presumably */
             fill = sym->next->value;
         }
     }
@@ -1024,7 +1035,7 @@ v_equ(const char *str, MNEMONIC *dummy)
                 */
                 error_fmt("EQU: Value mismatch.");
                 printf("old value: $%04lx  new value: $%04lx\n",
-                    lab->value, sym->value);
+                    lab->value, sym->value); /* TODO: part of error? [phf] */
                 ++Redo;
                 Redo_why |= REASON_EQU_VALUE_MISMATCH;
             }
@@ -1141,7 +1152,7 @@ v_execmac(const char *str, MACRO *mac)
     programlabel();
     
     if (Mlevel == MAXMACLEVEL) {
-        (void) puts("infinite macro recursion");
+        (void) puts("infinite macro recursion"); /* TODO: error? [phf] */
         return;
     }
     ++Mlevel;
@@ -1221,7 +1232,7 @@ v_endm(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
         free(inc);
         return;
     }
-    (void) puts("not within a macro");
+    (void) puts("not within a macro"); /* TODO: error? [phf] */
 }
 
 void
@@ -1303,7 +1314,7 @@ v_endif(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
             programlabel();
         }
         if (ifs->file != pIncfile) {
-            (void) puts("too many endif's");
+            (void) puts("too many endif's"); /* TODO: error? [phf] */
         }
         else {
             Ifstack = ifs->next;
@@ -1611,7 +1622,7 @@ static void genfill(int32_t fill, long entries, int size)
     long bytes;
     int i;
     unsigned char c3,c2,c1,c0;
-    const int size_of_gen = sizeof(Gen);
+    const int size_of_gen = sizeof(Gen); /* [phf] signed to keep loop at end sane! */
 
     assert(entries >= 0);
     assert(size == 1 || size == 2 || size == 4);
