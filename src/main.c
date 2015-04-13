@@ -317,23 +317,23 @@ static void parse_output_format(char *str)
 }
 
 /* TODO: still need to improve option parsing and errors for it [phf] */
-static void parse_options(int ac, char **av)
+static void parse_options(int argc, char **argv)
 {
     int i;
 
-    if (ac < 2) {
+    if (argc < 2) {
         parse_options_fail(/* No source file given. */);
     }
     
-    for (i = 2; i < ac; ++i) {
-        if (char_starts_option(av[i][0])) {
-            char *str = av[i]+2;
+    for (i = 2; i < argc; ++i) {
+        if (char_starts_option(argv[i][0])) {
+            char *str = argv[i]+2;
             /* all options require an argument! */
             if (strlen(str) == 0) {
                 /* TODO: print usage, too? can't use panic then... */
-                panic_fmt("Missing argument for -%c option!", av[i][1]);
+                panic_fmt("Missing argument for -%c option!", argv[i][1]);
             }
-            switch(av[i][1])
+            switch(argv[i][1])
             {
             case 'E':
                 parse_error_format(str);
@@ -349,7 +349,7 @@ static void parse_options(int ac, char **av)
 
             case 'M':
             case 'D':
-                parse_define(av[i][1], str);
+                parse_define(argv[i][1], str);
                 break;
 
             case 'f':
@@ -397,7 +397,7 @@ static void parse_options(int ac, char **av)
     }
 }
 
-static int MainShadow(int ac, char **av)
+static int MainShadow(int argc, char **argv)
 {
 /*    int nError = ERROR_NONE;*/
     
@@ -411,7 +411,7 @@ static int MainShadow(int ac, char **av)
     addhashtable(Ops);
     pass = 1;
 
-    parse_options(ac, av);
+    parse_options(argc, argv);
 
     /* INITIAL SEGMENT */
     {
@@ -465,7 +465,7 @@ nextpass:
             return EXIT_FAILURE; /* needed for rest of code to work? [phf] */
         }
     }
-    pushinclude(av[1]);
+    pushinclude(argv[1]);
     
     while (pIncfile != NULL)
     {
