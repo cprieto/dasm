@@ -207,7 +207,7 @@ void programlabel(void)
     const char *str;
     bool rorg = (cseg->flags & SF_RORG) != 0;
     dasm_flag_t cflags = (rorg) ? cseg->rflags : cseg->flags;
-    unsigned long pc = (rorg) ? cseg->rorg : cseg->org;
+    long pc = (rorg) ? cseg->rorg : cseg->org;
     
     Plab = cseg->org;
     Pflags = cseg->flags;
