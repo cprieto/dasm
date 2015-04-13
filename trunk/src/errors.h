@@ -92,6 +92,8 @@ size_t number_of_warnings(void);
 
 /**
  * @brief Severity of error messages.
+ * @note Most of the code has not been adjusted to use these
+ * consistenly yet. :-/
  */
 typedef enum
 {
@@ -99,9 +101,9 @@ typedef enum
 
     /** displayed in debug mode, -d option */
     ERRORLEVEL_DEBUG,
-    /** displayed in high verbose mode, -v option */
+    /** displayed in high verbose mode, stuff that DASM does mostly internally, -v option */
     ERRORLEVEL_INFO,
-    /** displayed in low verbose mode, -v option */
+    /** displayed in low verbose mode, stuff that source code could have triggered, -v option */
     ERRORLEVEL_NOTICE,
     /** displayed if warnings enabled, -w option */
     ERRORLEVEL_WARNING,

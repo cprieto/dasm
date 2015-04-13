@@ -701,6 +701,17 @@ static void outlistfile(const char *comment)
     Extstr = NULL;
 }
 
+/*
+    [phf] This is a fun little function. The "sf" in the
+    name seems to indicate that it's for SEGMENT flags,
+    all of which are SF_* in asm.h; also, it's used all
+    over the place for SEGMENTs. Alas, the code below is
+    written in terms of SYM_* flags indicating that it
+    really is for SYMBOLs? Either there are some "dual
+    use flag bit patterns" at work here or something else
+    is confused. Also fun: The strange "flip which part
+    of the buffer to use" thing, how weird.
+*/
 char *sftos(long val, dasm_flag_t flags)
 {
     static char buf[MAX_SYM_LEN + 14];
@@ -1231,7 +1242,7 @@ void addhashtable(MNEMONIC *mne)
                 mne->opcode[i] = opcode[j++];
         }
         if (findmne(mne->name) != NULL) {
-            notice_fmt("Mnemonic '%s' was overridden!", mne->name);
+            info_fmt("Mnemonic '%s' was overridden!", mne->name);
         }
         i = hash_mnemonic(mne->name);
         mne->next = MHash[i];
