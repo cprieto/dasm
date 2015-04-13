@@ -1,0 +1,107 @@
+This is the source to the 2600 game Poker Squares.
+
+The game was released back in 2005. You can buy a copy, or just download
+the ROM image and manual, at the AtariAge store:
+
+https://www.atariage.com/software_page.html?SoftwareLabelID=2724
+
+During development, I posted sources to the old stellalist, but never
+did get around to releasing the source to the final version. So here it
+finally is.
+
+File list:
+
+pokersquares.dasm - The main source file, 6502 assembly with DASM syntax.
+
+pftitle.inc - Playfield data for the scrolling copyright message.
+
+pokersol.inc - Playfield data for the instructions.
+
+vcs.h - From the old mailing list. defines the standard VCS labels.
+        An old version of vcs.h, before all the fancy macros got
+        added.
+
+pokersquares.release.bin - The released binary. Can be downloaded
+                           from AtariAge. This copy is the one I sent to
+                           them in the first place (not that it matters;
+                           they're identical).
+
+pokersquares.pal.bin - PAL binary. Untested, never released, sitting on
+                       my hard drive for the past 10+ years.
+
+README - You're reading it.
+
+LICENSE - The WTFPL. Applies to all files except vcs.h.
+
+The first 4 files are the original source. I replaced my gnarly old
+Makefile with a cleaned-up and simpler one, and added the "make check"
+target to verify that the assembled binary matches the one downloaded
+from AtariAge.
+
+Building:
+
+The Makefile expects a more-or-less UNIX-like environment. This could be
+Linux, *BSD, Mac OSX, or Windows with msys or cygwin tools... or something
+else entirely (anyone still use BeOS? How about MinT on an Atari ST?)
+
+If you have GNU make and dasm installed and available on your $PATH, you
+should be able to just run 'make' (or maybe 'gmake'). The result is a 4K
+binary file called 'pokersquares.bin', which you can run with e.g. stella
+or z26, or burn to an EPROM and play on a real 2600. Also an assembly
+listing (pokersquares.list) and a symbol table dump (pokersquares.syms)
+are generated.
+
+To build the PAL version, 'make pal'. I've no idea if it'll work on
+real PAL hardware (never got a chance to test it), but at least Stella
+emulates it OK.
+
+If your dasm binary isn't installed on your $PATH, you can use a
+command like:
+
+   make DASM=/path/to/your/dasm
+
+If you don't have GNU make (maybe you're on a user-hostile OS that
+doesn't ship development tools, or maybe you don't like GNU), but you
+do have DASM, you can probably build with:
+
+   dasm pokersquares.dasm -opokersquares.bin -f3 -v1
+
+Notes:
+
+The *.inc files were generated with a perl script, which I seem
+to have lost (or maybe just forgotten the name of) in the last 10
+years. Basically, I "drew" the playfields in ASCII art with a text editor,
+then ran that through the perl script, which turned it into labels and
+.byte declarations for DASM's consumption.
+
+After the assembler does its thing, the newly-built binary is checked
+against either pokersquares.release.bin or pokersquares.pal.bin using
+the *nix 'cmp' command. If it complains that the files differ, the mostly
+likely cause is your DASM version.
+
+You might run into assembly errors with versions of DASM newer than
+about 2005. I used version 2.20.07 during development, and have just
+successfully built with 2.20.09. Note that these old versions of DASM
+can't be compiled as 64-bit code (or, they can be compiled, but crash
+when you try to run them).
+
+At the time of this writing, DASM development has just started back
+up. One of the developers' goals is compatibility with historic versions,
+so you might be able to use a very recent version.
+
+License:
+
+The file vcs.h came from the old stella mailing list. It's a collaborative
+work, added to by many list members. I don't recall there ever being a
+formal license for vcs.h, but it's considered a public domain work to
+the best of my knowledge. If I'm wrong on this, please correct me!
+
+Everything else in this directory is my own original work, released
+under the WTFPL. License terms can be found in the file LICENSE or at:
+
+http://www.wtfpl.net/txt/copying/
+
+Author:
+
+B. Watson, <yalhcru@gmail.com>. I can also be reached as Urchlay on
+FreeNode IRC in the ##atari channel.

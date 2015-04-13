@@ -1,0 +1,2036 @@
+
+; pokersol.asm
+
+; by B. Watson <urchlay@geocities.com>
+
+; Tested on an NTSC 6-switch Atari 2600
+; Tested on z26 v1.46 on a windows machine
+; Tested on xstella 1.1 on a linux machine
+
+; To build NTSC version:
+
+; dasm pokersol_027.asm -opokersol_027.bin -v3 -f3
+
+
+; To build PAL version:
+
+; dasm pokersol_027.asm -DPAL -opokersol_027.bin -v3 -f3
+
+
+
+ processor 6502
+ include "vcs.h"
+
+ seg.u data.0
+
+ org $80
+
+card0ptr ds 50
+left_diff_ptr = card0ptr
+right_diff_ptr = card0ptr+2
+ranks = card0ptr
+suits = card0ptr+14
+pairs = suits+5
+trips = pairs+1
+quad  = trips+1
+flush = quad+1
+tmp_cards = flush+1 ; 5 bytes
+end_ptrs
+tableau ds 25 ; the cards that have been played
+stock ds 27 ; the rest of the cards
+scoredig0 = stock ; 3 2-byte pointers
+deck = tableau ; the whole deck (which gets shuffled, then the
+               ; first 25 cards get overwritten with the
+               ; blank tableau)
+current_card ds 1 ; index into stock, points at card being placed
+tmp ds 1
+tmp2 ds 1
+select_debnc ds 1 ; bit 7: 0=game display, 1=cribsheet. bits 0..4=debounce
+playerpos ds 1 ; 5*y + x (or else $FF for `game not on'
+framectr ds 1
+color0 ds 5
+random ds 2
+score ds 1
+score_frame ds 1
+sound_type ds 1
+sound_ctr ds 1
+btn_debnc ds 1
+joy_debnc ds 1
+last_joy ds 1
+bw_mask ds 1 ; $FF for color, $0F for B/W (ANDed with color values)
+diff_shadow ds 1 ; shadows SWCHB bits for diff. switches
+scroll_ctr ds 1
+
+ echo *-$80,"bytes of zero page used."
+
+	if (*-$80) > ($7d)
+	echo "You're out of zero page! (Must be $7D or less bytes used)"
+	err
+	endif
+ 
+
+; constants:
+
+RAND_SEED = $55 ; goes in random @ powerup, gets asl'd then goes in random+1
+
+ ifconst PAL
+RED = $62
+CARD_COLOR = $0C
+YELLOW = $28
+GREEN = $38
+VBLANK_TIME = 54
+OSCAN_TIME = 56
+ else ; NTSC
+RED = $34 ; was $32, looks great in color, crappy in B/W
+CARD_COLOR = $0C ; white (don't need to bother with bw_mask for this)
+YELLOW = $28 ; used to be $FC
+GREEN = $BC ; used to be $B6
+VBLANK_TIME = 44
+OSCAN_TIME = 37
+ endif
+
+
+SND_BZZT = $8A ; hi nyb = D4-D1 of AUDF0, lo nyb = D3-D0 of AUDC0
+SND_BZZT_LEN = $06 ; frames to play sound for
+
+;these are OK
+SND_PLACE = $22
+SND_PLACE_LEN = $03
+
+SND_SCORE = $1A
+SND_SCORE_LEN = $20
+
+ seg code
+
+ org $F000
+
+main_loop
+ lda #2
+ sta VSYNC ; start blanking
+ sta WSYNC
+ sta WSYNC
+ lda #VBLANK_TIME
+ sta TIM64T ; go ahead & set timer
+ lda #0
+ sta WSYNC
+ sta VSYNC ; 3 WSYNC's, then turn off VSYNC
+
+game_calc
+ inc framectr
+ lda framectr
+ and #1
+ beq pos_miss
+ inc scroll_ctr
+pos_miss
+
+; position missiles...
+ sta WSYNC
+ ldx #7
+mposloop
+ dex
+ bne mposloop
+ sta RESM0 ; 49
+ sta RESM1 ; 52
+ lda #$60
+ sta HMM0
+ lda #$F0
+ sta HMM1
+
+; position players
+ sta WSYNC
+ ldx #7
+posloop
+ dex
+ bne posloop
+ sta RESP0 ; 49
+ sta RESP1 ; 52
+ lda #$F0
+ sta HMP1
+ lda #$60
+ sta HMP0
+ sta WSYNC
+ sta HMOVE ; 2
+ lda #CARD_COLOR ; 2 = 4
+ sta COLUP0 ; 3 = 7
+ sta COLUP1 ; 3 = 10
+ ldy #0 ; 2 = 14
+ stx color0 ; 3 = 17
+ stx color0+1 ; 3 = 20
+ stx color0+2 ; 3 = 23
+ stx color0+3 ; 3 = 26
+ stx color0+4 ; 3 = 29
+ sta HMCLR ; 3 = 32
+
+; setup pointers to card sprite data (25 of them!)
+;   note to self: saved 50 cycles by swapping roles of X and Y here
+;   (I had 2 sta zp,y's, which are actually sta.w, since there's no sta zp,y)
+;   there is still an lda zp,y (same deal), but not much I can do about this
+;   put it in stelladoc as an example...
+
+; these are already 0 from above
+;ldy #0
+;ldx #0
+card_disp
+ sty tmp ; 3
+ lda tableau,y ; 4 = 7
+ tay ; 2 = 9
+ lda lo_bytes,y ; 5 = 14
+ sta card0ptr,x ; 4 = 18
+ inx ; 2 = 20
+ lda hi_bytes,y ; 5 = 23
+ sta card0ptr,x ; 4 = 27
+ inx ; 2 = 29
+ ldy tmp ; 2 = 31
+ iny ; 2 = 31
+ cpy #25 ; 2 = 33
+ bne card_disp ; 3 = 36
+
+ ldy #$0F
+ lda SWCHB
+ and #8
+ beq bw_on
+ ldy #$FF
+bw_on
+ sty bw_mask 
+
+; set up card color bytes (1 per row)
+
+; card0 thru card0+4 are already 0
+ ldx #0
+cbyte_loop
+ lda tableau,x
+ cmp #26
+ rol color0
+ lda tableau+5,x
+ cmp #26
+ rol color0+1
+ lda tableau+10,x
+ cmp #26
+ rol color0+2
+ lda tableau+15,x
+ cmp #26
+ rol color0+3
+ lda tableau+20,x
+ cmp #26
+ rol color0+4
+ inx
+ cpx #5
+ bne cbyte_loop
+
+ 
+; blink cursor 
+ lda framectr
+ and #8 ; blink 8 frames, then don't blink 8 frames
+ beq no_blink 
+ lda current_card
+ cmp #25
+ beq no_blink ; dont blink if game is over
+ lda playerpos
+ asl
+ tax
+ lda #<no_card
+ sta card0ptr,x
+ lda #>no_card
+ sta card0ptr+1,x
+
+no_blink
+; lda framectr
+; and #7
+; beq do_stick
+; jmp no_stick
+
+do_stick
+ ;sta last_joy
+ lda INPT4
+ and #$80
+ ;cmp #$80
+ bne not_hard
+ ;cmp last_btn
+ ;bne no_btn_debnc
+ lda btn_debnc
+ beq no_btn_debnc
+ dec btn_debnc
+ bne not_hard
+ ;bmi no_fire
+no_btn_debnc
+ ;sta last_btn
+ lda #16
+ sta btn_debnc
+ lda playerpos ; check & see if games is already on ($FF = no)
+ bpl place_card
+ lda #0 ; player pressed fire during shuffling
+ sta playerpos ; so start the game
+ sta current_card
+ ldx #24
+ lda #52 ; blank card
+blank_tableau
+ sta tableau,x
+ dex
+ bpl blank_tableau
+ ;bmi no_fire ; always branch
+ ; now the game is ready to begin, let's check left diff. switch
+ lda diff_shadow
+ and #64
+ beq not_hard
+ lda stock      ; if left `pro' difficulty, deal the 1st 5 cards to the
+ sta tableau+12 ; corners and center. *Damn* this makes the game harder!
+ lda stock+1    ; (thanks, Glenn!)
+ sta tableau
+ lda stock+2
+ sta tableau+4
+ lda stock+3
+ sta tableau+20
+ lda stock+4
+ sta tableau+24
+ lda #5
+ sta current_card
+not_hard
+ jmp no_fire
+
+
+place_card ; player pressed fire while game is on
+ ldx current_card
+ ldy playerpos
+ lda #SND_BZZT
+ sta sound_type
+ lda #SND_BZZT_LEN
+ sta sound_ctr
+ lda tableau,y ; can't place a card where a card already is
+ cmp #52 ; 52 is `no card placed'
+ bne no_fire
+ lda stock,x
+ sta tableau,y
+ inc current_card
+ lda #SND_PLACE
+ sta sound_type
+ lda #SND_PLACE_LEN
+ sta sound_ctr
+no_fire
+
+ lda playerpos
+; bmi no_stick
+ bpl check_stick
+ lda SWCHB
+ and #$C0
+ sta diff_shadow
+ jmp no_stick
+
+; read joystick
+
+check_stick
+ lda SWCHA
+ and #$F0
+ cmp #$F0
+ beq no_stick
+ cmp last_joy
+ bne no_joy_debnc
+ dec joy_debnc
+ bpl no_stick
+no_joy_debnc
+ sta last_joy
+ ldx #8
+ stx joy_debnc
+ asl
+ bcs no_right
+ inc playerpos
+no_right
+ asl
+ bcs no_left
+ dec playerpos
+no_left
+ asl
+ bcs no_down
+ tax
+ lda playerpos
+ adc #5
+ sta playerpos
+ txa
+no_down
+ asl
+ bcs no_up 
+ lda playerpos
+ sbc #4 ; subtract 5 (carry always clear)
+ sta playerpos
+no_up
+ lda playerpos
+ bpl not_minus
+ clc
+ adc #25
+ sta playerpos
+not_minus
+ cmp #25
+ bcc not_toohigh
+ sec
+ sbc #25
+ sta playerpos
+not_toohigh
+
+no_stick
+
+ lda SWCHB
+ and #$01
+ bne no_reset
+ jsr deal_deck ; player pressed game reset
+ lda #$FF ; $FF in playerpos means `game not on, so shuffle'
+ sta playerpos
+
+no_reset
+
+decode_score
+ lda current_card
+ cmp #25
+ bne no_decode_score
+ lda #0
+ sta tmp
+ sta tmp2
+ ;sta tmp3 ; dont need this
+ lda #<score_blank
+ sta scoredig0
+ sta scoredig0+2
+; sta scoredig0+4
+ lda #>score_blank
+ sta scoredig0+1
+ sta scoredig0+3
+ sta scoredig0+5
+ lda score
+ck_hund
+ cmp #100
+ bcc hundreds_done
+ inc tmp
+ sec
+ sbc #100
+ bcs ck_hund
+; adc #100
+hundreds_done
+ck_tens
+ cmp #10
+ bcc tens_done
+ inc tmp2
+ sec
+ sbc #10
+ bcs ck_tens
+; adc #10
+tens_done
+ asl
+ asl
+ asl
+ sta scoredig0+4 ; ones always displayed, even if 0
+ lda score
+ cmp #10 ; always draw tens digit if score >= 10
+ bcc no_tens
+ lda tmp2
+ ;beq no_tens ; leave tens blank if score < 10 - this caused Jake's bug
+ asl
+ asl
+ asl
+ sta scoredig0+2
+no_tens
+ lda tmp
+ beq no_hund ; leave hunds blank if score < 100
+ asl
+ asl
+ asl
+ sta scoredig0 
+no_hund
+
+no_decode_score
+
+ lda #0
+ sta COLUBK
+ sta COLUPF
+ sta PF0
+ sta PF1
+ sta PF2
+
+; play sounds
+ lda sound_ctr
+ bne play_sound
+; lda #$00
+ sta AUDV0
+ sta AUDF0
+ beq sound_done
+
+play_sound
+ lda sound_ctr
+ and #$07
+ sta AUDV0
+ lda sound_type
+ tax
+ and #$F0
+ lsr
+ lsr
+ lsr
+ sta AUDF0
+ stx AUDC0
+ dec sound_ctr
+
+sound_done
+
+;NEW:
+;
+; x = select_debnc & 0x7f;
+
+ lda select_debnc
+ and #$7f
+ tax
+
+; if (x != 0) select_debnc--;
+;
+
+ beq no_dec_sd
+ dec select_debnc
+no_dec_sd
+
+; if (select_pressed) {
+
+ lda SWCHB
+ and #2
+ bne sel_not_pressed
+
+;   if (x == 0) {
+
+ cpx #0
+ bne sel_not_pressed
+
+;      select_debnc ^= 0x80; /* toggle hi bit */
+
+ lda select_debnc
+ eor #$80
+
+;      select_debnc |= 0x10; /* set delay to 0x10 frames */
+
+ ora #$10
+ sta select_debnc
+
+;   }
+; }
+
+sel_not_pressed
+wait_timer
+ lda INTIM
+ bne wait_timer ; busy-wait for timer to expire
+ sta WSYNC
+ sta VBLANK
+ sta WSYNC ; wby do I need these 2??
+ lda #6
+ sta NUSIZ0
+ lda #2
+ sta NUSIZ1
+ sta WSYNC
+
+
+
+ ifconst PAL
+ ldx #8
+pal_top_loop
+ sta WSYNC
+ dex
+ bne pal_top_loop
+ endif
+
+;
+; if (select_debnc & 0x80)
+;   inst_kernel();
+; else
+;   kernel();
+
+ lda select_debnc
+ bpl kernel
+ jmp inst_kernel 
+
+
+kernel
+ ;lda #CARD_COLOR
+ ;sta COLUP0
+ ;ldx #192
+
+ mac cardloop
+ lda #0
+ sta COLUBK
+ lda #%11111110
+ sta GRP0
+ sta GRP1
+ lda #2
+ sta WSYNC
+ sta ENAM0
+ sta ENAM1
+ lda #%11111111
+ sta GRP0
+ sta GRP1
+ sta PF0
+ sta PF1
+ sta PF2
+ ldx color0+{1} ; 3
+ lda colPF0,x ; +4 = 7
+ sta PF0 ; +3 = 11
+ lda colPF1,x ; +4 = 15
+ sta PF1 ; +3 = 18
+ lda colPF2,x ; +4 = 22
+ sta PF2 ; +3 = 25
+ ;lda #$0
+ ;sta PF0
+
+ ldy #11
+.cardloop0
+
+ lda #0 ; 65
+ sta.w COLUPF ; 70
+
+ lda (card0ptr+{1}*10+0),y ; 5
+ sta WSYNC ; 0
+ sta GRP0 ; 3
+ lda (card0ptr+{1}*10+2),y ; 5 = 8
+ sta GRP1 ; 3 = 11
+ lda (card0ptr+{1}*10+8),y ; 5 = 16
+ tax ; 2 = 18
+ txs ; 2 = 20
+ lda (card0ptr+{1}*10+6),y ; 5 = 25
+ tax ; 2 = 32
+
+ nop ; 2 = 42
+ lda #RED ; 2 = 34
+ and bw_mask ; 3 = 37
+ sta COLUPF ; 3 = 40
+
+ lda (card0ptr+{1}*10+4),y ; 5 = 47
+ sta GRP0 ; 3 = 50
+ stx GRP1 ; 3 = 53
+ tsx ; 2 = 55
+ stx GRP0 ; 3 = 58
+
+; #define LAME_CUT_AND_PASTE
+ nop ; 2 = 58
+ nop ; 2 = 60
+ nop ; 2 = 62
+ lda #0 ; 2 = 64
+ sta.w COLUPF ; 4 = 68
+
+ lda (card0ptr+{1}*10+0),y ; 5
+ sta WSYNC ; 0
+ sta GRP0 ; 3
+ lda (card0ptr+{1}*10+2),y ; 5 = 8
+ sta GRP1 ; 3 = 11
+ lda (card0ptr+{1}*10+8),y ; 5 = 16
+ tax ; 2 = 18
+ txs ; 2 = 20
+ lda (card0ptr+{1}*10+6),y ; 5 = 25
+ tax ; 2 = 32
+
+ nop ; 2 = 42
+ lda #RED ; 2 = 34
+ and bw_mask ; 3 = 37
+ sta COLUPF ; 3 = 40
+
+ lda (card0ptr+{1}*10+4),y ; 5 = 47
+ sta GRP0 ; 3 = 50
+ stx GRP1 ; 3 = 53
+ tsx ; 2 = 55
+ stx GRP0 ; 3 = 58
+
+ dey ; 2 = 60
+ bpl .cardloop0 ; 2/3
+
+ lda #0 ; 65
+ nop ; 67
+ sta COLUPF ; 70
+ sta WSYNC
+ sta PF0
+ sta PF1
+ sta PF2
+ lda #%11111111
+ sta GRP0
+ sta GRP1
+ sta WSYNC
+ lda #0
+ sta ENAM0
+ sta ENAM1
+ lda #%11111110
+ sta GRP0
+ sta GRP1
+ sta WSYNC
+ iny
+ sty GRP0
+ sty GRP1
+
+ sta WSYNC
+ sta WSYNC
+ endm ; end of mac cardloop
+
+ cardloop 0
+ cardloop 1
+ cardloop 2
+ cardloop 3
+ cardloop 4
+
+ sta WSYNC
+ ldx #31
+ lda playerpos
+; bmi kill_rest ; this branch is too far!
+ bpl k_ok
+ ;jmp kill_rest
+ jmp scroll_title_or_blank
+k_ok
+ lda current_card
+ ;jmp draw_score ; very temporary!
+ cmp #25
+; beq kill_rest ; this branch is too far!
+ bne k_ok2
+ jmp draw_score
+k_ok2
+ sta WSYNC
+
+ lda #0
+ sta NUSIZ0
+ sta NUSIZ1
+ lda #%11111110
+ sta GRP0
+ lda #2
+ sta WSYNC
+ sta ENAM0
+ lda #%11111111
+ sta GRP0
+ ldx current_card
+ lda stock,x
+ tax
+ lda lo_bytes,x
+ sta tmp
+ lda hi_bytes,x
+ sta tmp+1
+ cpx #26
+ ldx #$00
+ bcc last_card_black
+ ldx #$3
+last_card_black
+ txs
+ ldy #11
+ lda #RED ; 2
+ and bw_mask ; 3
+ sta COLUPF ; 3
+draw_last_card
+ repeat 2
+ sta WSYNC ; 3
+ lda (tmp),y ; 5
+ sta GRP0 ; 3
+ tsx ; 2
+ stx PF2 ; 3
+ ldx #6
+ dex
+ bne *-1
+ stx PF2
+
+;;; waste 16 cycles (with sta.w below)
+; repeat 8 ; sketchy... 2*8=16 bytes total
+; nop
+; repend
+
+; waste 16 cycles, without the sta.w below
+; lda (tmp),y ; this is 7*2=14 bytes total, plus we lose the sta.w below
+; lda (tmp),y
+; lda (tmp),y
+; nop
+;
+; lda #red
+; and bw_mask
+; sta colubk ; sta.w colubk
+ repend
+ dey
+ bpl draw_last_card
+
+ sta WSYNC 
+ lda #%11111111
+ sta GRP0
+ iny
+ sty PF2
+ sta WSYNC 
+ sty ENAM0
+ lda #%11111110
+ sta GRP0
+ sta WSYNC
+ sty GRP0 
+
+
+ ldx #2
+kill_rest
+ lda #YELLOW
+ and bw_mask
+ sta COLUP0
+ sta COLUP1
+ sta WSYNC
+ dex
+ bne kill_rest
+
+ lda diff_shadow
+ and #64
+ bne ld_on
+ lda #<score_blank 
+ sta  left_diff_ptr
+ lda #>score_blank
+ sta  left_diff_ptr+1
+ jmp ld_off
+ld_on
+ lda #<left_diff_hard 
+ sta  left_diff_ptr
+ lda #>left_diff_hard
+ sta  left_diff_ptr+1
+ld_off
+
+ lda diff_shadow
+ bpl rd_on
+ lda #<score_blank 
+ sta  right_diff_ptr
+ lda #>score_blank
+ sta  right_diff_ptr+1
+ jmp rd_off
+rd_on
+ lda #<right_diff_hard 
+ sta  right_diff_ptr
+ lda #>right_diff_hard
+ sta  right_diff_ptr+1
+rd_off
+
+
+ lda #0
+ sta NUSIZ0
+ sta NUSIZ1
+ ldy #7
+kr_diff_loop
+ sta WSYNC
+ lda (left_diff_ptr),y
+ sta GRP0
+ lda (right_diff_ptr),y
+ sta GRP1
+ dey
+ bpl kr_diff_loop
+ sta WSYNC
+ lda #0
+ sta GRP0
+ sta GRP1
+ jmp end_kernel
+ 
+draw_score
+ lda #2
+ sta NUSIZ0
+ lda #0
+ sta NUSIZ1
+ ldy #7
+ lda score
+ cmp #25
+ bcc lt_25
+ cmp #40
+ bcc lt_40
+ lda #GREEN
+ bne ds_color
+lt_25
+ lda #RED
+ bne ds_color
+lt_40
+ lda #YELLOW
+
+ds_color
+ and bw_mask
+ sta COLUP1
+ sta COLUP0
+
+ds_loop
+ sta WSYNC
+ lda (scoredig0),y ; 5
+ sta GRP0 ; 3 = 8
+ lda (scoredig0+2),y ; 5 = 13
+ sta GRP1 ; 3 = 16
+ ldx #4 ; 2 = 18
+ds_delay
+ dex
+ bne ds_delay ; @ end of loop, 37 cyc.
+
+ lda (scoredig0+4),y ; 5 = 42
+ sta GRP0 ; 3 = 45
+
+ sta WSYNC
+ lda (scoredig0),y ; 5
+ sta GRP0 ; 3 = 8
+ lda (scoredig0+2),y ; 5 = 13
+ sta GRP1 ; 3 = 16
+; repeat 16
+; nop
+; repend ; 48
+ ldx #4
+ds_delay1
+ dex
+ bne ds_delay1 ; @ end of loop, 47 cyc.
+ lda (scoredig0+4),y ; 5 = 52
+ sta GRP0 ; 3 = 55
+
+ dey
+
+ bpl ds_loop
+ sta WSYNC
+ lda #0
+ sta GRP0
+ sta GRP1
+ ldx #14
+ jmp kill_rest
+
+scroll_title_or_blank
+ ; X is 31 on entry, always
+ sta WSYNC
+ lda scroll_ctr
+ bpl do_scroll
+start_freeze 
+ ldx #0
+ beq do_freeze
+do_scroll
+ ;stx COLUBK
+ lsr
+ lsr
+ ;lsr
+ tax
+do_freeze
+ ldy #13
+; sty COLUPF
+do_sblank
+ ;ldx #0
+scr_loop
+ tya
+ ;asl
+ eor bw_mask
+ sta WSYNC ; 0
+ sta.w COLUPF
+ lda #0 ; 2
+ sta PF0 ; 3
+ lda t_left_pf1,x ; 4
+ sta PF1 ; 3
+ lda t_left_pf2,x ; 4
+ sta PF2 ; 3
+ ;nop ; 2
+ ;nop ; 2
+ nop ; 2
+ nop ; 2
+ nop  ; 2
+ nop  ; 2
+ lda t_right_pf0,x ; 4
+ sta PF0 ; 3
+ nop ; 2
+ nop ; 2
+ nop ; 2
+ lda t_right_pf1,x ; 4
+ sta PF1 ; 3
+ lda t_spade,y ; 2
+ sta PF2 ; 3
+;
+ sta WSYNC ; 0
+ lda t_left_pf1,x ; 4
+ sta PF1 ; 3
+ lda t_left_pf2,x ; 4
+ sta PF2 ; 3
+ lda #0
+ sta PF0
+ nop
+ nop
+ nop
+ nop
+ nop 
+ nop 
+ lda t_right_pf0,x
+ sta PF0
+ nop
+ nop
+ nop
+ lda t_right_pf1,x
+ sta PF1
+ lda t_spade,y ; 2
+ sta PF2
+ inx
+ dey
+ bpl scr_loop
+ sta WSYNC
+ lda #0
+ sta PF0
+ sta PF1
+ sta PF2
+ ldx #1
+ jmp kill_rest
+
+ echo *-kernel,"bytes of kernel code"
+end_kernel
+ ifconst PAL
+ ldx #18
+pal_bot_loop
+ sta WSYNC
+ dex
+ bne pal_bot_loop
+ endif
+
+ lda #OSCAN_TIME
+ sta TIM64T
+
+overscan
+
+
+ lda #2
+ sta VBLANK
+ 
+ ldx #$FF
+ txs
+ lda current_card
+ cmp #25
+ bne not_score
+ jsr calc_score
+not_score
+ lda playerpos
+ bpl finish_overscan
+ jsr shuffle
+
+finish_overscan
+ lda INTIM
+ bne finish_overscan
+
+ jmp main_loop
+
+; suits is 5 elements, each element is the suit (0-4) of the card
+; ranks is 13 elements, each elem. is how many of that card we have
+
+; this routine only gets called when current_card == 25
+calc_score
+ ldy score_frame
+ bne no_score_sound
+
+ lda #SND_SCORE
+ sta sound_type
+ lda #SND_SCORE_LEN
+ sta sound_ctr
+
+no_score_sound
+ cpy #12
+ bne ok_to_score
+ rts
+ok_to_score
+ lda #0
+ ldx #28
+clear_vars
+ sta card0ptr,x
+ dex
+ bpl clear_vars
+
+; note to self: surely we can eliminate either X or A here..
+
+ tya ; Y came from ldy score_frame, above.
+ tax
+ ;ldx score_frame
+ cpx #5 ; is this hand #5 or greater?
+ bcs copy_vert_hands ; if so, it's vertical, otherwise:
+
+; X is 0-4, copy tableau+X*5 thru tableau+X*5+4 to tmp_cards
+
+ stx tmp ; in C: y = x*5;
+ ;txa ; a is already == x
+ asl
+ asl
+ adc tmp ; carry already clear
+ tay
+ ldx #4
+hcc_loop
+ lda tableau,y 
+ sta tmp_cards,x
+ iny
+ dex
+ bpl hcc_loop
+ bmi done_copying ; may need to convert to jmp later
+
+copy_vert_hands
+ cpx #10 ; is X>=10?
+ bcs copy_diag_hands ; if so, we're done with vert hands
+
+; X is 5-9
+; for (int i=0; i<5; i++)  { tmp_cards[i] = tableau[ 5*i + (X-5) ]; }
+; /* damn, it's easier in C :)  */
+
+ lda tableau-5,x
+ sta tmp_cards
+ lda tableau,x
+ sta tmp_cards+1
+ lda tableau+5,x
+ sta tmp_cards+2
+ lda tableau+10,x
+ sta tmp_cards+3
+ lda tableau+15,x
+ sta tmp_cards+4
+ jmp done_copying
+
+copy_diag_hands
+ lda diff_shadow
+ bmi no_mo_copying ; don't score diags if right difficulty = pro (a)
+;X is 10 or 11
+
+; if X is 10, we need: tableau +0, +6, +12, +18, +24 (offset 0, step 6)
+; if X is 11, we need: tableau +4, +8, +12, +16, +20 (offset 4, step 4)
+
+ txa
+ and #1 ; now 0 or 1
+ asl
+ asl ; now 0 or 4
+ tax ; X will hold offset into tableau: 0 for x==10, 4 for x==11
+ lsr ; now 0 or 2
+ eor #2 ; now 2 or 0
+ adc #4 ; now 6 or 4 (don't need to clc, carry always clear)
+ sta tmp ; step: 6 for x==10, 4 for x==11
+
+ ldy #4
+diag_loop 
+ ;ldx tmp
+ lda tableau,x
+ sta tmp_cards,y
+ txa
+ clc ; maybe not need
+ adc tmp ; add offset
+ ;sta tmp
+ tax
+ dey
+ bpl diag_loop
+ bmi done_copying
+
+no_mo_copying
+ rts
+
+done_copying
+ inc score_frame
+; this sucks!
+ ldx #4
+split_loop
+ lda tmp_cards,x
+sub_loop
+ sec
+ sbc #13
+ bcc no_subtract
+ inc suits,x
+ bne sub_loop ; should always branch
+no_subtract
+ adc #13 ; carry should already be clear
+ ;tay
+ ;inc ranks,y ;arrrgh. illegal addr. mode!
+ stx tmp
+ tax
+ inc ranks,x
+ ldx tmp
+end_split_loop
+ dex
+ bpl split_loop
+
+; lda suits+1 ; debug code
+; sta score
+; rts
+
+; ldx #3
+;ck_flush 
+; lda suits,x
+; cmp #5
+; beq got_flush
+; dex
+; bpl ck_flush
+; bmi done_flush
+
+
+ lda suits
+ cmp suits+1
+ bne done_flush
+ cmp suits+2
+ bne done_flush
+ cmp suits+3
+ bne done_flush
+ cmp suits+4
+ bne done_flush
+
+got_flush
+ inc flush
+ bne pre_ck_straight ; if flush, don't bother checking for pairs/trips/etc.
+done_flush
+
+ ldx #12
+ck_quad
+ lda ranks,x
+ cmp #4
+ bne not_quad
+ lda #16 ; if we got 4 of a kind, that's all we got
+ jmp add_A_to_score ; so don't check for more stuff
+not_quad
+ dex
+ bpl ck_quad
+
+ ldx #12
+ck_trip
+ lda ranks,x
+ cmp #3
+ bne no_trip
+ inc trips
+ bne done_trips ; if we got trips, we only got it once 
+no_trip
+ dex
+ bpl ck_trip
+
+done_trips
+ ldx #12
+ck_pair
+ lda ranks,x
+ cmp #2
+ bne no_pair
+ inc pairs ; might have 2 pair, keep checking
+no_pair
+ dex
+ bpl ck_pair
+
+pre_ck_straight
+ lda ranks
+ sta ranks+13 ; duplicate ace as high card
+ ldx #9
+ck_straight
+ lda ranks,x
+ and ranks+1,x
+ and ranks+2,x
+ and ranks+3,x
+ and ranks+4,x
+ bne got_straight
+ dex
+ bpl ck_straight
+ bmi done_checking
+got_straight
+ and flush ; did we get a straight flush?
+ bne got_straight_flush ; if so, jump
+ lda #12 ; otherwise, score 12 for straight
+ bne add_A_to_score
+got_straight_flush
+ lda #30
+ bne add_A_to_score
+
+done_checking
+; done checking, now total 'em up
+
+ lda flush
+ beq test_trips
+ lda #5
+ bne add_A_to_score
+
+; at this point, we have 1 of:
+;  nothing pair 2pair trips fullhouse
+
+test_trips
+ lda trips
+ beq no_trips
+ and pairs ; should be 0 or 1
+ bne got_full_house ; if (trips && pairs), we got full house, yay!
+ lda #6 ; otherwise, 6 points for trips
+ bne add_A_to_score
+got_full_house
+ lda #10
+ bne add_A_to_score
+no_trips
+
+; at this point, we have 1 of: nothing pair 2pair
+
+
+test_pairs
+ lda pairs
+ beq add_A_to_score
+ cmp #2
+ beq score_2_pair
+ lda #1
+ bne add_A_to_score
+score_2_pair
+ lda #3
+
+add_A_to_score
+ clc
+ adc score
+ sta score
+
+ rts
+
+
+; tya
+; ora #6
+; sta.w COLUPF
+
+END_CODE = *
+ echo END_CODE-$f000,"bytes of code"
+
+ org $F900
+BEGIN_DATA
+ echo *-END_CODE , "bytes of code space free"
+ include "pftitle.inc"
+END_TITLE = *
+
+ org $Fa00
+ echo *-END_TITLE, "bytes wasted in TITLE data area:",END_TITLE,"-",*-1
+ include "pokersol.inc"
+
+
+; SUBROUTINES
+;
+; these were moved here because there was a small (132-byte) chunk of space
+; wasted by the next `align 256'. There are still 5 bytes of this left.
+
+inst_kernel ; this kernel displays the instructions
+ sta WSYNC
+ ldy #pf_bytes
+ tya
+ ora #6
+ and bw_mask
+ sta COLUPF
+ik_draw_pf
+ lda #2
+ sta tmp
+ik_one_line
+ sta WSYNC ; 0
+ lda left_pf0,y ; 4
+ sta PF0 ; 3 = 7
+ lda left_pf1,y ; 4 = 11
+ sta PF1 ; 3 = 14
+ lda left_pf2,y ; 4 = 15
+ sta PF2 ; 3 = 18
+ ldx right_pf2,y ; 4 = 26
+ tya
+ ora #6
+ and bw_mask
+ sta COLUPF
+ lda right_pf0,y ; 4 = 41
+ sta PF0 ; 3 = 44
+ lda right_pf1,y ; 4 = 22
+ sta PF1 ; 3 = 37
+ stx PF2 ; 3 = 47
+ dec tmp ; 5 = 52
+ bpl ik_one_line ; 2 = 54
+ dey ; 2 = 56
+ bpl ik_draw_pf ; 3 = 59
+
+ sta WSYNC
+ lda #0
+ sta COLUPF
+ ;sta WSYNC
+
+ jmp end_kernel
+
+deal_deck
+ ldx #0
+ stx current_card
+ stx score_frame
+ stx score
+deal_loop
+ txa
+ sta deck,x
+ inx
+ cpx #52
+ bne deal_loop 
+ rts
+
+; shuffle deck
+shuffle
+ ldy #50
+shuffle_loop
+ lda random ; 3
+ lsr ; +2 = 5
+ lsr ; +2 = 7
+ sbc random ; +3 = 10
+ lsr ; +2 = 12
+ ror random+1 ; +5 = 17
+ ror random ; +5 = 17
+ bcs noswap ; +3 = 20
+ lda deck,y ; +4 = 24 ; if we got a 1 (carry), swap card with the one after it
+ ldx deck+1,y ; +4 = 28
+ stx deck,y ; +4 = 32
+ sta deck+1,y ; +4 = 38
+noswap
+ dey ; +2 = 40
+ bpl shuffle_loop ; +3 = 43
+ rts
+
+left_diff_hard
+ hex 00 c3 c3 18 18 c3 c3 00
+
+END_PF = *
+
+ align 256
+ echo *-END_PF, "bytes wasted in PF data area: ", END_PF, "-", *-1
+score_font
+sf0
+ byte %00111100
+ byte %01111110
+ byte %11100111
+ byte %11000011
+ byte %11000011
+ byte %11100111
+ byte %01111110
+ byte %00111100
+sf1
+ byte %01111110
+ byte %01111110
+ byte %00011000
+ byte %00011000
+ byte %00011000
+ byte %01111000
+ byte %00111000
+ byte %00011000
+sf2
+ byte %11111111
+ byte %01111111
+ byte %00110000
+ byte %00011100
+ byte %00000110
+ byte %01100011
+ byte %11111111
+ byte %01111110
+sf3
+ byte %01111110
+ byte %11111111
+ byte %01100011
+ byte %00000110
+ byte %00011100
+ byte %00000110
+ byte %00000011
+ byte %11111111
+sf4
+ byte %00000110
+ byte %00000110
+ byte %11111111
+ byte %11111111
+ byte %11000110
+ byte %11100110
+ byte %01110110
+ byte %00110110
+sf5
+ byte %01111100
+ byte %11111110
+ byte %01100111
+ byte %00001110
+ byte %01111100
+ byte %01100000
+ byte %01111111
+ byte %01111111
+sf6
+ byte %01111110
+ byte %11111111
+ byte %11000111
+ byte %11001110
+ byte %11111100
+ byte %11100000
+ byte %01110011
+ byte %00111110
+sf7
+ byte %11100000
+ byte %01110000
+ byte %00111000
+ byte %00011100
+ byte %00001110
+ byte %00000111
+ byte %11111111
+ byte %11111111
+sf8
+ byte %01111110
+ byte %11100111
+ byte %11000011
+ byte %01100110
+ byte %00111100
+ byte %01100110
+ byte %01100110
+ byte %00111100
+sf9
+ byte %01111100
+ byte %11001110
+ byte %00000111
+ byte %00111111
+ byte %01110011
+ byte %11100011
+ byte %11111111
+ byte %01111110
+no_card
+ repeat 14
+ byte 1
+ repend 
+
+; cards are A B C D E from left to right, bits 4 3 2 1 0 in color0+row
+;  so, RED BLACK BLACK RED RED would be $13, which is used as an offset
+;  into each of the colPF* tables in turn
+
+; PF2: xxBBxxAA
+; PF0: xxCC.... (bottom 4 bits are unused anyway)
+; PF1: DDxxEExx (remember, PF1 is forwards!)
+
+; (bits marked xx are 0)
+
+; each colPF* table is a list of what byte to put in that PF
+; register, for each of the 32 possible red/black arrangements.
+
+; 1 bits are red (COLUPF), 0 bits are black (COLUBK)
+
+colPF2
+ repeat 8
+ byte $00
+ repend
+ repeat 8
+ byte $30
+ repend
+ repeat 8
+ byte $03
+ repend
+ repeat 8
+ byte $33
+ repend
+
+colPF0
+ repeat 4
+ hex 00 00 00 00 30 30 30 30
+ repend
+
+colPF1
+ repeat 8
+ hex 00 0C C0 CC
+ repend
+
+
+
+; jumped to by reset vector (crammed in here to fill up $22 byte wasted space)
+
+initvcs
+ sei
+ cld
+ ldx #$ff
+ txs
+ lda #0
+iloop
+ sta 0,x
+ dex
+ bne iloop
+ lda #RAND_SEED
+ sta random
+ asl
+ sta random+1
+ dex
+ stx playerpos
+
+; initialize deck
+ jsr deal_deck
+ jmp main_loop
+
+score_blank
+ repeat 10
+ byte 0
+ repend
+
+END_MISC = *
+ align 256
+ echo *-END_MISC, "bytes wasted in MISC data area: ", END_MISC, "-", *-1
+cards
+
+; suit sprite data
+ mac spade
+ byte %11000111
+ byte %01101101
+ byte %00000001
+ byte %10000011
+ byte %11000111
+ byte %11101111
+ byte %11111111
+ endm
+
+ mac heart
+ byte %11101111
+ byte %11000111
+ byte %10000011
+ byte %00000001
+ byte %00010001
+ byte %10111011
+ byte %11111111
+ endm
+
+ mac diam
+ byte %11101111
+ byte %11000111
+ byte %10000011
+ byte %00000001
+ byte %10000011
+ byte %11000111
+ byte %11101111
+ endm
+
+ mac club
+ byte %11000111
+ byte %11101111
+ byte %00101001
+ byte %00111001
+ byte %11000111
+ byte %11000111
+ byte %11111111
+ endm
+
+; rank sprite data
+
+ mac rank1
+ byte %10111011
+ byte %10000011
+ byte %10111011
+ byte %11010111
+ byte %11101111
+ endm
+
+ mac rank2
+ byte %10000011
+ byte %11011111
+ byte %11100111
+ byte %10111011
+ byte %11000111
+ endm
+
+ mac rank3
+ byte %10000111
+ byte %11111011
+ byte %11100111
+ byte %10111011
+ byte %11000111
+ endm
+
+ mac rank4
+ byte %11111011
+ byte %10000011
+ byte %10111011
+ byte %11011011
+ byte %11101011
+ endm
+
+ mac rank5
+ byte %11000111
+ byte %10111011
+ byte %11100111
+ byte %11011111
+ byte %11000011
+ endm
+
+ mac rank6
+ byte %11000111
+ byte %10111011
+ byte %10000111
+ byte %10111111
+ byte %11000011
+ endm
+
+ mac rank7
+ byte %11011111
+ byte %11101111
+ byte %11110111
+ byte %11111011
+ byte %10000011
+ endm
+
+ mac rank8
+ byte %11000111
+ byte %10111011
+ byte %11000111
+ byte %10111011
+ byte %11000111
+ endm
+
+ mac rank9
+ byte %10000111
+ byte %11111011
+ byte %11000011
+ byte %10111011
+ byte %11000111
+ endm
+
+ mac rank10
+ byte %00010011
+ byte %10101101
+ byte %10101101
+ byte %00101101
+ byte %10110011
+ endm
+
+ mac rankj
+ byte %11001111
+ byte %10110111
+ byte %11110111
+ byte %11110111
+ byte %11100011
+ endm
+
+ mac rankq
+ byte %11001011
+ byte %10110111
+ byte %10111011
+ byte %10111011
+ byte %11000111
+ endm
+
+ mac rankk
+ byte %10110111
+ byte %10101111
+ byte %10011111
+ byte %10101111
+ byte %10110111
+ endm
+
+
+spades1
+ spade
+ rank1
+spades2
+ spade
+ rank2
+spades3
+ spade
+ rank3
+spades4
+ spade
+ rank4
+spades5
+ spade
+ rank5
+spades6
+ spade
+ rank6
+spades7
+ spade
+ rank7
+spades8
+ spade
+ rank8
+spades9
+ spade
+ rank9
+spades10
+ spade
+ rank10
+spadesj
+ spade
+ rankj
+spadesq
+ spade
+ rankq
+spadesk
+ spade
+ rankk
+clubs1
+ club
+ rank1
+clubs2
+ club
+ rank2
+clubs3
+ club
+ rank3
+clubs4
+ club
+ rank4
+clubs5
+ club
+ rank5
+clubs6
+ club
+ rank6
+clubs7
+ club
+ rank7
+clubs8
+ club
+ rank8
+
+ align 256
+clubs9
+ club
+ rank9
+clubs10
+ club
+ rank10
+clubsj
+ club
+ rankj
+clubsq
+ club
+ rankq
+clubsk
+ club
+ rankk
+hearts1
+ heart
+ rank1
+hearts2
+ heart
+ rank2
+hearts3
+ heart
+ rank3
+hearts4
+ heart
+ rank4
+hearts5
+ heart
+ rank5
+hearts6
+ heart
+ rank6
+hearts7
+ heart
+ rank7
+hearts8
+ heart
+ rank8
+hearts9
+ heart
+ rank9
+hearts10
+ heart
+ rank10
+heartsj
+ heart
+ rankj
+heartsq
+ heart
+ rankq
+heartsk
+ heart
+ rankk
+diam1
+ diam
+ rank1
+diam2
+ diam
+ rank2
+diam3
+ diam
+ rank3
+
+ align 256
+diam4
+ diam
+ rank4
+diam5
+ diam
+ rank5
+diam6
+ diam
+ rank6
+diam7
+ diam
+ rank7
+diam8
+ diam
+ rank8
+diam9
+ diam
+ rank9
+diam10
+ diam
+ rank10
+diamj
+ diam
+ rankj
+diamq
+ diam
+ rankq
+diamk
+ diam
+ rankk
+
+blank_card
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+ byte %11111111
+
+; lookup table of sprite data
+; (saves us having to multiply by 12 during vblank & kernel)
+lo_bytes
+ byte <spades1, <spades2, <spades3, <spades4, <spades5
+ byte <spades6, <spades7, <spades8, <spades9, <spades10
+ byte <spadesj, <spadesq, <spadesk
+ byte <clubs1, <clubs2, <clubs3, <clubs4, <clubs5
+ byte <clubs6, <clubs7, <clubs8, <clubs9, <clubs10
+ byte <clubsj, <clubsq, <clubsk
+ byte <hearts1, <hearts2, <hearts3, <hearts4, <hearts5
+ byte <hearts6, <hearts7, <hearts8, <hearts9, <hearts10
+ byte <heartsj, <heartsq, <heartsk
+ byte <diam1, <diam2, <diam3, <diam4, <diam5
+ byte <diam6, <diam7, <diam8, <diam9, <diam10
+ byte <diamj, <diamq, <diamk, <blank_card, <no_card
+hi_bytes
+ byte >spades1, >spades2, >spades3, >spades4, >spades5
+ byte >spades6, >spades7, >spades8, >spades9, >spades10
+ byte >spadesj, >spadesq, >spadesk
+ byte >clubs1, >clubs2, >clubs3, >clubs4, >clubs5
+ byte >clubs6, >clubs7, >clubs8, >clubs9, >clubs10
+ byte >clubsj, >clubsq, >clubsk
+ byte >hearts1, >hearts2, >hearts3, >hearts4, >hearts5
+ byte >hearts6, >hearts7, >hearts8, >hearts9, >hearts10
+ byte >heartsj, >heartsq, >heartsk
+ byte >diam1, >diam2, >diam3, >diam4, >diam5
+ byte >diam6, >diam7, >diam8, >diam9, >diam10
+ byte >diamj, >diamq, >diamk, >blank_card, >no_card
+
+right_diff_hard
+ hex 82 44 28 10 28 44 82 00
+
+
+END_DATA = *
+
+ org $FFFC
+ echo *-END_DATA, "bytes wasted in CARDS data area: ", END_DATA, "-", *-1
+ word initvcs
+ word initvcs
+
+ echo *-BEGIN_DATA,"bytes of data"
+
+; Changelog
+
+; 12/15/01:
+
+; Fix Q and A in card sprite data
+
+; various font fixes to score_font, looks a little better
+
+; make crib sheet more readable (UPPERCASE, 3x5 font, inverse video numbers)
+
+; make Select act as a toggle for crib sheet
+
+; 12/8/01:
+
+; add scrolling title to shuffle loop (what a pain)
+
+; 12/2/01:
+
+; use missiles for 9-pixel-wide cards
+
+; adjust RED YELLOW GREEN constants for better B/W greys
+
+; fix minor bug: 39 was green, should be 40 & up only (fencepost error)
+
+; 12/1/01:
+
+; color cribsheet
+
+; fix score bug Jake found
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; TODO LIST
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; PAL version... probably a compile-time option.
+
+; STARTED ON:
+; optimize, optimize, optimize! (specifically, get rid of macros & repeats)
+; I now have 482 bytes free in the code area from $F000-$FA00
+; update: I now have 604 bytes free, *and* I've added diagonals since then!
+
+; play testing! (by someone other than me!)
+
+; STARTED ON: get rid of `magic numbers', make them constants
+
+; force shuffling at bootup. Possible shuffle 256 times before starting
+; main_loop (nobody would ever notice), then shuffle until 10 frames after
+; the button is pressed *and released* to avoid would-be cheaters.
+
+; get one random bit per frame, whether we need one or not.
+
+;;;;;
+;
+; Stuff I may do, if I can free up some more RAM/ROM:
+;
+;;;;;
+
+; replace the `cursor' with the ball? would give us permanently red cursor,
+; would keep the cursor the same color no matter what card
+; is under it.
+
+; score each hand as it's completed? means we would have to display the
+; card to be played and the score at the same time...
+
+; perhaps we could set up card pointers during the kernel, during the 5 scans
+; between cardloops? Have to check the timing on this, but it would free up
+; 40 bytes of RAM (!) If we do this, we can then keep track of deck state
+; in between hands, instead of starting each shuffling round with an
+; ordered deck! This is only going to be do-able if I'm using the ball for
+; the cursor...
+
+; perhaps slow down scoring & flash the row/col being scored?
+
+; 2-player mode? (all we really have to do is score vert & horiz separately)
+
+;;;;;
+;
+; Stuff that was on the TODO list that is mostly or all done:
+;
+;;;;;
+
+; DONE:
+; make Select act like a toggle instead of having to hold it down to see
+; the crib sheet.
+
+; DONE: Clean up score font some (3, 5, 8 at least)
+
+; DONE: Use better-looking playfield for crib sheet (now it's in color,
+; should I use a 4x5 uppercase-only font too?
+
+; DONE: use missiles for 9-pixel-wide symmetrical cards. It came out OK,
+; and changing no_card gave me a border on the right even when the cursor's
+; there.
+
+; DONE:
+; clean up huge nasty block card shape data: use macros so at least the source
+; only has one each of each card/rank. After this is done, center the ranks
+; (assume 9-pixel-wide cards, even if I don't actually use them)
+
+; DONE:
+; Add scrolling title/copyright during shuffle (in kill_rest). Not sure
+; whether to use PF* or GRP* 48-pixel routine.
+
+; DONE: center the cards on the display, ref. Manuel's post 11/22/01
+
+; DONE:
+; serious bug: the 10's digit of the score isn't displayed if it's zero,
+; even if it needs to be (100 shows up as 1 0). Thanks to Jake Patterson
+; for pointing this out.
+
+; (mostly) DONE: Sound
+
+; DONE: Help/Scoring screen (SELECT)
+
+; (I think) DONE: Figure out what caused the glitch (screenshot: graphics_glitch.jpg)
+
+; DONE: joystick debounce
+
+; DONE: Make sure calc_score doesn't eat too many cycles (just test on real hardware
+; & see if it glitches)
+
+; DONE: Blank leading zeroes in score
+
+; DONE:
+; Decide whether royal flush should be 36 points or 30 like other
+; straight flushes (Hoyle says 30, so do online rules, but I like 36... Also
+; the best 5x5 grid would then be worth 254 points!).. I haven't decided
+; whether or not to do this, but I have decided to hard-code it instead of
+; making it optional (so people can compare their scores without having to
+; take into account how the scoring was done).
+;
+; I've decided not to bother with 36-point royal flushes. It doesn't really
+; add anything to the game, and adds cycles to the calc_score routine.
+
+; DONE: color the score? (red=below 25, yellow=25 to 40, grn=40 & up?)
+
+; DONE: Make left difficulty actually make the game harder
+
+; DONE: Add some kind of indicator to let the player know whether he's about to play
+; the hard or easy game (H or E in 4th card column?)
+
+; DONE: implement color/bw switch
+
+; DONE: Make right difficulty control whether diagonals are scored or not (only
+; poll during the shuffle)
+
+; DONE: add an indicator to let the player know whether diags. will be scored.
+
