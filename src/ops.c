@@ -532,6 +532,8 @@ v_seg(const char *str, MNEMONIC UNUSED(*dummy))
         if (strcmp(str, seg->name) == 0) {
             Csegment = seg;
             programlabel();
+            /* [phf] seems like a reasonable message, wish I could print more info */
+            notice_fmt("Resuming segment %s.", strlen(str) == 0 ? "with no name" : str);
             return;
         }
     }
@@ -542,6 +544,8 @@ v_seg(const char *str, MNEMONIC UNUSED(*dummy))
     Seglist = seg;
     if (Mnext == AM_BSS)
         seg->flags |= SF_BSS;
+    /* [phf] seems like a reasonable message, wish I could print more info */
+    notice_fmt("Created segment %s.", strlen(str) == 0 ? "with no name" : str);
     programlabel();
 }
 
