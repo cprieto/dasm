@@ -46,6 +46,7 @@ static unsigned char OrgFill = DEFORGFILL;
 int	 Glen;
 
 extern MNEMONIC    Mne6502[];
+extern MNEMONIC    Mne6502illegal[];
 extern MNEMONIC    Mne6803[];
 extern MNEMONIC    MneHD6303[];
 extern MNEMONIC    Mne68705[];
@@ -73,6 +74,7 @@ void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
     if (strcmp(str,"6502") == 0) {
         if (!bCalled) {
             addhashtable(Mne6502);
+            addhashtable(Mne6502illegal); /* [phf] for now */
         }
         MsbOrder = false;	    /*	lsb,msb */
         Processor = 6502;
