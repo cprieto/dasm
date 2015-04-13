@@ -9,24 +9,57 @@ for i in *.asm
 do
   NAME=`basename $i .asm`
   echo
-  echo "----- Testing $NAME -----"
+  echo "===== Testing $NAME ====="
+
+  # First try to assemble the test case.
   ../bin/dasm $i -f1 -o$NAME.bin -DINEEPROM
-  # echo "dasm returned $?"
+  if [ $? == 0 ]
+  then
+    echo "-- assembled"
+  else
+    echo "---------- DASM failed, skipped test"
+    continue
+  fi
+
+  # Then try to produce the hex version.
+  ../bin/ftohex 1 $NAME.bin $NAME.hex
+  if [ $? == 0 ]
+  then
+    echo "-- hexed"
+  else
+    echo "---------- FTOHEX failed"
+  fi
+
+  # Next check if we have a reference binary.
+  if ! [ -f "$NAME.bin.ref" ]
+  then
+    echo "---------- no reference binary, skipped test"
+    continue
+  fi
+
+  # We have one so check if it matches.
   cmp -s $NAME.bin $NAME.bin.ref
   if [ $? == 0 ]
   then
-    echo "----- good"
+    echo "-- binaries match"
   else
-    echo "---------- error"
+    echo "---------- broken binary, skipped test"
   fi
-  ../bin/ftohex 1 $NAME.bin $NAME.hex
-  # echo "ftohex returned $?"
+
+  # Next check if we have a reference hex dump.
+  if ! [ -f "$NAME.hex.ref" ]
+  then
+    echo "---------- no reference hexdump, skipped test"
+    continue
+  fi
+
+  # We have one so check if it matches.
   cmp -s $NAME.hex $NAME.hex.ref
   if [ $? == 0 ]
   then
-    echo "----- good"
+    echo "-- hexdump matches"
   else
-    echo "---------- error"
+    echo "---------- broken hexdump"
   fi
 done
 
