@@ -8,6 +8,25 @@ Note: All of these are "nice to have" things, not essential
 for functionality and (hopefully) not the cause of bugs. We
 are hiding the file all the way down here for a reason...
 
+- DASM's exit status needs some love
+  - EXIT_FAILURE only if there were errors in the last pass
+    - meaning only if the resulting binary is probably broken
+  - currently EXIT_FAILURE is used if there were ANY errors
+    - breaks tools like make for no real reason
+
+- Fred Quimbly had a patch in r327 to avoid printing errors in every pass
+  - seems only right, many DASM "errors" in pass n get fixed in pass n+1
+  - didn't like his fix with the huge static buffers, build something better
+  - what are the exact rules for this? how does it interact with -v# and -d#?
+    - the old approach tried to map -v# and -d# to ERROR_LEVEL exclusively
+    - what is wanted is that ERRORs only get printed in the last pass
+      - but we should allow some kind of -v# to show errors in each pass
+    - actually it might not be too bad:
+      - keep ERROR_LEVEL scheme as described
+      - but unless -v# or -d# is given only show ANY of the messages in final pass
+      - have to think this through in more detail, but could work
+      - come to think of it: listfile generation should already do something like that?
+
 - find all external accesses to F_listfile to really centralize
   error handling in errors module!
   - be careful though, there *is* a purpose for a listing file
@@ -28,6 +47,10 @@ are hiding the file all the way down here for a reason...
   - current .indent.pro not right, need to adjust
   - when to do this? before 2.20.12?
   - maybe astyle is a better, more conservative choice?
+  - actually, looks like clang-format is the way to go
+    - except that even that wonderful tool messes up struct initializers
+      - probably have to explicitly switch off formatting there
+    - has config options for something close to Linux style
 
 - work on refactoring hash?() has found some problems
   - first hash_symbols() has a length argument because DASM
