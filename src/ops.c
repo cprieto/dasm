@@ -61,75 +61,86 @@ static int get_hex_digit(char c);
 *  An opcode modifies the SEGMENT flags in the following ways:
 */
 
+/*
+    [phf] note that the above comment has been a mystery for
+    a long time now; at some point I'll have to dig into old
+    sources to find out what it might have been good for...
+*/
+
+/*
+    [phf] v_processor used to hardcode all the cases, we now
+    use one table to encode all the relevant information
+*/
+
+#define MAX_MNEMONIC_TABLES 3
+
+struct processor_description {
+    /* unique name of processor architecture */
+    const char* name;
+    /* false => lsb,msb; true => msb,lsb */
+    bool msb_order;
+    /* list of mnemonic tables, NULL terminated */
+    MNEMONIC *mnemonic_tables[MAX_MNEMONIC_TABLES];
+};
+
+static struct processor_description available_processors[] = {
+    {"6502", false, {Mne6502, Mne6502illegal, NULL}},
+    {"6803", true, {Mne6803, NULL}},
+    {"HD6303", true, {Mne6803, MneHD6303, NULL}},
+    {"68705", true, {Mne68705, NULL}},
+    {"68HC11", true, {Mne68HC11, NULL}},
+    {"F8", true, {MneF8, NULL}},
+    /* must end with a NULL name [phf] */
+    {NULL, false, {NULL}}
+};
+
 void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
 {
-    static bool bCalled = false;
-    static unsigned long Processor = 0;
-    unsigned long PreviousProcessor = Processor;
+    /* [phf] I was confused why I cannot get rid of this "called_already"
+     * hack. Turns out that DASM processes the entire file again on each
+     * pass! (Sorta makes sense considering its design, but I had totally
+     * forgotten about that.) Of course addhashtable() doesn't like to be
+     * called a second time with the same hash table and hangs if we try.
+     */
+    static bool called_already = false;
+    static struct processor_description *selected = NULL;
+
+    struct processor_description *previous = selected;
+    struct processor_description *p;
 
     assert(str != NULL);
 
-    Processor = 0;
-
-    if (strcmp(str,"6502") == 0) {
-        if (!bCalled) {
-            addhashtable(Mne6502);
-            addhashtable(Mne6502illegal); /* [phf] for now */
+    for (p = available_processors; p->name != NULL; p++) {
+        if (match_either_case(str, p->name)) {
+            selected = p;
+            break;
         }
-        MsbOrder = false;	    /*	lsb,msb */
-        Processor = 6502;
     }
 
-    if (strcmp(str,"6803") == 0) {
-        if (!bCalled) {
-            addhashtable(Mne6803);
-        }
-        MsbOrder = true;	    /*	msb,lsb */
-        Processor = 6803;
-    }
-
-    if (match_either_case(str, "HD6303")) {
-        if (!bCalled) {
-            addhashtable(Mne6803);
-            addhashtable(MneHD6303);
-        }
-        MsbOrder = true;	    /*	msb,lsb */
-        Processor = 6303;
-    }
-
-    if (strcmp(str,"68705") == 0) {
-        if (!bCalled) {
-            addhashtable(Mne68705);
-        }
-        MsbOrder = true;	    /*	msb,lsb */
-        Processor = 68705;
-    }
-
-    if (match_either_case(str, "68HC11")) {
-        if (!bCalled) {
-            addhashtable(Mne68HC11);
-        }
-        MsbOrder = true;	    /*	msb,lsb */
-        Processor = 6811;
-    }
-
-    if (match_either_case(str, "F8")) {
-		if (!bCalled) {
-			addhashtable(MneF8);
-        }
-		MsbOrder = true;
-        Processor = 0xf8;
-    }
-
-    bCalled = true;
-
-    if (Processor == 0) {
+    if (selected == NULL) {
         fatal_fmt("Processor '%s' not supported!", str);
+        return;
     }
 
-    if (PreviousProcessor != 0 && Processor != PreviousProcessor) {
+    if (previous != NULL && selected != previous) {
         fatal_fmt("Only one processor type may be selected!");
+        return;
     }
+
+    if (!called_already) {
+        /* p->mnemonics_tables is an array of MNEMONIC pointers (each
+         * of which in turn denotes an array of MNEMONIC structs
+         * defined in the mne*.c files); we step through this array
+         * until we * find a NULL pointer; for each valid pointer we
+         * call addhashtable() to incorporate those opcodes [phf]
+         */
+        for (MNEMONIC **m = selected->mnemonic_tables; *m != NULL; m++) {
+            addhashtable(*m);
+        }
+        MsbOrder = p->msb_order;
+    }
+
+    called_already = true;
 }
 
 #define badcode(mne,adrmode)  (!(mne->okmask & (1L << adrmode)))
