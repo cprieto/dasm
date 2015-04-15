@@ -37,9 +37,6 @@
 #include <assert.h>
 #include <limits.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 /*
   Size of SYMBOL hash table. Must be a power of two
   for the AND trick to work!

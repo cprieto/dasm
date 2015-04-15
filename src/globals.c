@@ -33,9 +33,6 @@
 
 #include <assert.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 MNEMONIC    *MHash[MHASHSIZE];   /*	mnemonic hash table */
 INCFILE *pIncfile;	    /*	include file stack  */
 REPLOOP *Reploop;	    /*	repeat loop stack   */

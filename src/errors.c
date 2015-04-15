@@ -53,9 +53,6 @@
     that should really be panics...
 */
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 static error_format_t F_error_format = ERRORFORMAT_DEFAULT;
 static error_level_t F_error_level = ERRORLEVEL_DEFAULT;
 static size_t nof_fatals = 0;

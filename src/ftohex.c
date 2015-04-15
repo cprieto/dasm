@@ -57,9 +57,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 #define PERLINE 16
 
 static void convert(int format, FILE *in, FILE *out);

@@ -64,9 +64,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 /*@out@*/
 void *checked_malloc(size_t bytes)
 {

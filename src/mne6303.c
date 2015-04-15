@@ -30,9 +30,6 @@
 #include "asm.h"
 #include "version.h"
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 /*
  *  IMP IMM8 IMM16 BYTE BYTEX BYTEY WORD WORDX WORDY REL (,x) (),y (WORD)
  *   0	 1    2     3	 4	5    6	   7	 8    9   10   11    12

@@ -30,9 +30,6 @@
 #include "asm.h"
 #include "version.h"
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 #define AFSTD	AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX|AF_0X
 
 MNEMONIC Mne68705[] = {

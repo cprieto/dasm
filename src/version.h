@@ -31,17 +31,6 @@
  */
 
 /**
- * @brief Macro to tag files going into DASM executables
- * with Subversion "Id" keywords.
- *
- * @warning Only .c files should be tagged, for obvious
- * reasons.
- */
-
-/* TODO: add some kind of __unused annotation to make sure they stay? */
-#define SVNTAG(id) static const char _svnid[] = id
-
-/**
  * @brief Macro to provide current DASM release as a string.
  */
 #define DASM_RELEASE "2.20.12"
