@@ -381,10 +381,10 @@ SYMBOL *eval(const char *str, bool wantmode)
             
             if (*str == 'd')
             {  /*  STRING CONVERSION   */
-                char buf[32];
                 ++str;
                 if (Argflags[Argi-1] == 0)
                 {
+                    char buf[32];
                     int len = snprintf(buf,sizeof(buf),"%ld",Argstack[Argi-1]);
                     assert(len < (int)sizeof(buf));
                     Argstring[Argi-1] = checked_strdup(buf);
@@ -887,7 +887,6 @@ static const char *pushsymbol(const char *str)
 {
     SYMBOL *sym;
     const char *ptr;
-    bool macro = false;
     
     for (ptr = str; *ptr == '_' || *ptr == '.' || is_alpha_num(*ptr); ++ptr);
 
@@ -916,6 +915,8 @@ static const char *pushsymbol(const char *str)
 
     if ((sym = find_symbol(str, ptr - str)) != NULL)
     {
+        bool macro = false;
+
         if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo_eval;
         }

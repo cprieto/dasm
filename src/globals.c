@@ -40,17 +40,14 @@ SEGMENT *Seglist;	    /*	segment list	    */
 SEGMENT *Csegment;	    /*	current segment     */
 IFSTACK *Ifstack;	    /*	IF/ELSE/ENDIF stack */
 char	*Av[256];	    /*	up to 256 arguments */
-char	Avbuf[512];
 bool MsbOrder = true;
 int	Mnext;
-unsigned int	Mlevel;
 unsigned long	Localindex;	   /*  to generate local variables */
 unsigned long	Lastlocalindex;
 
 unsigned long	Localdollarindex;
 unsigned long	Lastlocaldollarindex;
 
-bool bTrace = false;
 bool processor_forced = false; /* 20150414 bkw: -m option sets this */
 
 unsigned long   Redo_why = 0;
@@ -71,9 +68,15 @@ const char	*F_outfile = "a.out";
 /*@null@*/ FILE	*FI_listfile;
 FILE	*FI_temp;
 bool Fisclear;
+
+/*
+    [phf] the only reason Plab and Pflags exist is so main.c
+    can print something; there should be a better way...
+*/
 unsigned long Plab;
 dasm_flag_t Pflags;
 
+/* Adrbytes has been unused for years, see DASM v2.12 for example [phf] */
 /*unsigned int	Adrbytes[]  = { 1, 2, 3, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 1, 1, 2, 3 };*/
 static address_mode_t Cvt[]	    = { 0, 2, 0, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0 };
 static size_t Opsize[]    = { 0, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 1, 2, 0, 0, 1, 1 };

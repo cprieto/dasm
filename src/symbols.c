@@ -353,14 +353,13 @@ static size_t nof_unresolved_symbols(void)
 size_t ShowUnresolvedSymbols(void)
 {
     SYMBOL *sym;
-    size_t i;
     
     size_t nUnresolved = nof_unresolved_symbols();
     if (nUnresolved > 0)
     {
         printf("--- Unresolved Symbol List\n");
         
-        for (i = 0; i < SHASHSIZE; i++) {
+        for (size_t i = 0; i < SHASHSIZE; i++) {
             for (sym = SHash[i]; sym != NULL; sym = sym->next) {
                 if ((sym->flags & SYM_UNKNOWN) != 0) {
                     printf(
@@ -521,10 +520,9 @@ void debug_symbol_hash_collisions(void)
     const SYMBOL *sym;
     int collisions = 0;
     size_t i;
-    bool first;
 
     for (i = 0; i < SHASHSIZE; i++) {
-        first = true;
+        bool first = true;
         for (sym = SHash[i]; sym != NULL; sym = sym->next) {
             if (!first) {
                 collisions += 1;

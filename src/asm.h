@@ -371,15 +371,9 @@ extern IFSTACK    *Ifstack;
 
 extern SEGMENT    *Csegment;  /*      current segment */
 extern char    *Av[];
-extern char    Avbuf[];
-/*extern unsigned int Adrbytes[];*/ /* unused for years, see 2.12 [phf] */
-/*extern unsigned int Cvt[];*/ /* replaced with function [phf] */
 extern MNEMONIC    Ops[];
-/*extern unsigned int    Opsize[];*/ /* replaced with function [phf] */
 extern int    Mnext;          /*    mnemonic extension    */
-extern unsigned int    Mlevel;
 
-extern bool bTrace;
 extern bool processor_forced; /* 20150414 bkw: -m option */
 extern bool MsbOrder;
 extern unsigned long    Redo_why;

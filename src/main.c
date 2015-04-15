@@ -66,6 +66,8 @@ static const char *Extstr;
 static int pass;
 static int Inclevel;
 
+static char Avbuf[512];
+
 static bool F_ListAllPasses = false;
 static bool bDoAllPasses = false;
 static int nMaxPasses = 10;
@@ -99,10 +101,9 @@ static void debug_mnemonic_hash_collisions(void)
     MNEMONIC *mne;
     int collisions = 0;
     int i;
-    bool first;
 
     for (i = 0; i < MHASHSIZE; i++) {
-        first = true;
+        bool first = true;
         for (mne = MHash[i]; mne != NULL; mne = mne->next) {
             if (!first) {
                 collisions += 1;
@@ -127,13 +128,12 @@ static void debug_hash_collisions(void)
 static void ShowSegments(void)
 {
     SEGMENT *seg;
-    const char *bss;
 
     printf("\n----------------------------------------------------------------------\n");
     printf(SHOW_SEGMENTS_FORMAT, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC");
     
     for (seg = Seglist; seg != NULL; seg = seg->next) {
-        bss = ((seg->flags & SF_BSS) != 0) ? "[u]" : "   ";
+        const char *bss = ((seg->flags & SF_BSS) != 0) ? "[u]" : "   ";
 
         printf(
             SHOW_SEGMENTS_FORMAT,
@@ -1170,8 +1170,6 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
     bool defined = false;
     STRLIST **slp = NULL, *sl;
     MACRO *mac = NULL;    /* slp, mac: might be used uninitialised */
-    MNEMONIC   *mne;
-    unsigned int i;
     char buf[MAXLINE];
     int skipit = !(Ifstack->xtrue && Ifstack->acctrue);
     char sbuf[MAX_SYM_LEN]; /* TODO: fixed size? [phf] */
@@ -1191,6 +1189,7 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
         }
     }
     if (!defined) {
+        unsigned int i;
         base = NULL;
         slp = &base;
         mac = small_alloc(sizeof(MACRO));
@@ -1203,6 +1202,7 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
     }
     while (fgets(buf, MAXLINE, pIncfile->fi)) {
         const char *comment;
+        MNEMONIC *mne;
         
         debug_fmt("%08lx %s", (unsigned long) pIncfile, buf);
         
