@@ -114,6 +114,9 @@ cscope:
 splint:
 	-splint $(SRCS) | grep "Finished"
 
+cppcheck:
+	-cppcheck --enable=all --inconclusive --std=c11 --language=c $(SRCS)
+
 # target to test compiles when neither __BSD__ nor __APPLE__ are
 # defined
 nobsd:
