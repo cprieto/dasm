@@ -38,6 +38,9 @@
 #include <ctype.h>
 #include <stdint.h>
 
+static unsigned int Mlevel;
+static bool bTrace = false;
+
 unsigned char Gen[256];
 static unsigned char OrgFill = DEFORGFILL;
 int	 Glen;
@@ -646,7 +649,6 @@ v_dc(const char *str, MNEMONIC *mne)
 {
     SYMBOL *sym;
     SYMBOL *tmp;
-    unsigned long value; /* TODO: argh, this receives sym->value! [phf] */
     const char *macstr = NULL; /* "might be used uninitialised" */
     bool vmode = false; /* is this a DV pseudo-op? */
 
@@ -704,6 +706,7 @@ v_dc(const char *str, MNEMONIC *mne)
     }
     sym = eval(str, false);
     for (; sym; sym = sym->next) {
+        unsigned long value; /* TODO: argh, this receives sym->value! [phf] */
         value = sym->value; /* TODO: we're assigning to UNSIGNED! [phf] */
         if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo;
@@ -814,7 +817,6 @@ v_ds(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     int mult = 1;
-    long filler = 0;
 
     assert(str != NULL);
     
@@ -826,6 +828,7 @@ v_ds(const char *str, MNEMONIC UNUSED(*dummy))
     }
     programlabel();
     if ((sym = eval(str, false)) != NULL) {
+        long filler = 0;
         if (sym->next != NULL) {
             filler = sym->next->value;
         }
@@ -1179,7 +1182,6 @@ v_execmac(const char *str, MACRO *mac)
     INCFILE *inc;
     STRLIST *base;
     STRLIST **psl, *sl;
-    const char *sone; /* used to be "s1" which clashed with "sl" [phf] */
 
     assert(str != NULL);
     assert(mac != NULL);
@@ -1196,7 +1198,7 @@ v_execmac(const char *str, MACRO *mac)
     strcpy(base->buf, str);
     psl = &base->next;
     while (*str != '\0' && *str != '\n') {
-        sone = str;
+        const char *sone = str; /* used to be "s1" which clashed with "sl" [phf] */
         while (*str != '\0' && *str != '\n' && *str != ',')
             ++str;
         sl = checked_malloc(STRLISTSIZE + (str-sone) + 1);
@@ -1534,17 +1536,15 @@ static long Seekback;
 void
 generate(void)
 {
-    long seekpos;
-    static unsigned long org;
-    int i;
-    
     if (Redo == 0)
     {
         if ((Csegment->flags & SF_BSS) == 0)
         {
-            for (i = Glen - 1; i >= 0; --i)
+            static unsigned long org;
+
+            for (int i = Glen - 1; i >= 0; --i)
                 CheckSum += Gen[i];
-            
+
             if (Fisclear)
             {
                 Fisclear = false;
@@ -1610,6 +1610,7 @@ generate(void)
                 
                 if (org != Csegment->org)
                 {
+                    long seekpos;
                     org = Csegment->org;
                     seekpos = ftell(FI_temp);
                     fseek(FI_temp, Seekback, 0);
