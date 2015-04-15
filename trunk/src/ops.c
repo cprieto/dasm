@@ -108,16 +108,37 @@ void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
     struct processor_description *previous = selected;
     struct processor_description *p;
 
+    bool found = false;
+
     assert(str != NULL);
+
+    /* 20150414 bkw: -m option sets the CPU, then ignores
+     * any processor directives in the source. However, we
+     * do want to emit a warning if the source tries to set
+     * the processor to something other than what we forced
+     * with the -m option (and ignore attempts to set the
+     * processor to what -m already forced it to, per Andrew
+     * Davies email). */
+    if (processor_forced) {
+        assert(selected != NULL); /* 20150414 bkw: This Never Happens */
+        if (!match_either_case(str, selected->name)) {
+            warning_fmt("Ignoring 'processor %s' due to -m%s option",
+                        str, selected->name);
+        }
+        return;
+    }
 
     for (p = available_processors; p->name != NULL; p++) {
         if (match_either_case(str, p->name)) {
             selected = p;
+            found = true;
             break;
         }
     }
 
-    if (selected == NULL) {
+    /* 20150414 bkw: fix buglet where an invalid processor
+     * directive was ignored, if it came after a valid one. */
+    if (!found) {
         fatal_fmt("Processor '%s' not supported!", str);
         return;
     }
