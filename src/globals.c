@@ -54,6 +54,7 @@ unsigned long	Localdollarindex;
 unsigned long	Lastlocaldollarindex;
 
 bool bTrace = false;
+bool processor_forced = false; /* 20150414 bkw: -m option sets this */
 
 unsigned long   Redo_why = 0;
 int	Redo_eval = 0;	   /*  infinite loop detection only    */

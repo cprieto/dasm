@@ -380,6 +380,7 @@ extern int    Mnext;          /*    mnemonic extension    */
 extern unsigned int    Mlevel;
 
 extern bool bTrace;
+extern bool processor_forced; /* 20150414 bkw: -m option */
 extern bool MsbOrder;
 extern unsigned long    Redo_why;
 

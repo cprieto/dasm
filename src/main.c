@@ -226,6 +226,7 @@ static void print_usage(void)
     (void) puts("-P#      maximum number of passes, with fewer checks");
     (void) puts("-T#      symbol table sorting (default 0 = alphabetical, 1 = address/value)");
     (void) puts("-E#      error format (default 0 = MS, 1 = Dillon, 2 = GNU)");
+    (void) puts("-mname   force processor type");
     (void) puts("");
     DASM_PRINT_BUGS
 }
@@ -385,7 +386,14 @@ static void parse_options(int argc, char **argv)
             case 'I':
                 v_incdir(str, NULL);
                 break;
-                
+
+            /* 20150414 bkw: decided I like -m better than -a */
+            case 'm':
+                /* [phf] don't exchange the order of these two! */
+                v_processor(str, NULL);
+                processor_forced = true;
+                break;
+
             default:
                 parse_options_fail(/* Unknown option. */);
                 break;
