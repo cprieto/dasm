@@ -42,9 +42,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 #define MAXLINE 1024
 #define ISEGNAME    "INITIAL CODE SEGMENT"
 

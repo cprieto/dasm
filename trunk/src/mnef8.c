@@ -41,9 +41,6 @@
 #include <ctype.h> /* for isspace() */
 #include <assert.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 /*
  * special registers. must use numbers from 16 and up,
  * since numbers below 16 are used for scratchpad registers.

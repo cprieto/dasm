@@ -38,9 +38,6 @@
 #include <ctype.h>
 #include <stdint.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 unsigned char Gen[256];
 static unsigned char OrgFill = DEFORGFILL;
 int	 Glen;

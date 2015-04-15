@@ -41,9 +41,6 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 /*
     There used to be big hack here to allow unary functions
     to take only v1 and f1 while binary functions also took

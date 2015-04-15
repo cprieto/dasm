@@ -48,9 +48,6 @@
 #include "asm.h"
 #include "version.h"
 
-/*@unused@*/
-SVNTAG("$Id$");
-
 #define AF_STD	 (AF_BYTEADR|AF_BYTEADRX|AF_BYTEADRY|AF_WORDADR)
 #define AF_STDI  (AF_IMM8|AF_STD)
 #define AF_STDD  (AF_IMM16|AF_STD)
