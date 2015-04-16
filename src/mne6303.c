@@ -168,11 +168,12 @@ MNEMONIC Mne6803[] = {
 
 MNEMONIC MneHD6303[] = {
     { NULL, v_mnemonic, "slp", 0,   AF_IMP, { 0x1A }},
+    { NULL, v_mnemonic, "xgdx", 0,  AF_IMP, { 0x18 }},
+    /* [phf] these are broken and fixing them would require major surgery, see BUGS file */
     { NULL, v_mnemonic, "aim", 0,   AF_BYTEADR|AF_BYTEADRX, { 0x71, 0x61 }},
     { NULL, v_mnemonic, "oim", 0,   AF_BYTEADR|AF_BYTEADRX, { 0x72, 0x62 }},
     { NULL, v_mnemonic, "eim", 0,   AF_BYTEADR|AF_BYTEADRX, { 0x75, 0x65 }},
     { NULL, v_mnemonic, "tim", 0,   AF_BYTEADR|AF_BYTEADRX, { 0x7B, 0x6B }},
-    { NULL, v_mnemonic, "xgdx", 0,  AF_IMP, { 0x18 }},
     MNEMONIC_NULL
 };
 
