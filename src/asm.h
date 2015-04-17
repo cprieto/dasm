@@ -58,8 +58,20 @@
 #define DASM_PATH_SEPARATOR '/'
 #endif /* defined(__WINDOWS__) */
 
+/*
+    [phf] EXPERIMENT: For years DASM has had OlafHashFormat
+    enabled yet none of our test cases differ in the least
+    when it's disabled. Enabling OlafFreeFormat ruins a few
+    test cases (and it might be a little buggy since it's
+    presumably been tested a lot less), but both complicate
+    the code of DASM and I want to see if we can get rid of
+    them. So as an experiment I've disabled both extensions
+    for now and I hope we'll get feedback from dasm-hacking
+    as to how that works out for everybody.
+*/
+
 #define OlafFreeFormat    0    /* Decide on looks of word if it is opcode */
-#define OlafHashFormat    1    /* Decide on # and ^ if it is an opcode */
+#define OlafHashFormat    0    /* Decide on # and ^ if it is an opcode */
 
 #if OlafHashFormat && OlafFreeFormat
 #error This cannot be!
