@@ -930,6 +930,44 @@ br2:
 *  .u                      x
 */
 
+/*
+    [phf] RANT: The preceeding comment deserves to burn, it has
+    next to nothing to do with the following code; speaking of
+    the code, it's quite horrid and really needs to go; but for
+    now I'll just try to understand it!
+
+    Luckily findext() only gets called in ops.c/v_dc() as well
+    as in main.c/parse() above. Its job seems to be to figure
+    out what addressing mode corresponds to a given "extension"
+    after a mnemonic. If, for example, we say "lda.zx $20" (for
+    "zero-page x-indexed") then we get the same encoding that
+    DASM would (eventually) derive for "lda $20,x".
+
+    Sadly there are globals: findext() sets the global Mnext to
+    the addressing mode it decides on. The rest of main.c doesn't
+    look at or modify Mnext. In fact, findext() is the ONLY thing
+    in DASM that EVER writes Mnext at all. Also, curiously, ops.c
+    never modifies Mnext, it only reads. So one could think that
+    instead of a global, Matt could just have returned the final
+    addressing mode; but now that we have this mess, we of course
+    first have to prove that...
+
+    In ops.c/v_mnemonic() we check Mnext and if it has a "valid"
+    value, we assume that the programmer "forced" the addresssing
+    mode in question. In ops.c/v_seg() we just check Mnext for
+    the ".u" which means a segment is uninitialized "BSS" data.
+    In ops.c/v_dc() we check Mnext to determine how much data to
+    lay down, but there are also some hacks that use it (Olaf's
+    .byte/.word/.long and Thomas' F8 stuff). Something similar
+    happens in ops.c/v_ds(); but those are all the uses of Mnext!
+
+    In ops.c/v_dc() findext() only gets called on some "fake"
+    instructions to determine the AM_WHATEVER value that's
+    needed for a given purpose; main.c/parse() has the other
+    calls to findext, this time with actual input (presumably).
+
+    ...TODO...
+*/
 
 void findext(char *str)
 {
