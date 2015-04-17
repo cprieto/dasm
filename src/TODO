@@ -27,6 +27,9 @@ are hiding the file all the way down here for a reason...
       - have to think this through in more detail, but could work
       - come to think of it: listfile generation should already do something like that?
 
+- there's still a memory management issue (leak-related)
+  - check ../test/directive_err.asm and the exit handler/rmnode()
+
 - find all external accesses to F_listfile to really centralize
   error handling in errors module!
   - be careful though, there *is* a purpose for a listing file

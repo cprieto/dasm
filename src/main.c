@@ -1335,6 +1335,7 @@ static void exit_handler(void)
     /* free all small allocations we ever made */
     small_free_all();
 
+#if 0 /* [phf] disabled, see ../test/directive_err.asm */
     /*
         Valgrind found a memory leak, apparently we never free
         the first IFSTACK we allocate; possible that the leak
@@ -1353,7 +1354,8 @@ static void exit_handler(void)
         rmnode((void **)&Ifstack, sizeof(IFSTACK)); /* free it */
         assert(Ifstack == NULL); /* and we're NULL */
     }
-    
+#endif
+
     /* TODO: more cleanup actions here? */
 
     debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
