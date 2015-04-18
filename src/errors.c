@@ -55,6 +55,9 @@
 
 static error_format_t F_error_format = ERRORFORMAT_DEFAULT;
 static error_level_t F_error_level = ERRORLEVEL_DEFAULT;
+/* debug channels to display, bitset */
+static unsigned int F_debug_channels = 0;
+
 static size_t nof_fatals = 0;
 static size_t nof_errors = 0;
 static size_t nof_warnings = 0;
@@ -91,6 +94,11 @@ void set_error_level(error_level_t level)
 {
     assert(valid_error_level(level));
     F_error_level = level;
+}
+
+void set_debug_channels(unsigned int channels)
+{
+    F_debug_channels = channels;
 }
 
 /**
@@ -383,7 +391,13 @@ void notify_fmt(error_level_t level, const char *fmt, ...)
     IMPLEMENT_FMT(level);
 }
 
-DEFINE_FMT(debug_fmt, ERRORLEVEL_DEBUG)
+void debug_fmt(enum debug_channels chan, const char *fmt, ...)
+{
+    if ((F_debug_channels & chan) == chan) {
+        IMPLEMENT_FMT(ERRORLEVEL_DEBUG);
+    }
+}
+
 DEFINE_FMT(info_fmt, ERRORLEVEL_INFO)
 DEFINE_FMT(notice_fmt, ERRORLEVEL_NOTICE)
 DEFINE_FMT(warning_fmt, ERRORLEVEL_WARNING)

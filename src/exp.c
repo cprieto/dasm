@@ -155,7 +155,7 @@ SYMBOL *eval(const char *str, bool wantmode)
 
     while (*str != '\0')
     {
-        debug_fmt("char '%c'", *str);
+        debug_fmt(DEBUG_CHANNEL_EVALUATION, "char '%c'", *str);
         
         switch(*str)
         {
@@ -450,7 +450,7 @@ SYMBOL *eval(const char *str, bool wantmode)
                 if ((cur->string = Argstring[Argi]) != NULL)
                 {
                     cur->flags |= SYM_STRING;
-                    debug_fmt("STRING: %s", cur->string);
+                    debug_fmt(DEBUG_CHANNEL_EVALUATION, "STRING: %s", cur->string);
                 }
                 cur = pNewSymbol;
             }
@@ -505,7 +505,7 @@ SYMBOL *eval(const char *str, bool wantmode)
         if ((cur->string = Argstring[Argi]) != NULL)
         {
             cur->flags |= SYM_STRING;
-            debug_fmt("STRING: %s", cur->string);
+            debug_fmt(DEBUG_CHANNEL_EVALUATION, "STRING: %s", cur->string);
         }
         if (base->addrmode == 0)
             base->addrmode = AM_BYTEADR;
@@ -530,7 +530,7 @@ SYMBOL *eval(const char *str, bool wantmode)
 
 static void evaltop(void)
 {
-    debug_fmt("evaltop @(A,O) %d %d", Argi, Opi);
+    debug_fmt(DEBUG_CHANNEL_EVALUATION, "evaltop @(A,O) %d %d", Argi, Opi);
     
     if (Opi <= Opibase)
     {
@@ -579,7 +579,7 @@ static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
 {
     char *str = NULL;
     
-    debug_fmt("stackarg %ld (@%d)", val, Argi);
+    debug_fmt(DEBUG_CHANNEL_EVALUATION, "stackarg %ld (@%d)", val, Argi);
     
     Lastwasop = false;
     if ((flags & SYM_STRING) != 0)
@@ -618,13 +618,13 @@ static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
 
 static void doop(opfunc_t func, int pri)
 {
-    debug_fmt("doop");
+    debug_fmt(DEBUG_CHANNEL_EVALUATION, "doop");
     
     Lastwasop = true;
     
     if (Opi == Opibase || pri == 128)
     {
-        debug_fmt("doop @ %d unary", Opi);
+        debug_fmt(DEBUG_CHANNEL_EVALUATION, "doop @ %d unary", Opi);
         Opdis[Opi] = func;
         Oppri[Opi] = pri;
         ++Opi;
@@ -634,7 +634,7 @@ static void doop(opfunc_t func, int pri)
     while (Opi != Opibase && Oppri[Opi-1] && pri <= Oppri[Opi-1])
         evaltop();
     
-    debug_fmt("doop @ %d", Opi);
+    debug_fmt(DEBUG_CHANNEL_EVALUATION, "doop @ %d", Opi);
     
     Opdis[Opi] = func;
     Oppri[Opi] = pri;

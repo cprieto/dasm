@@ -12,7 +12,7 @@
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
- 
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -64,9 +64,22 @@
 #include <string.h>
 #include <sys/types.h>
 
+/*
+    [phf] Some debugging aids for measuring memory allocation patterns.
+    I am sure there's a tool that does this for regular malloc(3) stuff
+    but that wouldn't work for the small_alloc() business anyway. So I
+    hacked this little framework. I am not sure in what form it should
+    survive later. Ideas? (The implementation is at the bottom.)
+*/
+
+static void debug_record_arena_alloc(size_t bytes);
+static void debug_record_regular_alloc(size_t bytes);
+
 /*@out@*/
 void *checked_malloc(size_t bytes)
 {
+    debug_record_regular_alloc(bytes);
+
     void *p = NULL;
     assert(bytes > 0); /* rule out 0! */
 
@@ -105,6 +118,8 @@ static struct new_perm_block *new_permalloc_stack = NULL;
 
 void *small_alloc(size_t bytes)
 {
+    debug_record_arena_alloc(bytes);
+
     /* Assume sizeof(union align) is a power of 2 */
     union align { long l; void *p; void (*fp)(void); };
 
@@ -117,7 +132,7 @@ void *small_alloc(size_t bytes)
     assert(bytes > 0); /* rule out 0! */
     /* could sanity check upper bound here, but we're doing it below anyway */
 
-    debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
+    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
 
     /* round up bytes for proper alignment */
     bytes = ROUNDUP(bytes);
@@ -125,11 +140,20 @@ void *small_alloc(size_t bytes)
     /* do we not have enough left in the current block? */
     if (bytes > left)
     {
-        debug_fmt("%s: new block needed", SOURCE_LOCATION);
+        debug_fmt(
+            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+            "%s: new block needed",
+            SOURCE_LOCATION
+        );
 
         /* allocate a new block */
         block = zero_malloc(ALLOCSIZE);
-        debug_fmt("%s: block @ %p", SOURCE_LOCATION, (void*) block);
+        debug_fmt(
+            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+            "%s: block @ %p",
+            SOURCE_LOCATION,
+            (void*) block
+        );
 
         /* calculate bytes we have left */
         left = ALLOCSIZE - ROUNDUP(sizeof(block->next));
@@ -147,15 +171,25 @@ void *small_alloc(size_t bytes)
 
         /* setup buf to point to actual memory area */
         buf = ((char*)block) + ROUNDUP(sizeof(block->next)); /* char cast important! */
-        debug_fmt("%s: initial buf @ %p", SOURCE_LOCATION, (void*) buf);
+        debug_fmt(
+            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+            "%s: initial buf @ %p",
+            SOURCE_LOCATION,
+            (void*) buf
+        );
     }
 
     ptr = buf;
     buf = ((char*)buf) + bytes; /* char cast important! */
-    debug_fmt("%s: adjusted buf @ %p", SOURCE_LOCATION, (void*) buf);
+    debug_fmt(
+        DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+        "%s: adjusted buf @ %p",
+        SOURCE_LOCATION,
+        (void*) buf
+    );
     assert(ptr < buf); /* TODO: good idea? [phf] */
     left -= bytes;
-    debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
+    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
     return ptr;
 }
 
@@ -164,7 +198,7 @@ void small_free_all(void)
     /* the block we are about to free() */
     struct new_perm_block *current = NULL;
 
-    debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
+    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
 
     /* as long as we have block left */
     while (new_permalloc_stack != NULL)
@@ -174,11 +208,16 @@ void small_free_all(void)
         /* pop the top block, stack possibly empty after this */
         new_permalloc_stack = current->next;
         /* free() the block we popped */
-        debug_fmt("%s: freed block @ %p", SOURCE_LOCATION, (void*) current);
+        debug_fmt(
+            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+            "%s: freed block @ %p",
+            SOURCE_LOCATION,
+            (void*) current
+        );
         free(current);
     }
 
-    debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
+    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
 }
 
 unsigned int hash_string(const char *string, size_t length)
@@ -418,5 +457,116 @@ void setprogname(const char *name)
 }
 
 #endif /* !defined(__APPLE__) && !defined(__BSD__) */
+
+/*
+    [phf] Here's that badly hacked-together memory allocation
+    debugger. If you see a chance to clean it up, please do.
+*/
+
+#define DEBUG_MAX_ALLOC 128
+
+struct debug_alloc_stat {
+    size_t size;
+    size_t count;
+};
+
+static int debug_num_regular;
+static int debug_num_arena;
+
+static struct debug_alloc_stat debug_regular[DEBUG_MAX_ALLOC];
+static struct debug_alloc_stat debug_arena[DEBUG_MAX_ALLOC];
+
+static int debug_find_stat_index(struct debug_alloc_stat *stats,
+    int used, size_t bytes)
+{
+    for (int i = 0; i < used; i++) {
+        if (stats[i].size == bytes) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void debug_record_arena_alloc(size_t bytes)
+{
+    int i = debug_find_stat_index(debug_arena, debug_num_arena, bytes);
+    if (i >= 0) {
+        debug_arena[i].count++;
+        return;
+    }
+    if  (debug_num_arena >= DEBUG_MAX_ALLOC) {
+        debug_fmt(
+            DEBUG_CHANNEL_INTERNAL,
+            "Ran out of %d slots to track memory allocations.",
+            DEBUG_MAX_ALLOC
+        );
+        return;
+    }
+    debug_arena[debug_num_arena].size = bytes;
+    debug_arena[debug_num_arena].count = 1;
+    debug_num_arena++;
+}
+
+static void debug_record_regular_alloc(size_t bytes)
+{
+    int i = debug_find_stat_index(debug_regular, debug_num_regular, bytes);
+    if (i >= 0) {
+        debug_regular[i].count++;
+        return;
+    }
+    if (debug_num_regular >= DEBUG_MAX_ALLOC) {
+        debug_fmt(
+            DEBUG_CHANNEL_INTERNAL,
+            "Ran out of %d slots to track memory allocations.",
+            DEBUG_MAX_ALLOC
+        );
+        return;
+    }
+    debug_regular[debug_num_regular].size = bytes;
+    debug_regular[debug_num_regular].count = 1;
+    debug_num_regular++;
+}
+
+void debug_memory_allocation_patterns(void)
+{
+    size_t total_num;
+    size_t total_size;
+
+    total_num = total_size = 0;
+    for (int i = 0; i < debug_num_regular; i++) {
+        debug_fmt(
+            DEBUG_CHANNEL_MEMORY,
+            "%zu regular allocations of %zu bytes",
+            debug_regular[i].count,
+            debug_regular[i].size
+        );
+        total_num += debug_regular[i].count;
+        total_size += debug_regular[i].size*debug_regular[i].count;
+    }
+
+    debug_fmt(
+        DEBUG_CHANNEL_MEMORY,
+        "Total of %zu regular allocations for %zu bytes (used %d slots)\n",
+        total_num, total_size, debug_num_regular
+    );
+
+    total_num = total_size = 0;
+    for (int i = 0; i < debug_num_arena; i++) {
+        debug_fmt(
+            DEBUG_CHANNEL_MEMORY,
+            "%zu arena allocations of %zu bytes",
+            debug_arena[i].count,
+            debug_arena[i].size
+        );
+        total_num += debug_arena[i].count;
+        total_size += debug_arena[i].size*debug_arena[i].count;
+    }
+
+    debug_fmt(
+        DEBUG_CHANNEL_MEMORY,
+        "Total of %zu arena allocations for %zu bytes (used %d slots)\n",
+        total_num, total_size, debug_num_arena
+    );
+}
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */

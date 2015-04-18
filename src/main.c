@@ -114,7 +114,7 @@ static void debug_mnemonic_hash_collisions(void)
         }
     }
 
-    debug_fmt("Collisions for MNEMONICS: %d", collisions);
+    debug_fmt(DEBUG_CHANNEL_HASH, "Collisions for MNEMONICS: %d", collisions);
 }
 
 static void debug_hash_collisions(void)
@@ -271,11 +271,12 @@ static void parse_debug_trace(char *str)
     if (debug == 0) {
         /* nothing to do, already at default error level? */
     }
-    else if (debug == 1) {
+    else if (debug >= 1) {
         set_error_level(ERRORLEVEL_DEBUG);
+        set_debug_channels(debug);
     }
     else {
-        panic_fmt("Invalid debug mode for -d option, must be 0 or 1");
+        panic_fmt("Invalid debug mode %d for -d option, must be >=0.", debug);
     }
     /* TODO: get rid of this message? */
     printf("Debug trace %s\n", debug != 0 ? "ON" : "OFF");
@@ -491,7 +492,7 @@ nextpass:
                     break;
             }
             
-            debug_fmt("%08lx %s", (unsigned long) pIncfile, buf);
+            debug_fmt(DEBUG_CHANNEL_PARSING, "%08lx %s", (unsigned long) pIncfile, buf);
             
             comment = cleanup(buf, false);
             ++pIncfile->lineno;
@@ -844,7 +845,7 @@ static const char *cleanup(char *buf, bool bDisable)
             if ( bDisable )
                 break;
             
-            debug_fmt("macro tail: '%s'", str);
+            debug_fmt(DEBUG_CHANNEL_PARSING, "macro tail: '%s'", str);
             
             arg = atoi(str+1);
             for (add = 0; *str != '\0' && *str != '}'; ++str)
@@ -860,7 +861,7 @@ static const char *cleanup(char *buf, bool bDisable)
             ++str;
             
             
-            debug_fmt("add/str: %d '%s'", add, str);
+            debug_fmt(DEBUG_CHANNEL_PARSING, "add/str: %d '%s'", add, str);
             
             for (strlist = pIncfile->args; arg != 0 && strlist != NULL;)
             {
@@ -872,11 +873,11 @@ static const char *cleanup(char *buf, bool bDisable)
             {
                 add += strlen(strlist->buf);
                 
-                debug_fmt("strlist: '%s' %zu", strlist->buf, strlen(strlist->buf));
+                debug_fmt(DEBUG_CHANNEL_PARSING, "strlist: '%s' %zu", strlist->buf, strlen(strlist->buf));
                 
                 if (str + add + strlen(str) + 1 > buf + MAXLINE)
                 {
-                    debug_fmt("str %8ld buf %8ld (add/strlen(str)): %d %ld",
+                    debug_fmt(DEBUG_CHANNEL_PARSING, "str %8ld buf %8ld (add/strlen(str)): %d %ld",
                               (unsigned long)str, (unsigned long)buf, add, (long)strlen(str));
                     panic_fmt("failure1"); /* TODO: more descriptive message? [phf] */
                 }
@@ -1242,7 +1243,7 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
         const char *comment;
         MNEMONIC *mne;
         
-        debug_fmt("%08lx %s", (unsigned long) pIncfile, buf);
+        debug_fmt(DEBUG_CHANNEL_PARSING, "%08lx %s", (unsigned long) pIncfile, buf);
         
         ++pIncfile->lineno;
         
@@ -1330,7 +1331,7 @@ void pushinclude(const char *str)
  */
 static void exit_handler(void)
 {
-    debug_fmt(DEBUG_ENTER, SOURCE_LOCATION);
+    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
 
     /* free all small allocations we ever made */
     small_free_all();
@@ -1358,7 +1359,9 @@ static void exit_handler(void)
 
     /* TODO: more cleanup actions here? */
 
-    debug_fmt(DEBUG_LEAVE, SOURCE_LOCATION);
+    debug_memory_allocation_patterns();
+
+    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
 }
 
 int main(int argc, char **argv)
