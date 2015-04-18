@@ -135,6 +135,37 @@ bool valid_error_level(int level);
 void set_error_level(error_level_t level);
 
 /**
+ * @brief Channels for debugging messages; without channels,
+ * there's simply too much debugging output.
+ * @note This is a bit set.
+ */
+enum debug_channels {
+    /* problems in the debugging code itself */
+    DEBUG_CHANNEL_INTERNAL = 1 << 0,
+    /* expression evaluation */
+    DEBUG_CHANNEL_EVALUATION = 1 << 1,
+    /* parsing */
+    DEBUG_CHANNEL_PARSING = 1 << 2,
+    /* control flow / calls and returns */
+    DEBUG_CHANNEL_CONTROL = 1 << 3,
+    /* hashing and hash tables */
+    DEBUG_CHANNEL_HASH = 1 << 4,
+    /* symbols */
+    DEBUG_CHANNEL_SYMBOLS = 1 << 5,
+    /* memory management */
+    DEBUG_CHANNEL_MEMORY = 1 << 6,
+    /* problems related to multiple passes */
+    DEBUG_CHANNEL_REDO = 1 << 7,
+    /* for *very* detailed messages we don't always want, OR on top */
+    DEBUG_CHANNEL_DETAIL = 1 << 8
+};
+
+/**
+ * @brief Set active debugging channels.
+ */
+void set_debug_channels(unsigned int channels);
+
+/**
  * @brief Length of buffer for source locations.
  */
 #define SOURCE_LOCATION_LENGTH 256
@@ -176,7 +207,7 @@ void notify_fmt(error_level_t level, const char *fmt, ...)
  * @brief Helpers to make common levels easier to read.
  */
 
-void debug_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void debug_fmt(enum debug_channels chan, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 void info_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void notice_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void warning_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));

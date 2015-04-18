@@ -95,6 +95,13 @@ void small_free_all(void);
 
 /**
  * @brief
+ *   Debugging output for memory allocation patterns.
+ */
+
+void debug_memory_allocation_patterns(void);
+
+/**
+ * @brief
  *   An excellent hash function for strings.
  *
  * @pre

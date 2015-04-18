@@ -55,8 +55,9 @@ int main(int argc, char *argv[])
     pIncfile->lineno = 47;
     /* enable all messages */
     set_error_level(ERRORLEVEL_DEBUG);
+    set_debug_channels(-1);
     /* test SUPER new API :-) */
-    debug_fmt(WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
+    debug_fmt(DEBUG_CHANNEL_INTERNAL, WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
     info_fmt(WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
     notice_fmt(WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
     warning_fmt(WARNING_RANGE, "CRAZY", "DEBUG", 2, 14);
