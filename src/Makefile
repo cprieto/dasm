@@ -34,9 +34,6 @@ GOPTI= -O2 # -O2 for more warnings; use -O0 for debugging
 # Our baseline is C99 with a set of fairly standard warnings.
 GWARN = -std=c99 -Wall -Wextra -Wpedantic
 #
-# Sadly splint is a bit dated so we have to avoid some features.
-GWARN+= -Wdeclaration-after-statement
-#
 # We do a ton of string formatting so let's be safe about it.
 GWARN+= -Wformat-nonliteral -Wformat-security -Wformat-y2k
 #
@@ -65,6 +62,11 @@ GWARN+= -Wshadow -Wundef \
 # new code collide) but produces too many warnings and we want
 # to be C99 anyway, darn it.
 #GWARN+= -Wtraditional -Wtraditional-conversion
+#
+# We used this when we were still SPLINT addicts because that
+# things has a C89 parser while claiming C99 features on their
+# out-of-date website. No more!
+#GWARN+= -Wdeclaration-after-statement
 
 GDEBG= -g # -fsanitize=address # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
 
