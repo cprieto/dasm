@@ -153,15 +153,23 @@ static void print_error_message(const char *message)
     assert(message != NULL);
     assert(strlen(message) > 0);
 
-    fprintf(stderr, "%s\n", message);
+    bool missing = false; /* missing from listing file? */
 
-    if (FI_listfile != NULL) {
-        fprintf(FI_listfile, "*%s\n", message);
+    if (F_listfile != NULL) {
+        if (FI_listfile != NULL) {
+            fprintf(FI_listfile, "*%s\n", message);
+        }
+        else {
+            missing = true;
+        }
     }
-    else {
-        /* sanity check: if there was no FILE* there should be no name */
-        assert(F_listfile == NULL);
-    }
+
+    fprintf(
+        stderr,
+        "%s%s\n",
+        message,
+        missing ? " [not in listing file]" : ""
+    );
 }
 
 /**

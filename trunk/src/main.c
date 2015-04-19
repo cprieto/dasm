@@ -568,10 +568,14 @@ nextpass:
     if (fclose(FI_temp) != 0) {
         warning_fmt("Problem closing temporary file '%s'.", F_outfile);
     }
+    /* [phf] either way, after this we cannot risk writing to the file anymore! */
+    FI_temp = NULL;
     if (FI_listfile != NULL) {
         if (fclose(FI_listfile) != 0) {
             warning_fmt("Problem closing list file '%s'.", F_listfile);
         }
+        /* [phf] either way, after this we cannot risk writing to the file anymore! */
+        FI_listfile = NULL;
     }
     
     if (Redo != 0)
