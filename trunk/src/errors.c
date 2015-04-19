@@ -25,6 +25,9 @@
 
 /**
  * @file
+ * @todo For some messages we might want to include "errno"
+ * information, there's currently no standard way of doing
+ * that.
  */
 
 #include "errors.h"
@@ -137,16 +140,37 @@ static void internal_panic(const char *message)
 }
 
 /**
- * @brief Print final error message to all relevant streams.
- * @note We always print to stderr; we print to the listing
- * file if we have one. Messages to the listing file get a
- * leading "*" just like Matt's version did years ago; at
- * one point I thought that the "*" starts a comment, but I
- * can't confirm that in the code (only ";" seems to be a
- * comment), so the motivation must have been different.
+ * Print final error message to all relevant streams.
+ *
+ * We always print to stderr. We print to the listing file as
+ * well if we have one, but it's complicated to know if we do.
+ *
+ * Originally we just checked FI_listfile != NULL but DASM is
+ * of course being difficult: It closes the listing file after
+ * each pass, but *without* setting FI_listfile to NULL. This
+ * in turn made valgrind complain about accessing memory that
+ * had been freed. Since there is no portable way to check if
+ * a FILE* is open or not, we had to change the code in main.c
+ * to assing NULL to FI_listfile after each fclose(). Works,
+ * but it's an ugly dependency. Also the listing file will not
+ * show error messages generated between two passes. Since we
+ * think that's important, we would like to warn the user but
+ * of course we cannot generate another error message here.
+ * What we do instead is append a little note to the regular
+ * message that goes to stderr anyway. Let's hope that's good
+ * enough.
+ *
+ * Messages to the listing file get a leading "*" just like
+ * Matt's version did years ago; at one point I thought that
+ * the "*" starts a comment, but I can't confirm that in the
+ * code (only ";" seems to be a comment), so the motivation
+ * must have been different.
+ *
  * We only get here after all the other filters checked that
  * we should really print, so we don't check anything else
  * about the error message.
+ *
+ * @pre message != NULL && strlen(message) > 0
  */
 static void print_error_message(const char *message)
 {
