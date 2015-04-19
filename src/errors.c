@@ -151,7 +151,7 @@ static void internal_panic(const char *message)
  * in turn made valgrind complain about accessing memory that
  * had been freed. Since there is no portable way to check if
  * a FILE* is open or not, we had to change the code in main.c
- * to assing NULL to FI_listfile after each fclose(). Works,
+ * to assign NULL to FI_listfile after each fclose(). Works,
  * but it's an ugly dependency. Also the listing file will not
  * show error messages generated between two passes. Since we
  * think that's important, we would like to warn the user but
