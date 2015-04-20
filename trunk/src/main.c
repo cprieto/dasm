@@ -537,7 +537,11 @@ nextpass:
         if (fclose(pIncfile->fi) != 0) {
             warning_fmt("Problem closing include file '%s'.", pIncfile->name);
         }
+        /* [phf] either way, after this we cannot risk reading from the file anymore! */
+        pIncfile->fi = NULL;
         free(pIncfile->name); /* can't do anything about this warning :-( [phf] */
+        /* [phf] and we set the name to NULL to be safe about that as well */
+        pIncfile->name = NULL;
         --Inclevel;
         rmnode((void **)&pIncfile, sizeof(INCFILE));
         
