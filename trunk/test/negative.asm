@@ -89,4 +89,33 @@
 	lda	#1024	; FAILS with range check
 	lda	#-1024	; FAILS with range check
 
+; Added for Andrew's bug report 2015/04/20; these all behave
+; as they should as far as I can tell. Regarding the range
+; check, we can either have one or not. I prefer to have one
+; but that MUST mean that there's a message for the line
+; marked "FAILS" below. The value is, strictly speaking,
+; out of the -128..255 range I postulated when I first added
+; range checking. There's no logical reason to go beyond that
+; range for a single byte. Maybe we should "demote" the message
+; to a warning. And actually I think we need one more warning,
+; see the line marked "SILENTLY" below.
+
+	.echo	$80	; prints $80
+	.echo	-$80	; prints $ffffff80
+	.echo	<-$80	; prints $80
+	.echo	~$80	; prints $ffffff7f
+	.echo	<~$80	; prints $7f
+
+	lda	$80	; generates A5 80
+	lda	-$80	; generates A5 80
+	lda	<-$80	; generates A5 80
+	lda	~$80	; SILENTLY generates AD 7F FF
+	lda	<~$80	; generates A5 7F
+
+	lda	#$80	; generates A9 80
+	lda	#-$80	; generates A9 80
+	lda	#<-$80	; generates A9 80
+	lda	#~$80	; FAILS with range check! but generates A9 7F
+	lda	#<~$80	; generates A9 7F
+
 	.end
