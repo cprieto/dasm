@@ -34,8 +34,6 @@
 
 #include "asm.h"
 
-#include <stdbool.h>
-
 void programlabel(void);
 void ShowSymbols(FILE *file);
 size_t ShowUnresolvedSymbols(void);

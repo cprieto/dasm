@@ -39,14 +39,9 @@
  * to blame for this implementation of course...
  */
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include "platform.h"
 
-/* remove cool GNU stuff for other compilers */
-/* TODO: find more permanent place for this, more .h might need it! */
-#ifndef __GNUC__
-#define __attribute__(x)  /* GNU C __attribute__ removed */
-#endif
+#include <stdlib.h>
 
 /**
  * @brief Format of error messages for -E option.
@@ -257,7 +252,7 @@ void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
 #define DEBUG_LEAVE ">>> Left function %s."
 #define DEBUG_HASH_COLLISIONS "%d mnemonic collisions, %d symbol collisions."
 
-/* warnings related to assembly source code */ 
+/* warnings related to assembly source code */
 #define WARNING_RANGE "The %s value in '%s' should be between %d and %d!"
 
 /* errors related to assembly source code */

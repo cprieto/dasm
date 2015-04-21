@@ -33,30 +33,11 @@
  * Matt first wrote DASM for 6502 code.
  */
 
+#include "platform.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-/*
-    Hack for Windows compatibilty (or at least Visual Studio
-    compatibility I guess?). Note that I have no idea if the
-    __WINDOWS__ symbol is really the right one to check for,
-    please let me know if it's not. [phf]
-*/
-#if defined(__WINDOWS__)
-/* no stdbool.h so fake it */
-#define bool int
-#define false (0==1)
-#define true (!false)
-/* no strcasecmp so fake it using stricmp */
-#define strcasecmp stricmp
-/* strange paths :-) */
-#define DASM_PATH_SEPARATOR '\\'
-#else
-#include <stdbool.h>
-#include <strings.h>
-#define DASM_PATH_SEPARATOR '/'
-#endif /* defined(__WINDOWS__) */
 
 /*
     [phf] EXPERIMENT: For years DASM has had OlafHashFormat
@@ -75,22 +56,6 @@
 
 #if OlafHashFormat && OlafFreeFormat
 #error This cannot be!
-#endif
-
-/*
-    Martin Pool's cool little macro to "portably" use various
-    "unused" annotations. Good for GCC and splint so far. See
-    http://sourcefrog.net/weblog/software/languages/C/unused.html
-    for the original.
-*/
-
-#ifdef UNUSED 
-#elif defined(__GNUC__) 
-# define UNUSED(x) x ## _UNUSED __attribute__((unused)) 
-#elif defined(__LCLINT__) || defined(S_SPLINT_S) 
-# define UNUSED(x) /*@unused@*/ x 
-#else 
-# define UNUSED(x) x 
 #endif
 
 enum FORMAT
