@@ -144,19 +144,19 @@ SYMBOL *eval(const char *str, bool wantmode)
     int oldargibase = Argibase;
     int oldopibase = Opibase;
     int scr;
-    
+
     const char *pLine = str;
 
     Argibase = Argi;
     Opibase = Opi;
     Lastwasop = true;
     base = cur = alloc_symbol();
-    
+
 
     while (*str != '\0')
     {
         debug_fmt(DEBUG_CHANNEL_EVALUATION, "char '%c'", *str);
-        
+
         switch(*str)
         {
         case ' ':
@@ -219,7 +219,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '>':   /*  18: >> <<  17: > >= <= <    */
-            
+
             if (Lastwasop)
             {
                 doop(op_takemsb, 128);
@@ -246,7 +246,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '<':
-            
+
             if (Lastwasop)
             {
                 doop(op_takelsb, 128);
@@ -272,7 +272,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '=':   /*  16: ==  (= same as ==)      */
-            
+
             if (str[1] == '=')
                 ++str;
             doop(op_eqeq, 16);
@@ -280,7 +280,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '!':   /*  16: !=                      */
-            
+
             if (Lastwasop)
             {
                 doop(op_not, 128);
@@ -294,7 +294,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '&':   /*  15: &   12: &&              */
-            
+
             if (str[1] == '&')
             {
                 doop(op_andand, 12);
@@ -308,13 +308,13 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '^':   /*  14: ^                       */
-            
+
             doop(op_xor, 14);
             ++str;
             break;
 
         case '|':   /*  13: |   11: ||              */
-            
+
             if (str[1] == '|')
             {
                 doop(op_oror, 11);
@@ -327,20 +327,20 @@ SYMBOL *eval(const char *str, bool wantmode)
             ++str;
             break;
 
-            
+
         case '(':
-            
+
             if (wantmode)
             {
                 cur->addrmode = AM_INDWORD;
                 ++str;
                 break;
             }
-            
+
             /* fall thru OK */
-            
+
         case '[':   /*  eventually an argument      */
-            
+
             if (Opi == MAXOPS)
                 /* TODO: should be an error message? [phf] */
                 (void) puts("too many ops");
@@ -348,9 +348,9 @@ SYMBOL *eval(const char *str, bool wantmode)
                 Oppri[Opi++] = 0;
             ++str;
             break;
-            
+
         case ')':
-            
+
             if (wantmode)
             {
                 if (cur->addrmode == AM_INDWORD &&
@@ -362,11 +362,11 @@ SYMBOL *eval(const char *str, bool wantmode)
                 ++str;
                 break;
             }
-            
+
             /* fall thru OK */
-            
+
         case ']':
-            
+
             while(Opi != Opibase && Oppri[Opi-1])
                 evaltop();
             if (Opi != Opibase)
@@ -378,7 +378,7 @@ SYMBOL *eval(const char *str, bool wantmode)
                 (void) puts("']' error, no arg on stack");
                 break;
             }
-            
+
             if (*str == 'd')
             {  /*  STRING CONVERSION   */
                 ++str;
@@ -393,7 +393,7 @@ SYMBOL *eval(const char *str, bool wantmode)
             break;
 
         case '#':
-            
+
             cur->addrmode = AM_IMM8;
             ++str;
             /*
@@ -402,14 +402,14 @@ SYMBOL *eval(const char *str, bool wantmode)
             */
             wantmode = false;
             break;
-            
+
         case ',':
-            
+
             while(Opi != Opibase)
                 evaltop();
             Lastwasop = true;
             scr = tolower(str[1]);
-            
+
             if (cur->addrmode == AM_INDWORD && scr == 'x' && !is_alpha_num(str[2]))
             {
                 cur->addrmode = AM_INDBYTEX;
@@ -446,7 +446,7 @@ SYMBOL *eval(const char *str, bool wantmode)
                 }
                 cur->value = Argstack[Argi];
                 cur->flags = Argflags[Argi];
-                
+
                 if ((cur->string = Argstring[Argi]) != NULL)
                 {
                     cur->flags |= SYM_STRING;
@@ -496,7 +496,7 @@ SYMBOL *eval(const char *str, bool wantmode)
 
     while(Opi != Opibase)
         evaltop();
-    
+
     if (Argi != Argibase)
     {
         --Argi;
@@ -531,7 +531,7 @@ SYMBOL *eval(const char *str, bool wantmode)
 static void evaltop(void)
 {
     debug_fmt(DEBUG_CHANNEL_EVALUATION, "evaltop @(A,O) %d %d", Argi, Opi);
-    
+
     if (Opi <= Opibase)
     {
         /* [phf] removed
@@ -578,9 +578,9 @@ static void evaltop(void)
 static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
 {
     char *str = NULL;
-    
+
     debug_fmt(DEBUG_CHANNEL_EVALUATION, "stackarg %ld (@%d)", val, Argi);
-    
+
     Lastwasop = false;
     if ((flags & SYM_STRING) != 0)
     {
@@ -619,9 +619,9 @@ static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
 static void doop(opfunc_t func, int pri)
 {
     debug_fmt(DEBUG_CHANNEL_EVALUATION, "doop");
-    
+
     Lastwasop = true;
-    
+
     if (Opi == Opibase || pri == 128)
     {
         debug_fmt(DEBUG_CHANNEL_EVALUATION, "doop @ %d unary", Opi);
@@ -630,16 +630,16 @@ static void doop(opfunc_t func, int pri)
         ++Opi;
         return;
     }
-    
+
     while (Opi != Opibase && Oppri[Opi-1] && pri <= Oppri[Opi-1])
         evaltop();
-    
+
     debug_fmt(DEBUG_CHANNEL_EVALUATION, "doop @ %d", Opi);
-    
+
     Opdis[Opi] = func;
     Oppri[Opi] = pri;
     ++Opi;
-    
+
     if (Opi == MAXOPS)
     {
         /* TODO: should be an error message? [phf] */
@@ -887,7 +887,7 @@ static const char *pushsymbol(const char *str)
 {
     SYMBOL *sym;
     const char *ptr;
-    
+
     for (ptr = str; *ptr == '_' || *ptr == '.' || is_alpha_num(*ptr); ++ptr);
 
     if (ptr == str)
@@ -920,22 +920,22 @@ static const char *pushsymbol(const char *str)
         if ((sym->flags & SYM_UNKNOWN) != 0) {
             ++Redo_eval;
         }
-        
+
         if ((sym->flags & SYM_MACRO) != 0) {
             macro = true;
             sym = eval(sym->string, false);
             assert(sym != NULL);
         }
-        
+
         if ((sym->flags & SYM_STRING) != 0) {
             stackarg(0, SYM_STRING, sym->string);
-        } 
+        }
         else {
             stackarg(sym->value, sym->flags & SYM_UNKNOWN, NULL);
         }
-        
+
         sym->flags |= SYM_REF|SYM_MASREF;
-        
+
         if (macro) {
             free_symbol_list(sym);
         }

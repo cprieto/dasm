@@ -93,7 +93,7 @@ SYMBOL *find_symbol(const char *str, size_t len)
 
     assert(str != NULL);
     assert(len > 0);
-    
+
     if (len > MAX_SYM_LEN) {
         len = MAX_SYM_LEN;
         /* TODO: should we truncate? ever? [phf] */
@@ -136,7 +136,7 @@ SYMBOL *find_symbol(const char *str, size_t len)
         /* not a special identifier? i think that's what this case is,
            there was no "else" at all originally [phf] */
     }
-    
+
     hash = hash_symbol(str, len);
     for (sym = SHash[hash]; sym != NULL; sym = sym->next) {
         if ((sym->namelen == len) && (memcmp(sym->name, str, len) == 0)) {
@@ -160,7 +160,7 @@ SYMBOL *create_symbol(const char *str, size_t len)
         /* TODO: truncate? is that good? [phf] */
         len = MAX_SYM_LEN;
     }
-    
+
     if (str[0] == '.')
     {
         assert(len < INT_MAX);
@@ -205,7 +205,7 @@ void programlabel(void)
     bool rorg = (cseg->flags & SF_RORG) != 0;
     dasm_flag_t cflags = (rorg) ? cseg->rflags : cseg->flags;
     long pc = (rorg) ? cseg->rorg : cseg->org;
-    
+
     Plab = cseg->org;
     Pflags = cseg->flags;
     str = Av[0];
@@ -216,19 +216,19 @@ void programlabel(void)
 
     if (str[len-1] == ':')
         --len;
-    
+
     if (str[0] != '.' && str[len-1] != '$')
     {
         Lastlocaldollarindex++;
         Localdollarindex = Lastlocaldollarindex;
     }
-    
+
     /*
     *	Redo:	unknown and referenced
     *		referenced and origin not known
     *		known and phase error	 (origin known)
     */
-    
+
     if ((sym = find_symbol(str, len)) != NULL)
     {
         if ((sym->flags & (SYM_UNKNOWN|SYM_REF)) == (SYM_UNKNOWN|SYM_REF))
@@ -337,7 +337,7 @@ static size_t nof_unresolved_symbols(void)
     SYMBOL *sym;
     size_t unresolved = 0;
     size_t i;
-    
+
     /* Pre-count unresolved symbols */
     for (i = 0; i < SHASHSIZE; i++) {
         for (sym = SHash[i]; sym != NULL; sym = sym->next) {
@@ -346,19 +346,19 @@ static size_t nof_unresolved_symbols(void)
             }
         }
     }
-            
+
 	return unresolved;
 }
 
 size_t ShowUnresolvedSymbols(void)
 {
     SYMBOL *sym;
-    
+
     size_t nUnresolved = nof_unresolved_symbols();
     if (nUnresolved > 0)
     {
         printf("--- Unresolved Symbol List\n");
-        
+
         for (size_t i = 0; i < SHASHSIZE; i++) {
             for (sym = SHash[i]; sym != NULL; sym = sym->next) {
                 if ((sym->flags & SYM_UNKNOWN) != 0) {
@@ -370,14 +370,14 @@ size_t ShowUnresolvedSymbols(void)
                 }
             }
         }
-                
+
         printf(
             "--- %zu Unresolved Symbol%c\n\n",
             nUnresolved,
             (nUnresolved == 1) ? ' ' : 's'
         );
     }
-    
+
     return nUnresolved;
 }
 
@@ -387,7 +387,7 @@ static int CompareAlpha( const void *arg1, const void *arg2 )
 
     const SYMBOL *sym1 = *(SYMBOL * const *) arg1;
     const SYMBOL *sym2 = *(SYMBOL * const *) arg2;
-    
+
     /*
        The cast above is wild, thank goodness the Linux man page
        for qsort(3) has an example explaining it... :-) [phf]
@@ -405,10 +405,10 @@ static int CompareAlpha( const void *arg1, const void *arg2 )
 static int CompareAddress( const void *arg1, const void *arg2 )
 {
     /* Simple numeric ordering comparison function for quicksort */
-    
+
     const SYMBOL *sym1 = *(SYMBOL * const *) arg1;
     const SYMBOL *sym2 = *(SYMBOL * const *) arg2;
-    
+
     return sym1->value - sym2->value;
 }
 
@@ -430,12 +430,12 @@ void ShowSymbols(FILE *file)
             nSymbols++;
         }
     }
-        
+
     /* Malloc an array of pointers to data */
     symArray = (SYMBOL**) malloc(nSymbols * sizeof(SYMBOL*));
     if (symArray == NULL) {
         fprintf(file, " (unsorted - not enough memory to sort!)\n");
-            
+
         /* Display complete symbol table */
         for (i = 0; i < SHASHSIZE; i++) {
             for (sym = SHash[i]; sym != NULL; sym = sym->next) {
@@ -445,14 +445,14 @@ void ShowSymbols(FILE *file)
     }
     else {
         size_t nPtr = 0;
-         
+
         /* Copy the element pointers into the symbol array */
         for (i = 0; i < SHASHSIZE; i++) {
             for (sym = SHash[i]; sym != NULL; sym = sym->next) {
                 symArray[nPtr++] = sym;
             }
         }
-                
+
         if (F_sortmode == SORTMODE_ADDRESS) {
             /* Sort via address */
             fprintf(file, " (sorted by address)\n");
@@ -466,9 +466,9 @@ void ShowSymbols(FILE *file)
         else {
             assert(false);
         }
-                
+
         /* Now display sorted list */
-                
+
         for (i = 0; i < nPtr; i++) {
             /* TODO: format is different here that above [phf] */
             fprintf(file, "%-24s %-12s", symArray[i]->name, sftos(symArray[i]->value, symArray[i]->flags));
@@ -480,10 +480,10 @@ void ShowSymbols(FILE *file)
             }
             fprintf(file, "\n");
         }
-                
+
         free(symArray);
     }
-        
+
     fputs("--- End of Symbol List.\n", file);
 }
 

@@ -131,7 +131,7 @@ static void ShowSegments(void)
 
     printf("\n----------------------------------------------------------------------\n");
     printf(SHOW_SEGMENTS_FORMAT, "SEGMENT NAME", "", "INIT PC", "INIT RPC", "FINAL PC", "FINAL RPC");
-    
+
     for (seg = Seglist; seg != NULL; seg = seg->next) {
         const char *bss = ((seg->flags & SF_BSS) != 0) ? "[u]" : "   ";
 
@@ -146,54 +146,54 @@ static void ShowSegments(void)
         );
     }
     (void) puts("----------------------------------------------------------------------");
-    
+
     printf("%d references to unknown symbols.\n", Redo_eval);
     printf("%d events requiring another assembler pass.\n", Redo);
-    
+
     if (Redo_why != 0)
     {
         if ((Redo_why & REASON_MNEMONIC_NOT_RESOLVED) != 0)
             printf(" - Expression in mnemonic not resolved.\n");
-        
+
         if ((Redo_why & REASON_OBSCURE) != 0)
             printf(" - Obscure reason - to be documented :)\n");
-        
+
         if ((Redo_why & REASON_DC_NOT_RESOVED) != 0)
             printf(" - Expression in a DC not resolved.\n");
-        
+
         if ((Redo_why & REASON_DV_NOT_RESOLVED_PROBABLY) != 0)
             printf(" - Expression in a DV not resolved (probably in DV's EQM symbol).\n");
-        
+
         if ((Redo_why & REASON_DV_NOT_RESOLVED_COULD) != 0)
             printf(" - Expression in a DV not resolved (could be in DV's EQM symbol).\n");
-        
+
         if ((Redo_why & REASON_DS_NOT_RESOLVED) != 0)
             printf(" - Expression in a DS not resolved.\n");
-        
+
         if ((Redo_why & REASON_ALIGN_NOT_RESOLVED) != 0)
             printf(" - Expression in an ALIGN not resolved.\n");
-        
+
         if ((Redo_why & REASON_ALIGN_RELOCATABLE_ORIGIN_NOT_KNOWN) != 0)
             printf(" - ALIGN: Relocatable origin not known (if in RORG at the time).\n");
-        
+
         if ((Redo_why & REASON_ALIGN_NORMAL_ORIGIN_NOT_KNOWN) != 0)
             printf(" - ALIGN: Normal origin not known	(if in ORG at the time).\n");
-        
+
         if ((Redo_why & REASON_EQU_NOT_RESOLVED) != 0)
             printf(" - EQU: Expression not resolved.\n");
-        
+
         if ((Redo_why & REASON_EQU_VALUE_MISMATCH) != 0)
             printf(" - EQU: Value mismatch from previous pass (phase error).\n");
-        
+
         if ((Redo_why & REASON_IF_NOT_RESOLVED) != 0)
             printf(" - IF: Expression not resolved.\n");
-        
+
         if ((Redo_why & REASON_REPEAT_NOT_RESOLVED) != 0)
             printf(" - REPEAT: Expression not resolved.\n");
-        
+
         if ((Redo_why & REASON_FORWARD_REFERENCE) != 0)
             printf(" - Label defined after it has been referenced (forward reference).\n");
-        
+
         if ((Redo_why & REASON_PHASE_ERROR) != 0)
             printf(" - Label value is different from that of the previous pass (phase error).\n");
     }
@@ -323,7 +323,7 @@ static void parse_options(int argc, char **argv)
     if (argc < 2) {
         parse_options_fail(/* No source file given. */);
     }
-    
+
     for (i = 2; i < argc; ++i) {
         if (char_starts_option(argv[i][0])) {
             char *str = argv[i]+2;
@@ -406,14 +406,14 @@ static void parse_options(int argc, char **argv)
 static int MainShadow(int argc, char **argv)
 {
 /*    int nError = ERROR_NONE;*/
-    
+
     char buf[MAXLINE];
     MNEMONIC *mne;
-    
+
     int oldredo = -1;
     unsigned long oldwhy = 0;
     int oldeval = 0;
-    
+
     addhashtable(Ops);
     pass = 1;
 
@@ -436,20 +436,20 @@ static int MainShadow(int argc, char **argv)
         ifs->xtrue  = true;
         Ifstack = ifs;
     }
-    
-    
+
+
 nextpass:
-    
-    
+
+
     if (F_verbose > 0) {
         (void) puts("");
         printf("START OF PASS: %d\n", pass);
     }
-    
+
     Localindex = Lastlocalindex = 0;
-    
+
     Localdollarindex = Lastlocaldollarindex = 0;
-    
+
     FI_temp = fopen(F_outfile, "wb");
     Fisclear = true;
     CheckSum = 0;
@@ -472,7 +472,7 @@ nextpass:
         }
     }
     pushinclude(argv[1]);
-    
+
     while (pIncfile != NULL)
     {
         for (;;) {
@@ -491,13 +491,13 @@ nextpass:
                 if (fgets(buf, MAXLINE, pIncfile->fi) == NULL)
                     break;
             }
-            
+
             debug_fmt(DEBUG_CHANNEL_PARSING, "%08lx %s", (unsigned long) pIncfile, buf);
-            
+
             comment = cleanup(buf, false);
             ++pIncfile->lineno;
             mne = parse(buf);
-            
+
             if (Av[1][0])
             {
                 if (mne != NULL)
@@ -515,25 +515,25 @@ nextpass:
                         error_fmt("Unknown mnemonic '%s'!", Av[1]);
                     }
                 }
-                
+
             }
             else
             {
                 if (Ifstack->xtrue && Ifstack->acctrue)
                     programlabel();
             }
-            
+
             if (FI_listfile != NULL && ListMode) {
                 outlistfile(comment);
             }
         }
-        
+
         while (Reploop != NULL && Reploop->file == pIncfile)
             rmnode((void **)&Reploop, sizeof(REPLOOP));
-        
+
         while (Ifstack->file == pIncfile)
             rmnode((void **)&Ifstack, sizeof(IFSTACK));
-        
+
         if (fclose(pIncfile->fi) != 0) {
             warning_fmt("Problem closing include file '%s'.", pIncfile->name);
         }
@@ -544,7 +544,7 @@ nextpass:
         pIncfile->name = NULL;
         --Inclevel;
         rmnode((void **)&pIncfile, sizeof(INCFILE));
-        
+
         if (pIncfile != NULL) {
         /*
         if (F_verbose > 1)
@@ -559,14 +559,14 @@ nextpass:
     if (F_verbose >= 1) {
         ShowSegments();
     }
-    
+
     if (F_verbose >= 3) {
         if (Redo == 0 || F_verbose == 4) {
             ShowSymbols(stdout);
         }
         ShowUnresolvedSymbols();
     }
-    
+
     closegenerate();
     assert(FI_temp != NULL); /* fclose() undefined for NULL [phf] */
     if (fclose(FI_temp) != 0) {
@@ -581,7 +581,7 @@ nextpass:
         /* [phf] either way, after this we cannot risk writing to the file anymore! */
         FI_listfile = NULL;
     }
-    
+
     if (Redo != 0)
     {
         if ( !bDoAllPasses )
@@ -592,7 +592,7 @@ nextpass:
 /*                return ERROR_NOT_RESOLVABLE;*/
                 return EXIT_FAILURE; /* needed for rest of code to work? [phf] */
             }
-            
+
             oldredo = Redo;
             oldwhy = Redo_why;
             oldeval = Redo_eval;
@@ -602,7 +602,7 @@ nextpass:
 
             Redo_if <<= 1;
             ++pass;
-            
+
             if (number_of_fatals() > 0)
             {
                 printf("Unrecoverable error(s) in pass, aborting assembly!\n");
@@ -637,7 +637,7 @@ static int tabit(const char *buf1, char *buf2)
     char *bp;
     const char *ptr;
     int j, k;
-    
+
     bp = buf2;
     ptr= buf1;
     for (j = 0; *ptr != '\0' && *ptr != '\n'; ++ptr, ++bp, j = (j+1)&7) {
@@ -676,12 +676,12 @@ static void outlistfile(const char *comment)
     const char *dot;
     int i, j;
     int len;
-    
+
     /* TODO: what does this mean exactly? [phf] */
     if ((pIncfile->flags & INF_NOLIST) != 0) {
         return;
     }
-    
+
     assert(FI_listfile != NULL);
 
     xtrue = (Ifstack->xtrue && Ifstack->acctrue) ? ' ' : '-';
@@ -692,7 +692,7 @@ static void outlistfile(const char *comment)
         dot = ".";
     else
         ptr = "";
-    
+
     len = snprintf(buf1, sizeof(buf1), "%7lu %c%s", pIncfile->lineno, c, sftos(Plab, Pflags & 7));
     assert(len < (int)sizeof(buf1));
     j = strlen(buf1);
@@ -731,69 +731,69 @@ char *sftos(long val, dasm_flag_t flags)
     static char buf[MAX_SYM_LEN + 14];
     static char c;
     char *ptr = (c) ? buf : buf + sizeof(buf) / 2;
-    
+
     memset(buf, 0, sizeof(buf));
-    
+
     c = 1 - c;
-    
+
     sprintf(ptr, "%04lx ", val);
-    
+
     if ((flags & SYM_UNKNOWN) != 0) {
         strcat( ptr, "???? ");
     }
     else {
         strcat( ptr, "     " );
     }
-    
+
     if ((flags & SYM_STRING) != 0) {
         strcat( ptr, "str ");
     }
     else {
         strcat( ptr, "    " );
     }
-    
+
     if ((flags & SYM_MACRO) != 0) {
         strcat( ptr, "eqm ");
     }
     else {
         strcat( ptr, "    " );
     }
-    
+
     if ((flags & (SYM_MASREF|SYM_SET)) != 0) {
         strcat( ptr, "(" );
     }
     else {
         strcat( ptr, " " );
     }
-    
+
     if ((flags & SYM_MASREF) != 0) {
         strcat( ptr, "R" );
     }
     else {
         strcat( ptr, " " );
     }
-    
+
     if ((flags & SYM_SET) != 0) {
         strcat( ptr, "S" );
     }
     else {
         strcat( ptr, " " );
     }
-    
+
     if ((flags & (SYM_MASREF|SYM_SET)) != 0) {
         strcat( ptr, ")" );
     }
     else {
         strcat( ptr, " " );
     }
-    
+
     return ptr;
 }
 
 static void clearsegs(void)
 {
     SEGMENT *seg;
-    
+
     for (seg = Seglist; seg != NULL; seg = seg->next) {
         seg->flags = (seg->flags & SF_BSS) | SF_UNKNOWN;
         seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
@@ -806,7 +806,7 @@ static const char *cleanup(char *buf, bool bDisable)
     STRLIST *strlist;
     int arg, add;
     const char *comment = "";
-    
+
     for (str = buf; *str != '\0'; ++str)
     {
         switch(*str)
@@ -852,9 +852,9 @@ static const char *cleanup(char *buf, bool bDisable)
         case '{':
             if ( bDisable )
                 break;
-            
+
             debug_fmt(DEBUG_CHANNEL_PARSING, "macro tail: '%s'", str);
-            
+
             arg = atoi(str+1);
             for (add = 0; *str != '\0' && *str != '}'; ++str)
                 --add;
@@ -867,29 +867,29 @@ static const char *cleanup(char *buf, bool bDisable)
             }
             --add;
             ++str;
-            
-            
+
+
             debug_fmt(DEBUG_CHANNEL_PARSING, "add/str: %d '%s'", add, str);
-            
+
             for (strlist = pIncfile->args; arg != 0 && strlist != NULL;)
             {
                 --arg;
                 strlist = strlist->next;
             }
-            
+
             if (strlist)
             {
                 add += strlen(strlist->buf);
-                
+
                 debug_fmt(DEBUG_CHANNEL_PARSING, "strlist: '%s' %zu", strlist->buf, strlen(strlist->buf));
-                
+
                 if (str + add + strlen(str) + 1 > buf + MAXLINE)
                 {
                     debug_fmt(DEBUG_CHANNEL_PARSING, "str %8ld buf %8ld (add/strlen(str)): %d %ld",
                               (unsigned long)str, (unsigned long)buf, add, (long)strlen(str));
                     panic_fmt("failure1"); /* TODO: more descriptive message? [phf] */
                 }
-                
+
                 memmove(str + add, str, strlen(str)+1);
                 str += add;
                 if (str - strlen(strlist->buf) < buf)
@@ -914,12 +914,12 @@ static const char *cleanup(char *buf, bool bDisable)
             break;
         }
     }
-    
+
 br2:
     while(str != buf && *(str-1) == ' ')
         --str;
     *str = 0;
-    
+
     return comment;
 }
 
@@ -1082,7 +1082,7 @@ void rmnode(void **base,  size_t UNUSED(bytes))
        of the struct (the next field?); then we free the
        original struct we were pointing to; tricky! */
     void *node;
-    
+
     if ((node = *base) != NULL) {
         *base = *(void **)node;
         free(node);
@@ -1096,7 +1096,7 @@ static MNEMONIC *parse(char *buf)
 {
     int i, j;
     MNEMONIC *mne = NULL;
-    
+
     i = 0;
     j = 1;
 
@@ -1180,7 +1180,7 @@ static MNEMONIC *parse(char *buf)
         Avbuf[j++] = buf[i++];
     }
     Avbuf[j] = 0;
-    
+
     return mne;
 }
 
@@ -1189,7 +1189,7 @@ static MNEMONIC *findmne(const char *str)
     MNEMONIC *mne;
     char buf[MAX_SYM_LEN]; /* TODO: fixed size? was 64 before! argh! [phf] */
     size_t res;
-    
+
     assert(str != NULL);
 
     if (strlen(str) == 0) {
@@ -1250,14 +1250,14 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
     while (fgets(buf, MAXLINE, pIncfile->fi)) {
         const char *comment;
         MNEMONIC *mne;
-        
+
         debug_fmt(DEBUG_CHANNEL_PARSING, "%08lx %s", (unsigned long) pIncfile, buf);
-        
+
         ++pIncfile->lineno;
-        
-        
+
+
         comment = cleanup(buf, true);
-        
+
         mne = parse(buf);
         if (Av[1][0]) {
             if (mne != NULL && (mne->flags & MF_ENDM) != 0) {
@@ -1285,7 +1285,7 @@ void addhashtable(MNEMONIC *mne)
 {
     int i, j;
     unsigned int opcode[NUMOC];
-    
+
     for (; mne->vect != NULL; ++mne) {
         memcpy(opcode, mne->opcode, sizeof(mne->opcode));
         for (i = j = 0; i < NUMOC; ++i) {
@@ -1311,17 +1311,17 @@ void pushinclude(const char *str)
 {
     INCFILE *inf;
     FILE *fi;
-    
+
     if ((fi = pfopen(str, "r")) != NULL) {
         if (F_verbose > 1 && F_verbose != 5) {
             printf("%.*s Including file \"%s\"\n", Inclevel*4, "", str);
         }
         ++Inclevel;
-        
+
         if (FI_listfile != NULL) {
             fprintf(FI_listfile, "------- FILE %s LEVEL %d PASS %d\n", str, Inclevel, pass);
         }
-        
+
         inf = zero_malloc(sizeof(INCFILE));
         inf->next = pIncfile;
         inf->name = checked_strdup(str);
@@ -1389,7 +1389,7 @@ int main(int argc, char **argv)
         printf("Fatal assembly error: %s\n", sErrorDef[nError].sDescription);
     }
 #endif
-    
+
     DumpSymbolTable();
 
     if (number_of_errors() > 0) {
