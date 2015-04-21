@@ -22,6 +22,7 @@
 
 #define _POSIX_SOURCE
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -41,6 +42,7 @@ static void *p = NULL;
 static unsigned long v = 73;
 static unsigned long w = 12;
 static char *c = "test";
+static bool b = false;
 
 /*
 	The functions/operations we're benchmarking. Obviously
@@ -146,6 +148,11 @@ static void and_minus(void)
 	v = v & (w-1);
 }
 
+static void power_of_two(void)
+{
+	b = (v != 0) && !(v & (v - 1));
+}
+
 /*
 	Table of functions to benchmark. Obviously I've
 	been hacking DASM for too long, I seem to use these
@@ -163,12 +170,13 @@ static struct benchmark {
 	{tiny_calloc_free, "tiny calloc"},
 	{small_calloc_free, "small calloc"},
 	{big_calloc_free, "big calloc"},
-	{closest_power_of_two, "power-of-2"},
+	{closest_power_of_two, "closest power-of-2"},
 	{dillon, "dillon-hash"},
 	{bernstein, "bernstein-hash"},
 	{mod, "mod"},
 	{and, "and"},
 	{and_minus, "and-minus"},
+	{power_of_two, "is power-of-2"},
 	{NULL, NULL},
 };
 
