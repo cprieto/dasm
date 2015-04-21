@@ -177,11 +177,11 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
 
     assert(str != NULL);
     assert(mne != NULL);
-    
+
     Csegment->flags |= SF_REF;
     programlabel();
     symbase = eval(str, true);
-    
+
     if (bTrace) {
         printf("PC: %04lx  MNEMONIC: %s  addrmode: %d  ", Csegment->org, mne->name, symbase->addrmode);
     }
@@ -193,7 +193,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         }
     }
     sym = symbase;
-    
+
     if ((mne->flags & MF_IMOD) != 0) {
         if (sym->next != NULL) {
             sym->addrmode = AM_BITMOD;
@@ -209,15 +209,15 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
     else {
         opsize = (sym->value != 0) ? 1 : 0;
     }
-    
+
     while (badcode(mne,addrmode) && convert_address_mode(addrmode) != 0) {
         addrmode = convert_address_mode(addrmode);
     }
-    
+
     if (bTrace) {
         printf("mnemask: %08lx adrmode: %d  Cvt[am]: %d\n", mne->okmask, addrmode, convert_address_mode(addrmode));
     }
-    
+
     if (badcode(mne,addrmode)) {
         /* [phf] removed
         char sBuffer[128];
@@ -228,7 +228,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         free_symbol_list(symbase);
         return;
     }
-    
+
     if (Mnext >= 0 && Mnext < NUMOC) {           /*	Force	*/
         addrmode = Mnext;
         if (badcode(mne,addrmode)) {
@@ -240,22 +240,22 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             return;
         }
     }
-    
+
     if (bTrace) {
         printf("final addrmode = %d\n", addrmode);
     }
-    
+
     while (opsize > operand_size(addrmode)) {
         if (convert_address_mode(addrmode) == 0 || badcode(mne,convert_address_mode(addrmode)))
         {
             /* [phf] removed
             char sBuffer[128];
             */
-            
+
             if ((sym->flags & SYM_UNKNOWN) != 0) {
                 break;
             }
-            
+
             /* [phf] removed
             sprintf( sBuffer, "%s %s", mne->name, str );
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, sBuffer );
@@ -274,7 +274,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
     else {
         Gen[0] = opcode;
     }
-    
+
     switch(addrmode)
     {
     case AM_BITMOD:
@@ -287,7 +287,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             /* TODO: why no detail in original? */
         }
         Gen[opidx++] = sym->value;
-        
+
         if ((symbase->flags & SYM_UNKNOWN) == 0) {
             if (symbase->value > 7) {
                 /* [phf] removed
@@ -300,7 +300,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             }
         }
         break;
-        
+
     case AM_BITBRAMOD:
         if ((symbase->flags & SYM_UNKNOWN) == 0) {
             if (symbase->value > 7) {
@@ -313,9 +313,9 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
                 Gen[0] += symbase->value << 1;
             }
         }
-        
+
         sym = symbase->next;
-        
+
         if ((sym->flags & SYM_UNKNOWN) == 0 && (sym->value < -0x80 || sym->value >= 0x100)) {
             /* [phf] removed
             asmerr( ERROR_ADDRESS_MUST_BE_LT_100, false, NULL );
@@ -323,14 +323,14 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             error_fmt(ERROR_ADDRESS_RANGE, -128, 255);
             /* TODO: why no detail in original? */
         }
-        
+
         Gen[opidx++] = sym->value;
         sym = sym->next;
         break;
-        
+
     case AM_REL:
         break;
-        
+
     default:
         if (operand_size(addrmode) > 0) {
             Gen[opidx++] = sym->value;
@@ -347,7 +347,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         sym = sym->next;
         break;
     }
-    
+
     if ((mne->flags & MF_MASK) != 0)
     {
         if (sym != NULL) {
@@ -358,7 +358,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
                 error_fmt(ERROR_ADDRESS_RANGE, -128, 255);
                 /* TODO: why no detail in original? */
             }
-            
+
             Gen[opidx] = sym->value;
             sym = sym->next;
         }
@@ -369,14 +369,14 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             fatal_fmt(ERROR_INVALID_ARGS);
             /* TODO: fatal? really? how about str for details? */
         }
-        
+
         ++opidx;
     }
-    
+
     if ((mne->flags & MF_REL) != 0 || addrmode == AM_REL)
     {
         ++opidx;		/*  to end of instruction   */
-        
+
         if (sym == NULL)
         {
             /* [phf] removed
@@ -392,7 +392,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             /* TODO: this code seems to be in isPCKnown() as well */
             pc = (Csegment->flags & SF_RORG) ? Csegment->rorg : Csegment->org;
             pcf= (Csegment->flags & SF_RORG) ? Csegment->rflags : Csegment->flags;
-            
+
             if ((pcf & (SF_UNKNOWN|2)) == 0) {
                 dest = sym->value - pc - opidx;
                 /* [phf] mnef8.c generate_branch() checks different range! */
@@ -434,7 +434,7 @@ void v_list(const char *str, MNEMONIC UNUSED(*dummy))
 {
     programlabel();
     assert(str != NULL);
-    
+
     Glen = 0; /* Only so outlist() works */
 
     /*
@@ -489,7 +489,7 @@ static char *getfilename(const char *str)
     /* Find trailing quote and kill it. */
     for (end = buf; *end != '\0' && *end != '\"'; ++end);
     *end = '\0';
-        
+
     return buf;
 }
 
@@ -502,9 +502,9 @@ v_include(const char *str, MNEMONIC UNUSED(*dummy))
 
     programlabel();
     buf = getfilename(str);
-    
+
     pushinclude(buf);
-    
+
     free(buf);
 }
 
@@ -518,7 +518,7 @@ v_incbin(const char *str, MNEMONIC UNUSED(*dummy))
 
     programlabel();
     buf = getfilename(str);
-    
+
     binfile = pfopen(buf, "rb");
     if (binfile != NULL) {
         if (Redo != 0) {
@@ -543,7 +543,7 @@ v_incbin(const char *str, MNEMONIC UNUSED(*dummy))
     else {
         warning_fmt("Unable to open binary include file '%s'.", buf);
     }
-    
+
     free(buf);
     Glen = 0;		    /* don't list hexdump */
 }
@@ -561,7 +561,7 @@ v_seg(const char *str, MNEMONIC UNUSED(*dummy))
     if (strlen(str) == 0) {
         warning_fmt("Segments must have a name!");
     }
-    
+
     for (seg = Seglist; seg != NULL; seg = seg->next) {
         if (strcmp(str, seg->name) == 0) {
             Csegment = seg;
@@ -615,7 +615,7 @@ static int get_hex_digit(char c)
 {
     int value = 0;
     c = (char) toupper((int)c);
-    
+
     if ('0' <= c && c <= '9') {
         value = (int) (c - '0');
     }
@@ -654,7 +654,7 @@ v_dc(const char *str, MNEMONIC *mne)
 
     assert(str != NULL);
     assert(mne != NULL);
-    
+
     Glen = 0;
     programlabel();
 
@@ -682,7 +682,7 @@ v_dc(const char *str, MNEMONIC *mne)
     }
 
 	/* ...F8 */
-	
+
 
 
     if (mne->name[1] == 'v') {
@@ -819,7 +819,7 @@ v_ds(const char *str, MNEMONIC UNUSED(*dummy))
     int mult = 1;
 
     assert(str != NULL);
-    
+
     if (Mnext == AM_WORD) {
         mult = 2;
     }
@@ -860,7 +860,7 @@ v_org(const char *str, MNEMONIC UNUSED(*dummy))
     SYMBOL *sym;
 
     assert(str != NULL);
-    
+
     sym = eval(str, false);
     assert(sym != NULL);
 
@@ -870,7 +870,7 @@ v_org(const char *str, MNEMONIC UNUSED(*dummy))
     }
 
     Csegment->org = sym->value;
-    
+
     if ((sym->flags & SYM_UNKNOWN) != 0) {
         Csegment->flags |= SYM_UNKNOWN;
     }
@@ -895,7 +895,7 @@ v_org(const char *str, MNEMONIC UNUSED(*dummy))
             /* TODO: fatal? what about more passes? what about details? */
         }
     }
-    
+
     programlabel();
     free_symbol_list(sym);
 }
@@ -907,7 +907,7 @@ v_rorg(const char *str, MNEMONIC UNUSED(*dummy))
 
     assert(str != NULL);
     assert(sym != NULL);
-    
+
     if (sym->value < 0) {
         error_fmt("Address for RORG was %ld but must be >= 0!", sym->value);
         /* TODO: not do the rest of this maybe? */
@@ -949,7 +949,7 @@ v_align(const char *str, MNEMONIC UNUSED(*dummy))
     assert(sym != NULL);
 
     /* TODO: add some kind of check for ALIGN parameter? */
-    
+
     if (rorg) {
         Csegment->rflags |= SF_REF;
     }
@@ -1011,7 +1011,7 @@ v_equ(const char *str, MNEMONIC *dummy)
 
     assert(str != NULL);
     assert(sym != NULL);
-    
+
     /*
         If we encounter a line of the form
             . = expr
@@ -1052,7 +1052,7 @@ v_equ(const char *str, MNEMONIC *dummy)
         return;
     }
 #endif
-    
+
     lab = find_symbol(Av[0], strlen(Av[0]));
     if (lab == NULL) {
         lab = create_symbol(Av[0], strlen(Av[0]));
@@ -1079,16 +1079,16 @@ v_equ(const char *str, MNEMONIC *dummy)
             }
         }
     }
-    
+
     lab->value = sym->value;
     lab->flags = sym->flags & (SYM_UNKNOWN|SYM_STRING);
     lab->string = sym->string;
     sym->flags &= ~(SYM_STRING|SYM_MACRO);
-    
+
     /* List the value */
     {
         unsigned long v = lab->value;
-        
+
         Glen = 0;
         if (v > 0x0000FFFF)
         {
@@ -1098,7 +1098,7 @@ v_equ(const char *str, MNEMONIC *dummy)
         Gen[Glen++] = v >>  8;
         Gen[Glen++] = v;
     }
-    
+
     free_symbol_list(sym);
 }
 
@@ -1109,7 +1109,7 @@ v_eqm(const char *str, MNEMONIC UNUSED(*dummy))
     size_t len = strlen(Av[0]);
 
     assert(str != NULL);
-    
+
     if ((lab = find_symbol(Av[0], len)) != NULL) {
         if ((lab->flags & SYM_STRING) != 0) {
             free(lab->string);
@@ -1134,7 +1134,7 @@ v_echo(const char *str, MNEMONIC UNUSED(*dummy))
 
     assert(str != NULL);
     assert(sym != NULL); /* maybe not needed, we check NULL below? [phf] */
-    
+
     for (s = sym; s != NULL; s = s->next) {
         if ((s->flags & SYM_UNKNOWN) == 0) {
             if ((s->flags & (SYM_MACRO|SYM_STRING)) != 0) {
@@ -1164,7 +1164,7 @@ void v_set(const char *str, MNEMONIC UNUSED(*dummy))
 
     assert(str != NULL);
     assert(sym != NULL);
-    
+
     lab = find_symbol(Av[0], strlen(Av[0]));
     if (lab == NULL) {
         lab = create_symbol(Av[0], strlen(Av[0]));
@@ -1185,9 +1185,9 @@ v_execmac(const char *str, MACRO *mac)
 
     assert(str != NULL);
     assert(mac != NULL);
-    
+
     programlabel();
-    
+
     if (Mlevel == MAXMACLEVEL) {
         (void) puts("infinite macro recursion"); /* TODO: error? [phf] */
         return;
@@ -1212,7 +1212,7 @@ v_execmac(const char *str, MACRO *mac)
         while (*str == ' ')
             ++str;
     }
-    
+
     inc = zero_malloc(sizeof(INCFILE));
     inc->next = pIncfile;
     inc->name = mac->name;
@@ -1220,29 +1220,28 @@ v_execmac(const char *str, MACRO *mac)
     inc->lineno = 0;
     inc->flags = INF_MACRO;
     inc->saveidx = Localindex;
-    
+
     inc->savedolidx = Localdollarindex;
-    
+
     inc->strlist = mac->strlist;
     inc->args	  = base;
     pIncfile = inc;
-    
+
     ++Lastlocalindex;
     Localindex = Lastlocalindex;
-    
+
     ++Lastlocaldollarindex;
     Localdollarindex = Lastlocaldollarindex;
-    
 }
 
 void v_end(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     /* Only ENDs current file and any macro calls within it */
-    
+
     while ((pIncfile->flags & INF_MACRO) != 0) {
         v_endm(NULL, NULL);
     }
-    
+
     fseek(pIncfile->fi, 0, SEEK_END);
 }
 
@@ -1253,7 +1252,7 @@ v_endm(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
     STRLIST *args, *an;
 
     assert(inc != NULL);
-    
+
     /* programlabel(); contrary to documentation */
     if ((inc->flags & INF_MACRO) != 0) {
         --Mlevel;
@@ -1262,9 +1261,9 @@ v_endm(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
             free(args);
         }
         Localindex = inc->saveidx;
-        
+
         Localdollarindex = inc->savedolidx;
-        
+
         pIncfile = inc->next;
         free(inc);
         return;
@@ -1283,7 +1282,7 @@ v_ifconst(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     assert(str != NULL);
-    
+
     programlabel();
     sym = eval(str, false);
     assert(sym != NULL);
@@ -1296,7 +1295,7 @@ v_ifnconst(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     assert(str != NULL);
-    
+
     programlabel();
     sym = eval(str, false);
     assert(sym != NULL);
@@ -1309,7 +1308,7 @@ v_if(const char *str, MNEMONIC UNUSED(*dummy))
 {
     SYMBOL *sym;
     assert(str != NULL);
-    
+
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         pushif(0);
         return;
@@ -1322,9 +1321,8 @@ v_if(const char *str, MNEMONIC UNUSED(*dummy))
         Redo_why |= REASON_IF_NOT_RESOLVED;
         pushif(0);
         Ifstack->acctrue = false;
-        
+
         Redo_if |= 1;
-        
     }
     else {
         pushif(!!sym->value);
@@ -1345,7 +1343,7 @@ v_endif(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
 {
     IFSTACK *ifs = Ifstack;
     assert(ifs != NULL);
-    
+
     if ((ifs->flags & IFF_BASE) == 0) {
         if (ifs->acctrue) {
             programlabel();
@@ -1365,7 +1363,7 @@ void v_repeat(const char *str, MNEMONIC UNUSED(*dummy))
     REPLOOP *rp;
     SYMBOL *sym;
     assert(str != NULL);
-    
+
     if (!Ifstack->xtrue || !Ifstack->acctrue) {
         pushif(0);
         return;
@@ -1378,10 +1376,10 @@ void v_repeat(const char *str, MNEMONIC UNUSED(*dummy))
         free_symbol_list(sym);
         return;
     }
-    
+
     /* Don't allow negative values for REPEAT loops [AD] */
     /* TODO: refactor with == 0 case above? [phf] */
-    
+
     if (sym->value < 0)
     {
         pushif( 0 );
@@ -1393,7 +1391,7 @@ void v_repeat(const char *str, MNEMONIC UNUSED(*dummy))
         error_fmt("REPEAT parameter < 0 (ignored).");
         return;
     }
-    
+
     rp = zero_malloc(sizeof(REPLOOP));
     rp->next = Reploop;
     rp->file = pIncfile;
@@ -1450,22 +1448,22 @@ v_incdir(const char *str, MNEMONIC UNUSED(*dummy))
     char *buf;
     bool found = false;
     assert(str != NULL);
-    
+
     buf = getfilename(str);
-    
+
     for (tail = &incdirlist; *tail != NULL; tail = &(*tail)->next) {
         if (strcmp((*tail)->buf, buf) == 0) {
             found = true;
         }
     }
-    
+
     if (!found) {
         STRLIST *newdir;
         newdir = small_alloc(STRLISTSIZE + strlen(buf) + 1);
         strcpy(newdir->buf, buf);
         *tail = newdir;
     }
-    
+
     free(buf);
 }
 
@@ -1480,7 +1478,7 @@ addpart(char *dest, const char *dir, const char *file)
 #endif
     {
         int pos;
-        
+
         strcpy(dest, dir);
         pos = strlen(dest);
         if (pos > 0 && dest[pos-1] != ':' && dest[pos-1] != '/') {
@@ -1505,7 +1503,7 @@ pfopen(const char *name, const char *mode)
     if (f != NULL) {
         return f;
     }
-    
+
     /* Don't use the incdirlist for absolute pathnames */
     if (strchr(name, ':')) {
         return NULL;
@@ -1513,18 +1511,18 @@ pfopen(const char *name, const char *mode)
 
     /* TODO: the above looks like an Amiga leftover? the 512 below
        is fishy as well, wow... [phf] */
-    
+
     buf = zero_malloc(512);
-    
+
     for (incdir = incdirlist; incdir; incdir = incdir->next) {
         addpart(buf, incdir->buf, name);
-        
+
         f = fopen(buf, mode);
         if (f != NULL) {
             break;
         }
     }
-    
+
     free(buf);
     return f;
 }
@@ -1554,14 +1552,14 @@ generate(void)
                     Redo_why |= REASON_OBSCURE;
                     return;
                 }
-                
+
                 org = Csegment->org;
-                
+
                 if ( F_format < FORMAT_RAW )
                 {
                     putc((org & 0xFF), FI_temp);
                     putc(((org >> 8) & 0xFF), FI_temp);
-                    
+
                     if ( F_format == FORMAT_RAS )
                     {
                         Seekback = ftell(FI_temp);
@@ -1571,7 +1569,7 @@ generate(void)
                     }
                 }
             }
-            
+
             switch(F_format)
             {
             default:
@@ -1585,7 +1583,7 @@ generate(void)
 
             case FORMAT_RAW:
             case FORMAT_DEFAULT:
-                
+
                 if (Csegment->org < org)
                 {
                     printf("segment: %s %s  vs current org: %04lx\n",
@@ -1596,18 +1594,18 @@ generate(void)
                     fatal_fmt("Origin Reverse-indexed.");
                     exit(EXIT_FAILURE); /* TODO: necessary? why in the first place? */
                 }
-                
+
                 while (Csegment->org != org)
                 {
                     putc(OrgFill, FI_temp);
                     ++org;
                 }
-                
+
                 fwrite(Gen, Glen, 1, FI_temp);
                 break;
-                
+
             case FORMAT_RAS:
-                
+
                 if (org != Csegment->org)
                 {
                     long seekpos;
@@ -1624,18 +1622,18 @@ generate(void)
                     putc(0, FI_temp);
                     putc(0, FI_temp);
                 }
-                
+
                 fwrite(Gen, Glen, 1, FI_temp);
                 Seglen += Glen;
                 break;
-            
+
             }
             org += Glen;
         }
     }
-    
+
     Csegment->org += Glen;
-    
+
     if ((Csegment->flags & SF_RORG) != 0) {
         Csegment->rorg += Glen;
     }
