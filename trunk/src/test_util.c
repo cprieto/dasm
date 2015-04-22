@@ -33,6 +33,7 @@
 #include "util.h"
 
 #include "asm.h"
+#include "dalloc.h"
 #include "errors.h"
 
 #include <assert.h>
@@ -141,21 +142,21 @@ int main(int argc, char *argv[])
     setprogname(argv[0]);
     puts(getprogname());
     printf("sizeof(align)==%zu\n", sizeof(union align));
-    one = checked_malloc(BIG);
+    one = dalloc(BIG); /* [phf] was regular */
     puts("First malloc()ed!");
-    two = checked_malloc(BIG);
+    two = dalloc(BIG); /* [phf] was regular */
     puts("Second malloc()ed! Should have caused a panic?");
-    if (two) free(two);
+    if (two) dfree(two);
     puts("Second free()d!");
-    if (one) free(one);
+    if (one) dfree(one);
     puts("First free()d!");
-    one = small_alloc(4096);
+    one = dalloc(4096); /* [phf] was small */
     printf("First small_alloc()ed returned %p!\n", one);
-    two = small_alloc(4096);
+    two = dalloc(4096); /* [phf] was small */
     assert(one < two);
     printf("Second small_alloc()ed returned %p!\n", two);
-    one = small_alloc(10240);
-    small_free_all();
+    one = dalloc(10240); /* [phf] was small */
+    dfree_all();
     return EXIT_SUCCESS;
 }
 

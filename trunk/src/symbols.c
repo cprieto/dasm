@@ -30,6 +30,7 @@
 #include "symbols.h"
 
 #include "asm.h"
+#include "dalloc.h"
 #include "errors.h"
 #include "util.h"
 #include "version.h"
@@ -181,8 +182,8 @@ SYMBOL *create_symbol(const char *str, size_t len)
     }
 
     sym = alloc_symbol();
-    name = small_alloc(len+1);
-    memcpy(name, str, len); /* small_alloc zeros the array for us */
+    name = dalloc(len+1); /* [phf] was small */
+    memcpy(name, str, len); /* small_alloc zeros the array for us */ /* TODO: should be strdup? */
     sym->name = name;
     sym->namelen = len;
     hash = hash_symbol(str, len);
@@ -292,7 +293,7 @@ SYMBOL *alloc_symbol(void)
         memset(sym, 0, sizeof(SYMBOL));
     }
     else {
-        sym = small_alloc(sizeof(SYMBOL));
+        sym = dalloc(sizeof(SYMBOL)); /* [phf] was small */
     }
 
     return sym;
@@ -303,7 +304,7 @@ static void free_symbol(SYMBOL *sym)
     assert(sym != NULL);
 
     if ((sym->flags & SYM_STRING) != 0) {
-        free(sym->string); /* TODO: really how we allocate those? [phf] */
+        dfree(sym->string); /* TODO: really how we allocate those? [phf] */
     }
     sym->next = symbol_free_list;
     symbol_free_list = sym;
@@ -432,7 +433,7 @@ void ShowSymbols(FILE *file)
     }
 
     /* Malloc an array of pointers to data */
-    symArray = (SYMBOL**) malloc(nSymbols * sizeof(SYMBOL*));
+    symArray = (SYMBOL**) dalloc(nSymbols * sizeof(SYMBOL*)); /* [phf] was a REAL malloc(3)!!! */
     if (symArray == NULL) {
         fprintf(file, " (unsorted - not enough memory to sort!)\n");
 
@@ -481,7 +482,7 @@ void ShowSymbols(FILE *file)
             fprintf(file, "\n");
         }
 
-        free(symArray);
+        dfree(symArray);
     }
 
     fputs("--- End of Symbol List.\n", file);
@@ -498,20 +499,23 @@ void set_symbol_file_name(const char *name)
 
 void DumpSymbolTable(void)
 {
-    if (symbol_file_name != NULL)
-    {
-        FILE *fi = fopen(symbol_file_name, "w");
-        if (fi != NULL) {
-            ShowSymbols(fi);
-            if (fclose(fi) != 0) {
-                warning_fmt("Problem closing symbol file '%s'.",
-                            symbol_file_name);
-            }
-        }
-        else {
-            warning_fmt("Unable to open symbol dump file '%s'.",
-                        symbol_file_name);
-        }
+    if (symbol_file_name == NULL) {
+        /* no name, nothing to do */
+        return;
+    }
+
+    FILE *fi = fopen(symbol_file_name, "w");
+    if (fi == NULL) {
+        warning_fmt("Unable to open symbol dump file '%s'.",
+                    symbol_file_name);
+        return;
+    }
+
+    ShowSymbols(fi);
+
+    if (fclose(fi) != 0) {
+        warning_fmt("Problem closing symbol file '%s'.",
+                    symbol_file_name);
     }
 }
 

@@ -1,38 +1,20 @@
-# $Id$
-#
-# the DASM macro assembler (aka small systems cross assembler)
-#
-# Copyright (c) 1988-2002 by Matthew Dillon.
-# Copyright (c) 1995 by Olaf "Rhialto" Seibert.
-# Copyright (c) 2003-2008 by Andrew Davie.
-# Copyright (c) 2008 by Peter H. Froehlich.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 # Executables will be generated in the trunk/src/ directory (the
-# "current directory" as far as this Makefile is concerned). If
+# "current directory" as far as *this* Makefile is concerned). If
 # you want to move them somewhere, trunk/bin/ say, do so in the
 # trunk/ Makefile!
+#
+# The entire build process needs a serious redesign, it's horrid.
+# For example it should be possible to compile for release, for
+# plain debugging, for coverage analysis/profiling, etc. None of
+# that is possible easily right now.
 
-GOPTI= -O2 # -O2 for more warnings; use -O0 for debugging
+GOPTI= -O2 # -O0 # -O2 for more warnings, -O0 for debugging/coverage
 
 # Warnings are our first line of defense against many things,
 # here are some of our reasons for using so many...
 #
-# Our baseline is C99 with a set of fairly standard warnings.
-GWARN = -std=c99 -Wall -Wextra -Wpedantic
+# Our baseline is C11 with a set of fairly standard warnings.
+GWARN= -std=c11 -Wall -Wextra -Wpedantic
 #
 # We do a ton of string formatting so let's be safe about it.
 GWARN+= -Wformat-nonliteral -Wformat-security -Wformat-y2k
@@ -60,7 +42,7 @@ GWARN+= -Wshadow -Wundef \
 #
 # Seem like a good idea at first (to notice where old code and
 # new code collide) but produces too many warnings and we want
-# to be C99 anyway, darn it.
+# to be C11 anyway, darn it.
 #GWARN+= -Wtraditional -Wtraditional-conversion
 #
 # We used this when we were still SPLINT addicts because that
@@ -68,14 +50,14 @@ GWARN+= -Wshadow -Wundef \
 # out-of-date website. No more!
 #GWARN+= -Wdeclaration-after-statement
 
-GDEBG= -g # -fsanitize=address # -fprofile-arcs -ftest-coverage # -pg # -D_FORTIFY_SOURCE=2
+GDEBG= -g # --coverage # -fsanitize=address # -pg # -D_FORTIFY_SOURCE=2
 
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) # -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
 CC= gcc # clang
 
-OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o \
+OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o dalloc.o \
       mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
-SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c \
+SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c dalloc.c \
       mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
 
 TEST= test_errors test_util
@@ -98,8 +80,8 @@ ftobin: ftobin.c
 
 # produce executables for simple unit tests of certain
 # modules
-test_util: test_util.c util.o errors.o
-test_errors: test_errors.c errors.o util.o
+test_util: test_util.c util.o errors.o dalloc.o
+test_errors: test_errors.c errors.o util.o dalloc.o
 
 obj: $(OBJS)
 
@@ -108,7 +90,7 @@ $(OBJS): asm.h
 clean:
 	rm -rf *.o $(ALL) \
 	dasm-alpha-*.tar.gz \
-	*.gcda *.gcno *.gcov gmon.out
+	*.gcda *.gcno *.gcov gmon.out coverage.info ../lcov-html
 
 cscope:
 	ls *.h *.c >cscope.files
@@ -118,6 +100,12 @@ splint:
 
 cppcheck:
 	-cppcheck --enable=all --inconclusive --std=c11 --language=c $(SRCS)
+
+coverage:
+	echo "Let's hope you have coverage data..."
+	lcov --capture --directory . --output-file coverage.info
+	genhtml coverage.info --output-directory ../lcov-html
+	firefox-bin ../lcov-html/index.html
 
 # target to test compiles when neither __BSD__ nor __APPLE__ are
 # defined

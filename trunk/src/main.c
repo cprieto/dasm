@@ -34,6 +34,7 @@
  */
 
 #include "asm.h"
+#include "dalloc.h"
 #include "errors.h"
 #include "symbols.h"
 #include "util.h"
@@ -421,15 +422,15 @@ static int MainShadow(int argc, char **argv)
 
     /* INITIAL SEGMENT */
     {
-        SEGMENT *seg = small_alloc(sizeof(SEGMENT));
-        seg->name = strcpy(small_alloc(sizeof(ISEGNAME)), ISEGNAME);
+        SEGMENT *seg = dalloc(sizeof(SEGMENT)); /* [phf] was small */
+        seg->name = strcpy(dalloc(sizeof(ISEGNAME)), ISEGNAME); /* [phf] was small */
         seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
         Csegment = Seglist = seg;
     }
 
     /* TOP LEVEL IF */
     {
-        IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
+        IFSTACK *ifs = dalloc(sizeof(IFSTACK)); /* [phf] was zero regular */
         ifs->file = NULL;
         ifs->flags = IFF_BASE;
         ifs->acctrue = true;
@@ -531,6 +532,7 @@ nextpass:
         while (Reploop != NULL && Reploop->file == pIncfile)
             rmnode((void **)&Reploop, sizeof(REPLOOP));
 
+        /* TODO: missing guard? [phf] */
         while (Ifstack->file == pIncfile)
             rmnode((void **)&Ifstack, sizeof(IFSTACK));
 
@@ -539,7 +541,7 @@ nextpass:
         }
         /* [phf] either way, after this we cannot risk reading from the file anymore! */
         pIncfile->fi = NULL;
-        free(pIncfile->name); /* can't do anything about this warning :-( [phf] */
+        dfree(pIncfile->name); /* can't do anything about this warning :-( [phf] */
         /* [phf] and we set the name to NULL to be safe about that as well */
         pIncfile->name = NULL;
         --Inclevel;
@@ -1081,11 +1083,15 @@ void rmnode(void **base,  size_t UNUSED(bytes))
        were passed) with the content of the first element
        of the struct (the next field?); then we free the
        original struct we were pointing to; tricky! */
+    /* [phf] used to have a debug_fmt here which is bad
+     * since rmnode is used to mess with the pIncfile stack
+     * and debug_fmt uses that to locate the current file
+     */
     void *node;
 
     if ((node = *base) != NULL) {
         *base = *(void **)node;
-        free(node);
+        dfree(node);
     }
 }
 
@@ -1239,11 +1245,11 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
         unsigned int i;
         base = NULL;
         slp = &base;
-        mac = small_alloc(sizeof(MACRO));
+        mac = dalloc(sizeof(MACRO)); /* [phf] was small */
         i = hash_mnemonic(sbuf);
         mac->next = (MACRO *)MHash[i];
         mac->vect = v_execmac;
-        mac->name = strcpy(small_alloc(strlen(sbuf)+1), sbuf);
+        mac->name = strcpy(dalloc(strlen(sbuf)+1), sbuf); /* [phf] was small TODO: should be strdup? */
         mac->flags = MF_MACRO;
         MHash[i] = (MNEMONIC *)mac;
     }
@@ -1271,7 +1277,7 @@ void v_macro(const char *str, MNEMONIC UNUSED(*dummy))
             outlistfile(comment);
         }
         if (!defined) {
-            sl = small_alloc(STRLISTSIZE + strlen(buf) + 1);
+            sl = dalloc(STRLISTSIZE + strlen(buf) + 1); /* [phf] was small */
             strcpy(sl->buf, buf);
             *slp = sl;
             slp = &sl->next;
@@ -1322,7 +1328,7 @@ void pushinclude(const char *str)
             fprintf(FI_listfile, "------- FILE %s LEVEL %d PASS %d\n", str, Inclevel, pass);
         }
 
-        inf = zero_malloc(sizeof(INCFILE));
+        inf = dalloc(sizeof(INCFILE)); /* [phf] was zero regular */
         inf->next = pIncfile;
         inf->name = checked_strdup(str);
         inf->fi = fi;
@@ -1341,8 +1347,18 @@ static void exit_handler(void)
 {
     debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
 
+    debug_memory_allocation_patterns();
+
+    /* if there are still open files, close them */
+    if (FI_temp != NULL) {
+        fclose(FI_temp);
+    }
+    if (FI_listfile != NULL) {
+        fclose(FI_listfile);
+    }
+
     /* free all small allocations we ever made */
-    small_free_all();
+    dfree_all();
 
 #if 0 /* [phf] disabled, see ../test/directive_err.asm */
     /*
@@ -1366,8 +1382,6 @@ static void exit_handler(void)
 #endif
 
     /* TODO: more cleanup actions here? */
-
-    debug_memory_allocation_patterns();
 
     debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
 }

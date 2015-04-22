@@ -29,6 +29,7 @@
  */
 
 #include "asm.h"
+#include "dalloc.h"
 #include "errors.h"
 #include "symbols.h"
 #include "util.h"
@@ -505,7 +506,7 @@ v_include(const char *str, MNEMONIC UNUSED(*dummy))
 
     pushinclude(buf);
 
-    free(buf);
+    dfree(buf);
 }
 
 void
@@ -544,7 +545,7 @@ v_incbin(const char *str, MNEMONIC UNUSED(*dummy))
         warning_fmt("Unable to open binary include file '%s'.", buf);
     }
 
-    free(buf);
+    dfree(buf);
     Glen = 0;		    /* don't list hexdump */
 }
 
@@ -571,7 +572,7 @@ v_seg(const char *str, MNEMONIC UNUSED(*dummy))
             return;
         }
     }
-    Csegment = seg = zero_malloc(sizeof(SEGMENT));
+    Csegment = seg = dalloc(sizeof(SEGMENT)); /* [phf] was zero regular */
     seg->next = Seglist;
     seg->name = checked_strdup(str);
     seg->flags= seg->rflags = seg->initflags = seg->initrflags = SF_UNKNOWN;
@@ -1112,7 +1113,7 @@ v_eqm(const char *str, MNEMONIC UNUSED(*dummy))
 
     if ((lab = find_symbol(Av[0], len)) != NULL) {
         if ((lab->flags & SYM_STRING) != 0) {
-            free(lab->string);
+            dfree(lab->string);
         }
     }
     else
@@ -1193,7 +1194,7 @@ v_execmac(const char *str, MACRO *mac)
         return;
     }
     ++Mlevel;
-    base = checked_malloc(STRLISTSIZE + strlen(str) + 1);
+    base = dalloc(STRLISTSIZE + strlen(str) + 1); /* [phf] was regular */
     base->next = NULL;
     strcpy(base->buf, str);
     psl = &base->next;
@@ -1201,7 +1202,7 @@ v_execmac(const char *str, MACRO *mac)
         const char *sone = str; /* used to be "s1" which clashed with "sl" [phf] */
         while (*str != '\0' && *str != '\n' && *str != ',')
             ++str;
-        sl = checked_malloc(STRLISTSIZE + (str-sone) + 1);
+        sl = dalloc(STRLISTSIZE + (str-sone) + 1); /* [phf] was regular */
         sl->next = NULL;
         *psl = sl;
         psl = &sl->next;
@@ -1213,7 +1214,7 @@ v_execmac(const char *str, MACRO *mac)
             ++str;
     }
 
-    inc = zero_malloc(sizeof(INCFILE));
+    inc = dalloc(sizeof(INCFILE)); /* [phf] was zero regular */
     inc->next = pIncfile;
     inc->name = mac->name;
     inc->fi   = pIncfile->fi;	/* garbage */
@@ -1258,14 +1259,14 @@ v_endm(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
         --Mlevel;
         for (args = inc->args; args != NULL; args = an) {
             an = args->next;
-            free(args);
+            dfree(args);
         }
         Localindex = inc->saveidx;
 
         Localdollarindex = inc->savedolidx;
 
         pIncfile = inc->next;
-        free(inc);
+        dfree(inc);
         return;
     }
     (void) puts("not within a macro"); /* TODO: error? [phf] */
@@ -1353,7 +1354,7 @@ v_endif(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
         }
         else {
             Ifstack = ifs->next;
-            free(ifs);
+            dfree(ifs);
         }
     }
 }
@@ -1392,7 +1393,7 @@ void v_repeat(const char *str, MNEMONIC UNUSED(*dummy))
         return;
     }
 
-    rp = zero_malloc(sizeof(REPLOOP));
+    rp = dalloc(sizeof(REPLOOP)); /* [phf] was zero regular */
     rp->next = Reploop;
     rp->file = pIncfile;
     if ((pIncfile->flags & INF_MACRO) != 0) {
@@ -1459,12 +1460,12 @@ v_incdir(const char *str, MNEMONIC UNUSED(*dummy))
 
     if (!found) {
         STRLIST *newdir;
-        newdir = small_alloc(STRLISTSIZE + strlen(buf) + 1);
+        newdir = dalloc(STRLISTSIZE + strlen(buf) + 1); /* [phf] was small */
         strcpy(newdir->buf, buf);
         *tail = newdir;
     }
 
-    free(buf);
+    dfree(buf);
 }
 
 static void
@@ -1512,7 +1513,7 @@ pfopen(const char *name, const char *mode)
     /* TODO: the above looks like an Amiga leftover? the 512 below
        is fishy as well, wow... [phf] */
 
-    buf = zero_malloc(512);
+    buf = dalloc(512); /* [phf] was zero regular */
 
     for (incdir = incdirlist; incdir; incdir = incdir->next) {
         addpart(buf, incdir->buf, name);
@@ -1523,7 +1524,7 @@ pfopen(const char *name, const char *mode)
         }
     }
 
-    free(buf);
+    dfree(buf);
     return f;
 }
 
@@ -1722,7 +1723,7 @@ static void genfill(int32_t fill, long entries, int size)
 
 static void pushif(bool xbool)
 {
-    IFSTACK *ifs = zero_malloc(sizeof(IFSTACK));
+    IFSTACK *ifs = dalloc(sizeof(IFSTACK)); /* [phf] was zero regular */
     ifs->next = Ifstack;
     ifs->file = pIncfile;
     ifs->flags = 0;

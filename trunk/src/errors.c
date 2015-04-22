@@ -128,6 +128,7 @@ size_t number_of_warnings(void)
 }
 
 /* Super low-level panic for disasters *inside* the errors module! */
+static void internal_panic(const char *message) NORETURN;
 static void internal_panic(const char *message)
 {
   fprintf(
@@ -430,11 +431,16 @@ void debug_fmt(enum debug_channels chan, const char *fmt, ...)
     }
 }
 
+void panic_fmt(const char *fmt, ...)
+{
+    IMPLEMENT_FMT(ERRORLEVEL_DEBUG);
+    exit(EXIT_FAILURE);
+}
+
 DEFINE_FMT(info_fmt, ERRORLEVEL_INFO)
 DEFINE_FMT(notice_fmt, ERRORLEVEL_NOTICE)
 DEFINE_FMT(warning_fmt, ERRORLEVEL_WARNING)
 DEFINE_FMT(error_fmt, ERRORLEVEL_ERROR)
 DEFINE_FMT(fatal_fmt, ERRORLEVEL_FATAL)
-DEFINE_FMT(panic_fmt, ERRORLEVEL_PANIC)
 
 /* vim: set tabstop=4 softtabstop=4 expandtab shiftwidth=4 autoindent: */
