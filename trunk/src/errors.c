@@ -433,7 +433,7 @@ void debug_fmt(enum debug_channels chan, const char *fmt, ...)
 
 void panic_fmt(const char *fmt, ...)
 {
-    IMPLEMENT_FMT(ERRORLEVEL_DEBUG);
+    IMPLEMENT_FMT(ERRORLEVEL_PANIC);
     exit(EXIT_FAILURE);
 }
 
