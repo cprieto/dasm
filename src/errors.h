@@ -196,13 +196,14 @@ extern char source_location_buffer[SOURCE_LOCATION_LENGTH];
  */
 
 void notify_fmt(error_level_t level, const char *fmt, ...)
-     __attribute__((format(printf, 2, 3)));
+    __attribute__((format(printf, 2, 3)));
 
 /**
  * @brief Helpers to make common levels easier to read.
  */
 
-void debug_fmt(enum debug_channels chan, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+void debug_fmt(enum debug_channels chan, const char *fmt, ...)
+    __attribute__((format(printf, 2, 3)));
 void info_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void notice_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void warning_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
@@ -220,8 +221,8 @@ void fatal_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
  * have REAL error handling instead.
  */
 
-void panic_fmt(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
-     /* TODO: __attribute__((noreturn)) leads to bus error? :-/ */;
+void panic_fmt(const char *fmt, ...) NORETURN
+    __attribute__((format(printf, 1, 2)));
 
 /**
  * @brief Standard messages DASM spits out under certain conditions.

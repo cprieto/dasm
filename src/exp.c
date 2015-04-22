@@ -32,6 +32,7 @@
  */
 
 #include "asm.h"
+#include "dalloc.h"
 #include "errors.h"
 #include "symbols.h"
 #include "util.h"
@@ -598,7 +599,7 @@ static void stackarg(long val, dasm_flag_t flags, /*@null@*/ const char *ptr1)
             ++ptr;
             ++len;
         }
-        new = checked_malloc(len + 1);
+        new = dalloc(len + 1); /* [phf] was regular */
         memcpy(new, ptr1, len);
         new[len] = '\0';
         flags &= ~SYM_STRING;
