@@ -46,13 +46,10 @@ are hiding the file all the way down here for a reason...
       - probably hard since it can differ by opcode of
         course, given a certain machine...
 
-- use GNU indent to make code more consistent
-  - current .indent.pro not right, need to adjust
-  - when to do this? before 2.20.12?
-  - maybe astyle is a better, more conservative choice?
-  - actually, looks like clang-format is the way to go
-    - except that even that wonderful tool messes up struct initializers
-      - probably have to explicitly switch off formatting there
+- use clang-format to make code more consistent
+  - GNU indent and astyle both suck in various ways
+  - clang-format is pretty good EXCEPT for struct initializers
+    - probably have to explicitly switch off formatting there
     - has config options for something close to Linux style
 
 - work on refactoring hash?() has found some problems
