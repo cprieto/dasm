@@ -110,81 +110,68 @@ static struct new_perm_block *new_permalloc_stack = NULL;
  * Also clean up formatting and refactor.
  */
 static void *small_alloc(size_t bytes) __attribute__((malloc));
-
 static void *small_alloc(size_t bytes)
 {
-    debug_record_arena_alloc(bytes);
+	debug_record_arena_alloc(bytes);
 
-    /* Assume sizeof(union align) is a power of 2 */
-    union align { long l; double d; void *p; void (*fp)(void); };
+	/* Assume sizeof(union align) is a power of 2 */
+	union align { long l; double d; void *p; void (*fp)(void); };
 
-    static void *buf;
-    static size_t left = 0;
-    void *ptr;
-    struct new_perm_block *block;
-    size_t alignment = sizeof(union align);
+	/* carefully note that the next two are static! */
+	static void *buf;
+	static size_t left = 0;
+	void *ptr;
+	struct new_perm_block *block;
+	size_t alignment = sizeof(union align);
 
-    assert(bytes > 0); /* rule out 0! */
-    /* could sanity check upper bound here, but we're doing it below anyway */
+	assert(bytes > 0); /* rule out 0! */
+	/* could sanity check upper bound here, but we're doing it
+	 * below anyway */
 
-    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
+	debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
 
-    /* round up bytes for proper alignment */
-    bytes = ROUNDUP(bytes);
+	/* round up bytes for proper alignment */
+	bytes = ROUNDUP(bytes);
 
-    /* do we not have enough left in the current block? */
-    if (bytes > left)
-    {
-        debug_fmt(
-            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
-            "%s: new block needed",
-            SOURCE_LOCATION
-        );
+	/* do we not have enough left in the current block? */
+	if (bytes > left) {
+		debug_fmt(DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+				"%s: new block needed", SOURCE_LOCATION);
 
-        /* allocate a new block */
-        block = zero_malloc(ALLOCSIZE);
-        debug_fmt(
-            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
-            "%s: block @ %p",
-            SOURCE_LOCATION,
-            (void*) block
-        );
+		/* allocate a new block */
+		block = zero_malloc(ALLOCSIZE);
+		debug_fmt(DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+				"%s: block @ %p", SOURCE_LOCATION,
+				(void*) block);
 
-        /* calculate bytes we have left */
-        left = ALLOCSIZE - ROUNDUP(sizeof(block->next));
+		/* calculate bytes we have left */
+		left = ALLOCSIZE - ROUNDUP(sizeof(block->next));
 
-        /* check again if we have enough space */
-        if (bytes > left)
-        {
-            panic_fmt(PANIC_SMALL_MEMORY, bytes, SOURCE_LOCATION);
-        }
+		/* check again if we have enough space */
+		if (bytes > left) {
+			panic_fmt(PANIC_SMALL_MEMORY, bytes, SOURCE_LOCATION);
+		}
 
-        /* insert at top of stack */
-        block->next = new_permalloc_stack;
-        new_permalloc_stack = block;
+		/* insert at top of stack */
+		block->next = new_permalloc_stack;
+		new_permalloc_stack = block;
 
-        /* setup buf to point to actual memory area */
-        buf = ((char*)block) + ROUNDUP(sizeof(block->next)); /* char cast important! */
-        debug_fmt(
-            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
-            "%s: initial buf @ %p",
-            SOURCE_LOCATION,
-            (void*) buf
-        );
-    }
+		/* setup buf to point to actual memory area; char cast
+		 * is important! */
+		buf = ((char*)block) + ROUNDUP(sizeof(block->next));
+		debug_fmt(DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+				"%s: initial buf @ %p", SOURCE_LOCATION,
+				(void*) buf);
+	}
 
-    ptr = buf;
-    buf = ((char*)buf) + bytes; /* char cast important! */
-    debug_fmt(
-        DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
-        "%s: adjusted buf @ %p",
-        SOURCE_LOCATION,
-        (void*) buf
-    );
-    assert(ptr < buf); /* TODO: good idea? [phf] */
-    left -= bytes;
-    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
-    return ptr;
+	ptr = buf; /* recall buf is static! */
+	buf = ((char*)buf) + bytes; /* char cast important! */
+	debug_fmt(DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+			"%s: adjusted buf @ %p", SOURCE_LOCATION, (void*) buf);
+	assert(ptr < buf); /* TODO: good idea? [phf] */
+	left -= bytes;
+	debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
+	return ptr;
 }
 
 /**
@@ -196,29 +183,25 @@ static void *small_alloc(size_t bytes)
  */
 static void small_free_all(void)
 {
-    /* the block we are about to free() */
-    struct new_perm_block *current = NULL;
+	/* the block we are about to free() */
+	struct new_perm_block *current = NULL;
 
-    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
+	debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_ENTER, SOURCE_LOCATION);
 
-    /* as long as we have block left */
-    while (new_permalloc_stack != NULL)
-    {
-        /* remember the top block */
-        current = new_permalloc_stack;
-        /* pop the top block, stack possibly empty after this */
-        new_permalloc_stack = current->next;
-        /* free() the block we popped */
-        debug_fmt(
-            DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
-            "%s: freed block @ %p",
-            SOURCE_LOCATION,
-            (void*) current
-        );
-        free(current);
-    }
+	/* as long as we have block left */
+	while (new_permalloc_stack != NULL) {
+		/* remember the top block */
+		current = new_permalloc_stack;
+		/* pop the top block, stack possibly empty after this */
+		new_permalloc_stack = current->next;
+		/* free() the block we popped */
+		debug_fmt(DEBUG_CHANNEL_MEMORY|DEBUG_CHANNEL_DETAIL,
+				"%s: freed block @ %p", SOURCE_LOCATION,
+				(void*) current);
+		free(current);
+	}
 
-    debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
+	debug_fmt(DEBUG_CHANNEL_CONTROL, DEBUG_LEAVE, SOURCE_LOCATION);
 }
 #endif /* _DASM_ARENA_ALLOC */
 
