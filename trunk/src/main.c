@@ -209,6 +209,7 @@ static void print_usage(void)
     (void) puts("");
     (void) puts("Usage: dasm sourcefile [options]");
     (void) puts("");
+    /* TODO: Matt's 2.16 has *SPACES* between option and argument! [phf] */
     (void) puts("-f#      output format 1-3 (default 1)");
     (void) puts("-oname   output file name (else a.out)");
     (void) puts("-lname   list file name (else none generated)");
@@ -1133,6 +1134,9 @@ static MNEMONIC *parse(char *buf)
     Av[0] = Avbuf + j;
     while (buf[i] != '\0' && buf[i] != ' ') {
 
+        /* TODO: this was OlafColon and it was EITHER handled here OR in
+         * symbols.c/programlabel(); sadly whoever merged in Olaf's changes
+         * messed that up. [phf] */
         if (buf[i] == ':') {
             i++;
             break;
@@ -1313,6 +1317,8 @@ static unsigned int hash_mnemonic(const char *str)
     return hash_string(str, strlen(str)) & MHASHAND;
 }
 
+/* TODO: Matt's 2.16 returns an int for success/failure, however he never got
+ * around to checking it. Good idea? [phf] */
 void pushinclude(const char *str)
 {
     INCFILE *inf;

@@ -214,7 +214,9 @@ void programlabel(void)
         return;
     len = strlen(str);
 
-
+    /* TODO: this was !OlafColon and it was EITHER handled here OR in
+     * main.c/parse(); sadly whoever merged in Olaf's changes messed that
+     * up. [phf] */
     if (str[len-1] == ':')
         --len;
 

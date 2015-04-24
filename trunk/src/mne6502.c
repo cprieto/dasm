@@ -67,6 +67,12 @@ MNEMONIC Mne6502[] = {
     { NULL, v_mnemonic, "ldx", 0, AF_IMM8|AF_BYTEADR|AF_BYTEADRY|AF_WORDADR|AF_WORDADRY, { 0xA2, 0xA6, 0xB6, 0xAE, 0xBE } },
     { NULL, v_mnemonic, "ldy", 0, AF_IMM8|AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX, { 0xA0, 0xA4, 0xB4, 0xAC, 0xBC } },
     { NULL, v_mnemonic, "lsr", 0, AF_IMP|AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX, { 0x4A, 0x46, 0x56, 0x4E, 0x5E } },
+    /* [phf] Whoever added the illegal opcodes thought it was a good idea to
+     * hardcode some of them into the existing NOP instruction. At least one
+     * person is supposedly using them, so we can't cleanly move them until we
+     * rewrite the hash-table code to allow merging opcodes if they don't clash
+     * on addressing modes.
+     */
     { NULL, v_mnemonic, "nop", 0, AF_IMP|AF_IMM8|AF_BYTEADR|AF_BYTEADRX|AF_WORDADR|AF_WORDADRX, { 0xEA, 0x80, 0x04, 0x14, 0x0c, 0x1c } },
     { NULL, v_mnemonic, "ora", 0, AF_IMM8|ASTD, { 0x09, 0x05, 0x15, 0x0D, 0x1D, 0x19, 0x01, 0x11 } },
     { NULL, v_mnemonic, "pha", 0, AF_IMP, { 0x48 } },

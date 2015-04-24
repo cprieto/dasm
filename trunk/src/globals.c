@@ -100,6 +100,7 @@ MNEMONIC Ops[] = {
     { NULL, v_include , "include",        0,      0, {0,} },
     { NULL, v_seg     , "seg",            0,      0, {0,} },
     { NULL, v_hex     , "hex",            0,      0, {0,} },
+    /* TODO: how about "error" as a cleaner synonym? [phf] */
     { NULL, v_err     , "err",            0,      0, {0,} },
     { NULL, v_dc      , "dc",             0,      0, {0,} },
     { NULL, v_dc      , "byte",           0,      0, {0,} },
@@ -119,6 +120,7 @@ MNEMONIC Ops[] = {
     { NULL, v_eqm     , "eqm",            0,      0, {0,} },
     { NULL, v_set     , "set",            0,      0, {0,} },
     { NULL, v_macro   , "mac",            MF_IF,  0, {0,} },
+    /* TODO: Matt's 2.16 replaced MF_ENDM with 0 in the next line? [phf] */
     { NULL, v_endm    , "endm",           MF_ENDM,0, {0,} },
     { NULL, v_mexit   , "mexit",          0,      0, {0,} },
     { NULL, v_ifconst , "ifconst",        MF_IF,  0, {0,} },
