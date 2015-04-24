@@ -230,6 +230,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
         return;
     }
 
+    /* TODO: Matt's 2.16 removes the Mnext >= 0 part? [phf] */
     if (Mnext >= 0 && Mnext < NUMOC) {           /*	Force	*/
         addrmode = Mnext;
         if (badcode(mne,addrmode)) {
@@ -642,6 +643,8 @@ v_err(const char UNUSED(*str), MNEMONIC UNUSED(*dummy))
     /* [phf] removed
     asmerr( ERROR_ERR_PSEUDO_OP_ENCOUNTERED, true, NULL );
     */
+    /* TODO: we have an str available here, should we use it
+     * for an error message? [phf] */
     panic_fmt("ERR pseudo-op encountered, aborting assembly!");
 }
 
@@ -862,6 +865,8 @@ v_org(const char *str, MNEMONIC UNUSED(*dummy))
 
     assert(str != NULL);
 
+    /* TODO: Matt's 2.16 doesn't have the second argument? Was that added by
+     * Olaf? [phf] */
     sym = eval(str, false);
     assert(sym != NULL);
 
@@ -1318,12 +1323,14 @@ v_if(const char *str, MNEMONIC UNUSED(*dummy))
     sym = eval(str, false);
     assert(sym != NULL);
     if (sym->flags != 0) {
+        /* TODO: Matt's 2.16 diagnoses a "Value undefined" error
+         * here and says "IF error %x\n", sym-flags as well. [phf] */
         ++Redo;
         Redo_why |= REASON_IF_NOT_RESOLVED;
         pushif(0);
         Ifstack->acctrue = false;
 
-        Redo_if |= 1;
+        Redo_if |= 1; /* [phf] appears to be Olaf's invention */
     }
     else {
         pushif(!!sym->value);
