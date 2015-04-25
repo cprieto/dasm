@@ -1,0 +1,12 @@
+I am trying to put together a cram-based [1] test suite. I hope to cover
+mostly user-interface stuff, things like DASM's exit status, diagnostic
+messages, etc.
+
+So far the biggest hassle with cram is that it runs tests in its own weird
+temporary directories; copying stuff into those is a bit iffy; but we're
+working on it.
+
+Peter H. Froehlich
+phf at acm dot org
+
+[1] See https://pypi.python.org/pypi/cram for details.
