@@ -9,4 +9,25 @@ working on it.
 Peter H. Froehlich
 phf at acm dot org
 
-[1] See https://pypi.python.org/pypi/cram for details.
+[1] See https://pypi.python.org/pypi/cram for details. Here's a quick
+summary:
+
+- Lines beginning with two spaces, a dollar sign, and a space are run in the
+  shell.
+- Lines beginning with two spaces, a greater than sign, and a space allow
+  multi-line commands.
+- All other lines beginning with two spaces are considered command output.
+- Output lines ending with a space and the keyword (re) are matched as
+  Perl-compatible regular expressions.
+- Lines ending with a space and the keyword (glob) are matched with a
+  glob-like syntax. The only special characters supported are * and ?.
+  Both characters can be escaped using \, and the backslash can be
+  escaped itself.
+- Output lines ending with either of the above keywords are always first
+  matched literally with actual command output.
+- Lines ending with a space and the keyword (no-eol) will match actual
+  output that doesn’t end in a newline.
+- Actual output lines containing unprintable characters are escaped and
+  suffixed with a space and the keyword (esc). Lines matching unprintable
+  output must also contain the keyword.
+- Anything else is a comment.
