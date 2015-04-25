@@ -25,12 +25,12 @@ Testing with a few symbols/labels next.
   > EOF
 
 An ECHO with an unresolved label seems to result in an empty line even if the
-label *should* resolve in the second pass. There is a space in front of the
-output too, that probably should not be there.
+label *should* resolve in the second pass. Note that the single space in front
+of the output is apparently intentional; only Matthew Dillon knows why.
 
   $ $TESTDIR/dasm echo.asm
-  $1
-  $2
+   $1
+   $2
   some error message?
 
 Now we try dealing with strings in ECHO.
@@ -53,10 +53,10 @@ what the "correct" output should be in those cases.
   $ $TESTDIR/dasm echo.asm
   echo.asm (?): error: Syntax error in '"crap" "zero"'! (glob)
   echo.asm (?): error: Syntax error in '"A string" 10'! (glob)
-  eins
-  zero
-  zwei drei
-  $a
+   eins
+   zero
+   zwei drei
+   $a
   [1]
 
 Finally for some numbers and basic arithmetic, just for kicks.
@@ -72,19 +72,17 @@ Finally for some numbers and basic arithmetic, just for kicks.
   >  .echo \$0ffaaffbb
   >  .end
   > EOF
-  $ cat echo.asm
 
-Alright, we have the usual problem of an additional space in front of the
-numbers, but otherwise things are mostly good. Note that we had to escape
-the dollar signs in the input, otherwise cram shoots us in the foot.
+Looks good. Note that we had to escape the dollar signs in the input, otherwise
+cram shoots us in the foot.
 
   $ $TESTDIR/dasm echo.asm
-  $7
-  $2
-  $2
-  $ff
-  $ff
-  $ff
-  $ffaaffbb
+   $7
+   $2
+   $2
+   $ff
+   $ff
+   $ff
+   $ffaaffbb
 
 And that is it for now with tests of the ECHO directive.
