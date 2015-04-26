@@ -116,6 +116,7 @@ beta:
 # regular build from this Makefile; don't delete the
 # "real" distribution archives
 clean:
+	(cd doc; make clean; cd ..)
 	(cd src; make clean; cd ..)
 	(cd test; make clean; cd ..)
 	-rm -rf dasm-beta-*.tar.gz bin/
