@@ -7,6 +7,7 @@ DASM=../bin/dasm
 FTOHEX=../bin/ftohex
 
 test:
+	(cd cram; ./run_all.sh; cd ..)
 	(cd atari2600; make test; cd ..)
 	(cd atari2600/pokersquares; make DASM=../../../bin/dasm check; cd ../..)
 	(cd channel-f; make test; cd ..)
@@ -22,4 +23,4 @@ clean:
 	(cd atari2600; make clean; cd ..)
 	(cd atari2600/pokersquares; make clean; cd ../..)
 	(cd channel-f; make clean; cd ..)
-	rm -rf *.bin *.hex *.valgrind
+	rm -rf *.bin *.hex *.valgrind *.sym *.listing
