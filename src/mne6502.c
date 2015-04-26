@@ -132,6 +132,18 @@ MNEMONIC Mne6502illegal[] = {
 };
 
 /*
+    C64 DTV (rev 2 and 3) opcodes.   (rev 1 has no additional opcodes over
+    6502, but some illegals are missing)
+*/
+MNEMONIC Mne6502dtv[] = {
+    /* New instructions */
+    { NULL, v_mnemonic, "bra", 0, AF_REL, { 0x12 } },
+    { NULL, v_mnemonic, "sac", 0, AF_IMM8, { 0x32 } },
+    { NULL, v_mnemonic, "sir", 0, AF_IMM8, { 0x42 } },
+    MNEMONIC_NULL
+};
+
+/*
     65c02 opcodes submitted to Matt Dillon by Michael Marvin Morrison,
     apparently a long time ago since Mike gives mmm@reaper.chi.il.us
     and reaper!mmm@miroc.chi.il.us (!) as email addresses. :-) [phf]

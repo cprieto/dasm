@@ -48,6 +48,7 @@ int	 Glen;
 
 extern MNEMONIC    Mne6502[];
 extern MNEMONIC    Mne6502illegal[];
+extern MNEMONIC    Mne6502dtv[];
 extern MNEMONIC    Mne6803[];
 extern MNEMONIC    MneHD6303[];
 extern MNEMONIC    Mne68705[];
@@ -73,7 +74,7 @@ static int get_hex_digit(char c);
     use one table to encode all the relevant information
 */
 
-#define MAX_MNEMONIC_TABLES 3
+#define MAX_MNEMONIC_TABLES 4
 
 struct processor_description {
     /* unique name of processor architecture */
@@ -86,6 +87,7 @@ struct processor_description {
 
 static struct processor_description available_processors[] = {
     {"6502", false, {Mne6502, Mne6502illegal, NULL}},
+    {"C64DTV2", false, {Mne6502, Mne6502illegal, Mne6502dtv, NULL}},
     {"6803", true, {Mne6803, NULL}},
     {"HD6303", true, {Mne6803, MneHD6303, NULL}},
     {"68705", true, {Mne68705, NULL}},
