@@ -1,9 +1,9 @@
 # Gentoo installs "rst2man.py" and friends but Ubuntu installs
 # "rst2man" and so on. Better look for the commands ourselves.
-# A bit naively maybe?
-RST2MAN := $(shell /usr/bin/find /usr/bin -name "rst2man*")
-RST2HTML := $(shell /usr/bin/find /usr/bin -name "rst2html*")
-RST2LATEX := $(shell /usr/bin/find /usr/bin -name "rst2latex*")
+# 'which' will search the user's $PATH.
+RST2MAN   := $(shell which rst2man   2>/dev/null || which rst2man.py   2>/dev/null )
+RST2HTML  := $(shell which rst2html  2>/dev/null || which rst2html.py  2>/dev/null )
+RST2LATEX := $(shell which rst2latex 2>/dev/null || which rst2latex.py 2>/dev/null )
 
 all: ensuretools
 	@echo "Nothing to do yet."
