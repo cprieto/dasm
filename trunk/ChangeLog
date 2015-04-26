@@ -94,7 +94,7 @@ made. Check the Subversion logs for that. :-)
 
 	* src/main.c (CompareAlpha, CompareAddress): rewrote
 	  CompareAlpha() to call strcasecmp() instead of
-          allocating memory for both strings, converting
+	  allocating memory for both strings, converting
 	  them to lower case inline with one loop for each
 	  string, calling strcmp(), and then freeing memory
 	  again; also corrected the casts from const void*
@@ -125,7 +125,7 @@ made. Check the Subversion logs for that. :-)
 
 	* src/*: fixed lots of warnings in all source files, mostly
 	  concerned with initializion of MNEMONIC tables and various
-          printf format codes; also added "static" to many functions
+	  printf format codes; also added "static" to many functions
 	  that are used only within one file and removed several of
 	  the prototypes that were unnecessary because of this
 
@@ -133,4 +133,3 @@ Note that there is a long and involved history of changes from
 before 2.20.11 that was not reconstructed here. It would be an
 interesting (if Quixotic) project to actually do the necessary
 research, but it's not on my agenda for the near future.
-
