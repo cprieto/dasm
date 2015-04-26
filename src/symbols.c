@@ -434,6 +434,12 @@ void ShowSymbols(FILE *file)
         }
     }
 
+    /* [phf] stop sorting code from allocating 0 bytes */
+    if (nSymbols <= 0) {
+        fprintf(file, "\nNo symbols to show.\n");
+        goto no_symbols_to_show;
+    }
+
     /* Malloc an array of pointers to data */
     symArray = (SYMBOL**) dalloc(nSymbols * sizeof(SYMBOL*)); /* [phf] was a REAL malloc(3)!!! */
     if (symArray == NULL) {
@@ -487,6 +493,7 @@ void ShowSymbols(FILE *file)
         dfree(symArray);
     }
 
+no_symbols_to_show:
     fputs("--- End of Symbol List.\n", file);
 }
 
