@@ -394,6 +394,19 @@ static void parse_options(int argc, char **argv)
                 processor_forced = true;
                 break;
 
+            /*
+             * [phf] generate tests automatically; force a processor
+             * and then say -Xfilename to get a file full of opcodes;
+             * exits afterwards because we were not run to assemble
+             * something; debatable? let me know...
+             *
+             * this is an *undocumented* command line option, it may
+             * change at anytime, don't rely on it
+             */
+            case 'X':
+                generate_test_file(str, true);
+                break;
+
             default:
                 parse_options_fail(/* Unknown option. */);
                 break;
