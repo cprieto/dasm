@@ -46,15 +46,6 @@ unsigned char Gen[256];
 static unsigned char OrgFill = DEFORGFILL;
 int	 Glen;
 
-extern MNEMONIC    Mne6502[];
-extern MNEMONIC    Mne6502illegal[];
-extern MNEMONIC    Mne6502dtv[];
-extern MNEMONIC    Mne6803[];
-extern MNEMONIC    MneHD6303[];
-extern MNEMONIC    Mne68705[];
-extern MNEMONIC    Mne68HC11[];
-extern MNEMONIC    MneF8[];
-
 static void genfill(int32_t fill, long bytes, int size);
 static void pushif(bool xbool);
 static int get_hex_digit(char c);
@@ -74,16 +65,7 @@ static int get_hex_digit(char c);
     use one table to encode all the relevant information
 */
 
-#define MAX_MNEMONIC_TABLES 4
-
-struct processor_description {
-    /* unique name of processor architecture */
-    const char* name;
-    /* false => lsb,msb; true => msb,lsb */
-    bool msb_order;
-    /* list of mnemonic tables, NULL terminated */
-    MNEMONIC *mnemonic_tables[MAX_MNEMONIC_TABLES];
-};
+struct processor_description *selected_processor = NULL;
 
 static struct processor_description available_processors[] = {
     {"6502", false, {Mne6502, Mne6502illegal, NULL}},
@@ -106,9 +88,8 @@ void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
      * called a second time with the same hash table and hangs if we try.
      */
     static bool called_already = false;
-    static struct processor_description *selected = NULL;
 
-    struct processor_description *previous = selected;
+    struct processor_description *previous = selected_processor;
     struct processor_description *p;
 
     bool found = false;
@@ -123,17 +104,17 @@ void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
      * processor to what -m already forced it to, per Andrew
      * Davies email). */
     if (processor_forced) {
-        assert(selected != NULL); /* 20150414 bkw: This Never Happens */
-        if (!match_either_case(str, selected->name)) {
+        assert(selected_processor != NULL); /* 20150414 bkw: This Never Happens */
+        if (!match_either_case(str, selected_processor->name)) {
             warning_fmt("Ignoring 'processor %s' due to -m%s option",
-                        str, selected->name);
+                        str, selected_processor->name);
         }
         return;
     }
 
     for (p = available_processors; p->name != NULL; p++) {
         if (match_either_case(str, p->name)) {
-            selected = p;
+            selected_processor = p;
             found = true;
             break;
         }
@@ -146,7 +127,7 @@ void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
         return;
     }
 
-    if (previous != NULL && selected != previous) {
+    if (previous != NULL && selected_processor != previous) {
         fatal_fmt("Only one processor type may be selected!");
         return;
     }
@@ -155,13 +136,12 @@ void v_processor(const char *str, MNEMONIC UNUSED(*dummy))
         /* p->mnemonics_tables is an array of MNEMONIC pointers (each
          * of which in turn denotes an array of MNEMONIC structs
          * defined in the mne*.c files); we step through this array
-         * until we * find a NULL pointer; for each valid pointer we
+         * until we find a NULL pointer; for each valid pointer we
          * call addhashtable() to incorporate those opcodes [phf]
          */
-        for (MNEMONIC **m = selected->mnemonic_tables; *m != NULL; m++) {
+        for (MNEMONIC **m = selected_processor->mnemonic_tables; *m != NULL; m++) {
             addhashtable(*m);
         }
-        MsbOrder = p->msb_order;
     }
 
     called_already = true;
@@ -340,7 +320,7 @@ void v_mnemonic(const char *str, MNEMONIC *mne)
             Gen[opidx++] = sym->value;
         }
         if (operand_size(addrmode) == 2) {
-            if (MsbOrder) {
+            if (selected_processor->msb_order) {
                 Gen[opidx-1] = sym->value >> 8;
                 Gen[opidx++] = sym->value;
             }
@@ -737,7 +717,7 @@ v_dc(const char *str, MNEMONIC *mne)
                     Gen[Glen++] = value & 0xFF;
                     break;
                 case AM_WORD:
-                    if (MsbOrder) {
+                    if (selected_processor->msb_order) {
                         Gen[Glen++] = (value >> 8) & 0xFF;
                         Gen[Glen++] = value & 0xFF;
                     }
@@ -748,7 +728,7 @@ v_dc(const char *str, MNEMONIC *mne)
                     }
                     break;
                 case AM_LONG:
-                    if (MsbOrder) {
+                    if (selected_processor->msb_order) {
                         Gen[Glen++] = (value >> 24)& 0xFF;
                         Gen[Glen++] = (value >> 16)& 0xFF;
                         Gen[Glen++] = (value >> 8) & 0xFF;
@@ -784,7 +764,7 @@ v_dc(const char *str, MNEMONIC *mne)
                 Gen[Glen++] = value & 0xFF;
                 break;
             case AM_WORD:
-                if (MsbOrder) {
+                if (selected_processor->msb_order) {
                     Gen[Glen++] = (value >> 8) & 0xFF;
                     Gen[Glen++] = value & 0xFF;
                 }
@@ -795,7 +775,7 @@ v_dc(const char *str, MNEMONIC *mne)
                 }
                 break;
             case AM_LONG:
-                if (MsbOrder) {
+                if (selected_processor->msb_order) {
                     Gen[Glen++] = (value >> 24)& 0xFF;
                     Gen[Glen++] = (value >> 16)& 0xFF;
                     Gen[Glen++] = (value >> 8) & 0xFF;
@@ -1694,7 +1674,7 @@ static void genfill(int32_t fill, long entries, int size)
 
         case 2:
             for (i = 0; i < size_of_gen; i += 2) {
-                if (MsbOrder) {
+                if (selected_processor->msb_order) {
                     Gen[i+0] = c1;
                     Gen[i+1] = c0;
                 }
@@ -1707,7 +1687,7 @@ static void genfill(int32_t fill, long entries, int size)
 
         case 4:
             for (i = 0; i < size_of_gen; i += 4) {
-                if (MsbOrder) {
+                if (selected_processor->msb_order) {
                     Gen[i+0] = c3;
                     Gen[i+1] = c2;
                     Gen[i+2] = c1;

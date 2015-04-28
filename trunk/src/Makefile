@@ -55,10 +55,12 @@ GDEBG= -g # --coverage # -fsanitize=address # -pg # -D_FORTIFY_SOURCE=2
 CFLAGS= $(GOPTI) $(GWARN) $(GDEBG) # -D_BSD_SOURCE # -D_XOPEN_SOURCE=500
 CC= gcc # clang
 
-OBJS= main.o ops.o globals.o exp.o symbols.o errors.o util.o dalloc.o \
-      mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o
-SRCS= main.c ops.c globals.c exp.c symbols.c errors.c util.c dalloc.c \
-      mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c
+OBJS= main.o ops.o globals.o exp.o symbols.o \
+      mne6303.o mne6502.o mne68705.o mne6811.o mnef8.o \
+      errors.o util.o dalloc.o gentest.o
+SRCS= main.c ops.c globals.c exp.c symbols.c \
+      mne6303.c mne6502.c mne68705.c mne6811.c mnef8.c \
+      errors.c util.c dalloc.c gentest.c
 
 TEST= test_errors test_util
 

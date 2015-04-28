@@ -211,6 +211,15 @@ struct _MNEMONIC
 /* MNEMONIC with all fields 0, used as end-of-table marker. */
 #define MNEMONIC_NULL {NULL, NULL, NULL, 0, 0, {0,}}
 
+extern MNEMONIC    Mne6502[];
+extern MNEMONIC    Mne6502illegal[];
+extern MNEMONIC    Mne6502dtv[];
+extern MNEMONIC    Mne6803[];
+extern MNEMONIC    MneHD6303[];
+extern MNEMONIC    Mne68705[];
+extern MNEMONIC    Mne68HC11[];
+extern MNEMONIC    MneF8[];
+
 typedef struct _MACRO MACRO;
 struct _MACRO
 {
@@ -351,8 +360,26 @@ extern char    *Av[];
 extern MNEMONIC    Ops[];
 extern int    Mnext;          /*    mnemonic extension    */
 
+/*
+ * Description of a processor type as accepted by the .processor directive
+ * or the -m command line option.
+ */
+#define MAX_MNEMONIC_TABLES 4
+struct processor_description {
+    /* unique name of processor architecture */
+    const char* name;
+    /* false => lsb,msb; true => msb,lsb */
+    bool msb_order;
+    /* list of mnemonic tables, NULL terminated */
+    MNEMONIC *mnemonic_tables[MAX_MNEMONIC_TABLES];
+};
+
+/*
+ * The selected processor.
+ */
+extern struct processor_description *selected_processor;
 extern bool processor_forced; /* 20150414 bkw: -m option */
-extern bool MsbOrder;
+
 extern unsigned long    Redo_why;
 
 extern int Redo;
@@ -427,6 +454,9 @@ FILE *pfopen(const char *, const char *);
 
 /* exp.c */
 SYMBOL *eval(const char *str, bool wantmode);
+
+/* gentest.c */
+void generate_test_file(const char* filename, bool valid);
 
 #endif /* _DASM_ASM_H */
 

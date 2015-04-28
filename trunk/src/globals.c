@@ -40,7 +40,6 @@ SEGMENT *Seglist;	    /*	segment list	    */
 SEGMENT *Csegment;	    /*	current segment     */
 IFSTACK *Ifstack;	    /*	IF/ELSE/ENDIF stack */
 char	*Av[256];	    /*	up to 256 arguments */
-bool MsbOrder = true;
 int	Mnext;
 unsigned long	Localindex;	   /*  to generate local variables */
 unsigned long	Lastlocalindex;
