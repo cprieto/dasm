@@ -12,6 +12,16 @@ viewman:
 	$(RST2MAN) dasm.rst | nroff -man | less
 	$(RST2MAN) ftohex.rst | nroff -man | less
 
+viewpdf:
+	$(RST2LATEX) dasm.rst > dasm.tex
+	pdflatex dasm.tex
+	pdflatex dasm.tex
+	mupdf dasm.pdf
+	$(RST2LATEX) ftohex.rst > ftohex.tex
+	pdflatex ftohex.tex
+	pdflatex ftohex.tex
+	mupdf ftohex.pdf
+
 .PHONY: ensuretools
 ensuretools:
 ifndef RST2MAN
@@ -26,4 +36,4 @@ endif
 
 .PHONY: clean
 clean:
-	@echo "Eventually this will clean house."
+	rm -rf *.aux *.log *.pdf *.tex *.out
