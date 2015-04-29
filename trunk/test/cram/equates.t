@@ -63,4 +63,25 @@ in Haskell (without the fancy memoization of course).
    $2
    $11
 
-Actually kinda neat I think. :-)
+Actually kinda neat I think. :-) What happens for these directives when no
+expression is given is not so neat however:
+
+  $ cat <<EOF >equates.asm
+  >  .processor 6502
+  > one .equ
+  >  .echo one
+  > two .set
+  >  .echo two
+  > three .eqm
+  >  .echo three
+  > EOF
+
+  $ $TESTDIR/dasm equates.asm
+   $0
+   $0
+   $0
+
+That is both bad and sad. But I am not sure we can change it so I am leaving
+it as a "passed" test case for now. It really should be a failure, but this
+might be related to my troubles with the "empty .echo" directive, seems that
+DASM evaluates empty strings to 0 everywhere. Ouch!
